@@ -1,22 +1,25 @@
 import { Helmet } from "react-helmet-async";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import HowItWorks from "@/components/HowItWorks";
 import TierSection from "@/components/TierSection";
+import SocialProof from "@/components/SocialProof";
 import Philosophy from "@/components/Philosophy";
 import Footer from "@/components/Footer";
+import ConsentModal from "@/components/ConsentModal";
 
 const Index = () => {
   return (
     <>
       <Helmet>
-        <title>Alpha Appeal | South Africa's Premium Cannabis Lifestyle Subscription</title>
+        <title>Alpha Appeal | Live with Intention. Move with Culture.</title>
         <meta 
           name="description" 
-          content="Join South Africa's most exclusive cannabis lifestyle community. Curated products, premium experiences, and a community of tastemakers. 18+ only." 
+          content="Join South Africa's most intentional lifestyle movement. Art you can wear. Music you can live in. Culture you can feel. Premium curated experiences delivered monthly." 
         />
-        <meta name="keywords" content="cannabis, lifestyle, subscription, South Africa, premium, luxury" />
-        <meta property="og:title" content="Alpha Appeal | Premium Cannabis Lifestyle" />
-        <meta property="og:description" content="Join South Africa's most exclusive cannabis lifestyle community. Curated products, premium experiences." />
+        <meta name="keywords" content="lifestyle, subscription, South Africa, premium, luxury, music, fashion, wellness, culture" />
+        <meta property="og:title" content="Alpha Appeal | Premium Lifestyle Movement" />
+        <meta property="og:description" content="Art you can wear. Music you can live in. Culture you can feel. Join the movement." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://alpha-appeal.co.za" />
       </Helmet>
@@ -25,10 +28,13 @@ const Index = () => {
         <Header />
         <main>
           <Hero />
+          <HowItWorks />
           <TierSection />
+          <SocialProof />
           <Philosophy />
         </main>
         <Footer />
+        <ConsentModal />
       </div>
     </>
   );
