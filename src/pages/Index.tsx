@@ -1,13 +1,36 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Helmet } from "react-helmet-async";
+import Header from "@/components/Header";
+import Hero from "@/components/Hero";
+import TierSection from "@/components/TierSection";
+import Philosophy from "@/components/Philosophy";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <>
+      <Helmet>
+        <title>Alpha Appeal | South Africa's Premium Cannabis Lifestyle Subscription</title>
+        <meta 
+          name="description" 
+          content="Join South Africa's most exclusive cannabis lifestyle community. Curated products, premium experiences, and a community of tastemakers. 18+ only." 
+        />
+        <meta name="keywords" content="cannabis, lifestyle, subscription, South Africa, premium, luxury" />
+        <meta property="og:title" content="Alpha Appeal | Premium Cannabis Lifestyle" />
+        <meta property="og:description" content="Join South Africa's most exclusive cannabis lifestyle community. Curated products, premium experiences." />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://alpha-appeal.co.za" />
+      </Helmet>
+
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main>
+          <Hero />
+          <TierSection />
+          <Philosophy />
+        </main>
+        <Footer />
       </div>
-    </div>
+    </>
   );
 };
 
