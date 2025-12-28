@@ -1,58 +1,87 @@
 import TierCard from "@/components/TierCard";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const tiers = [
   {
-    name: "Essential",
-    price: 299,
-    description: "Perfect for the curious connoisseur",
+    name: "Free",
+    price: 0,
+    description: "Start your journey",
     features: [
-      "Monthly curated product sample",
-      "Access to member-only drops",
-      "Community forum access",
-      "Digital content library",
-      "Monthly newsletter",
+      "Limited community access",
+      "Preview content",
+      "Email updates",
+      "Public events calendar",
     ],
+    ctaText: "Join Free",
+    paymentType: "free" as const,
   },
   {
-    name: "Elite",
-    price: 599,
-    description: "For the dedicated enthusiast",
+    name: "Essential",
+    price: 99,
+    description: "Curated lifestyle, monthly",
     features: [
-      "Everything in Essential",
-      "Full-size monthly product kit",
-      "Exclusive music playlist access",
-      "Priority customer support",
-      "Early access to new products",
-      "Member events invitations",
+      "Alpha Essential Kit monthly",
+      "Curated lifestyle accessories",
+      "Full community access",
+      "Music playlists & drops",
+      "Event previews",
+      "Member-only content",
     ],
     highlighted: true,
     badge: "Most Popular",
+    ctaText: "Get Essential",
+    paymentType: "essential" as const,
+    payfastLink: "https://payf.st/eot4j",
+  },
+  {
+    name: "Elite",
+    price: 499,
+    originalPrice: 499,
+    promoPrice: 99,
+    promoText: "First month R99",
+    description: "The ultimate Alpha experience",
+    features: [
+      "Everything in Essential",
+      "Alpha Elite Experience kit",
+      "Luxury-grade accessories",
+      "Limited-edition fashion items",
+      "VIP event access",
+      "Priority drops",
+      "Personal concierge",
+    ],
+    ctaText: "Go Elite",
+    paymentType: "elite" as const,
   },
   {
     name: "Private",
-    price: 1499,
-    description: "The ultimate Alpha experience",
+    price: null,
+    description: "By invitation only",
     features: [
       "Everything in Elite",
-      "Premium luxury product kit",
-      "Quarterly limited edition drops",
-      "Personal lifestyle concierge",
-      "VIP event access",
-      "Custom product requests",
-      "Private community access",
+      "Exclusive private community",
+      "Bespoke product requests",
+      "Direct founder access",
+      "Investment opportunities",
+      "Private events",
     ],
+    ctaText: "Apply for Access",
+    paymentType: "private" as const,
+    isApplication: true,
   },
 ];
 
 const TierSection = () => {
-  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSelectTier = (tierName: string) => {
-    toast({
-      title: "Age Verification Required",
-      description: `You must be 18+ to join ${tierName}. Full signup coming soon!`,
-    });
+  const handleSelectTier = (tier: typeof tiers[0]) => {
+    if (tier.paymentType === "free") {
+      navigate("/signup?tier=free");
+    } else if (tier.paymentType === "private") {
+      navigate("/signup?tier=private&apply=true");
+    } else {
+      navigate(`/signup?tier=${tier.paymentType}`);
+    }
   };
 
   return (
@@ -64,39 +93,42 @@ const TierSection = () => {
         {/* Section Header */}
         <div className="text-center mb-16 md:mb-20">
           <span className="inline-block text-secondary text-sm font-medium tracking-[0.3em] uppercase mb-4">
-            Memberships
+            Choose Your Path
           </span>
           <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-6">
-            Choose Your
-            <span className="text-gradient-sage"> Experience</span>
+            Join the
+            <span className="text-gradient-sage"> Movement</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Every tier unlocks a world of curated products, exclusive content, 
-            and community access. Start your journey today.
+            Every tier unlocks curated experiences, exclusive content, 
+            and access to a community that moves with intention.
           </p>
         </div>
 
         {/* Tier Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {tiers.map((tier, index) => (
             <div 
               key={tier.name}
               className="animate-fade-up opacity-0"
-              style={{ animationDelay: `${(index + 1) * 150}ms`, animationFillMode: 'forwards' }}
+              style={{ animationDelay: `${(index + 1) * 100}ms`, animationFillMode: 'forwards' }}
             >
               <TierCard
                 {...tier}
-                onSelect={() => handleSelectTier(tier.name)}
+                onSelect={() => handleSelectTier(tier)}
               />
             </div>
           ))}
         </div>
 
         {/* Additional Info */}
-        <div className="mt-16 text-center">
+        <div className="mt-16 text-center space-y-2">
           <p className="text-muted-foreground text-sm">
-            All memberships include free shipping within South Africa. 
-            Cancel anytime. Must be 18+ to join.
+            All memberships include free shipping within South Africa. Cancel anytime.
+          </p>
+          <p className="text-muted-foreground text-xs">
+            By joining, you confirm you are 18+ and agree to our{" "}
+            <a href="/terms" className="text-secondary hover:underline">Terms & Conditions</a>.
           </p>
         </div>
       </div>
