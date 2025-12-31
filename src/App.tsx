@@ -6,12 +6,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import Signup from "./pages/Signup";
+import Login from "./pages/Login";
 import Checkout from "./pages/Checkout";
 import Welcome from "./pages/Welcome";
 import Shop from "./pages/Shop";
 import Music from "./pages/Music";
 import Community from "./pages/Community";
 import Profile from "./pages/Profile";
+import Map from "./pages/Map";
+import Diary from "./pages/Diary";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,11 +29,14 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/music" element={<Music />} />
             <Route path="/community" element={<Community />} />
+            <Route path="/map" element={<Map />} />
+            <Route path="/diary" element={<Diary />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/*" element={<Profile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

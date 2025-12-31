@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import alphaLogo from "@/assets/alpha-logo-light.png";
@@ -11,13 +12,13 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <a href="/" className="flex items-center">
+          <Link to="/" className="flex items-center">
             <img 
               src={alphaLogo} 
               alt="Alpha Appeal" 
               className="h-8 md:h-10 w-auto"
             />
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
@@ -34,12 +35,16 @@ const Header = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
-            <Button variant="sage" size="sm">
-              Join Alpha
-            </Button>
+            <Link to="/login">
+              <Button variant="ghost" size="sm">
+                Sign In
+              </Button>
+            </Link>
+            <Link to="/signup">
+              <Button variant="sage" size="sm">
+                Join Alpha
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -77,8 +82,12 @@ const Header = () => {
                 Community
               </a>
               <div className="flex gap-3 pt-4 border-t border-border/30">
-                <Button variant="ghost" className="flex-1">Sign In</Button>
-                <Button variant="sage" className="flex-1">Join Alpha</Button>
+                <Link to="/login" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full">Sign In</Button>
+                </Link>
+                <Link to="/signup" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="sage" className="w-full">Join Alpha</Button>
+                </Link>
               </div>
             </nav>
           </div>

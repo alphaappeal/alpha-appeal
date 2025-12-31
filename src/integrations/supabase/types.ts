@@ -282,6 +282,7 @@ export type Database = {
           payment_metadata: Json | null
           payment_method: string | null
           payment_status: string | null
+          product_name: string | null
           refund_amount: number | null
           refund_reason: string | null
           refunded_at: string | null
@@ -303,6 +304,7 @@ export type Database = {
           payment_metadata?: Json | null
           payment_method?: string | null
           payment_status?: string | null
+          product_name?: string | null
           refund_amount?: number | null
           refund_reason?: string | null
           refunded_at?: string | null
@@ -324,6 +326,7 @@ export type Database = {
           payment_metadata?: Json | null
           payment_method?: string | null
           payment_status?: string | null
+          product_name?: string | null
           refund_amount?: number | null
           refund_reason?: string | null
           refunded_at?: string | null
@@ -650,6 +653,7 @@ export type Database = {
           last_login: string | null
           mailerlite_subscriber_id: string | null
           name: string
+          onboarding_completed: boolean | null
           phone: string | null
           status: string | null
           subscription_tier: string | null
@@ -665,6 +669,7 @@ export type Database = {
           last_login?: string | null
           mailerlite_subscriber_id?: string | null
           name: string
+          onboarding_completed?: boolean | null
           phone?: string | null
           status?: string | null
           subscription_tier?: string | null
@@ -680,6 +685,7 @@ export type Database = {
           last_login?: string | null
           mailerlite_subscriber_id?: string | null
           name?: string
+          onboarding_completed?: boolean | null
           phone?: string | null
           status?: string | null
           subscription_tier?: string | null
