@@ -1,11 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ShoppingBag, Music, Leaf, User } from "lucide-react";
+import { ShoppingBag, MapPin, BookOpen, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { id: "shop", icon: ShoppingBag, label: "Shop", path: "/shop" },
-  { id: "music", icon: Music, label: "Music", path: "/music" },
-  { id: "community", icon: Leaf, label: "Community", path: "/community" },
+  { id: "map", icon: MapPin, label: "Map", path: "/map" },
+  { id: "diary", icon: BookOpen, label: "Diary", path: "/diary" },
   { id: "profile", icon: User, label: "Profile", path: "/profile" },
 ];
 

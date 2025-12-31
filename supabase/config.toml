@@ -1,1 +1,4 @@
 project_id = "xlyxtbcqirspcfxdznyu"
+
+[functions.mailerlite-sync]
+verify_jwt = false

@@ -121,7 +121,17 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
         },
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        if (authError.message.includes("User already registered")) {
+          toast({
+            title: "Email already registered",
+            description: "Please sign in or use a different email.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw authError;
+      }
 
       if (authData.user) {
         // Create user profile
@@ -148,6 +158,21 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
             motivation: formData.motivation,
             interests: formData.interests.join(", "),
           });
+        }
+
+        // Sync to MailerLite
+        try {
+          await supabase.functions.invoke("mailerlite-sync", {
+            body: {
+              email: formData.email,
+              name: formData.name,
+              tier: tier,
+              userId: authData.user.id,
+            },
+          });
+        } catch (mailError) {
+          console.error("MailerLite sync error:", mailError);
+          // Don't block signup if email sync fails
         }
 
         toast({
