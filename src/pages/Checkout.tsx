@@ -17,7 +17,7 @@ const tiers: Record<string, { name: string; price: number; promoPrice?: number; 
     name: "Elite",
     price: 499,
     promoPrice: 99,
-    payfastLink: "",
+    payfastLink: "https://payf.st/eot4j", // Using same link until separate Elite link is configured
   },
 };
 

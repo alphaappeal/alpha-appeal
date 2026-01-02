@@ -1,11 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { supabase } from "@/integrations/supabase/client";
 import alphaLogo from "@/assets/alpha-logo-light.png";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isAdmin, loading: adminLoading } = useAdminCheck();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/30">
@@ -31,20 +49,36 @@ const Header = () => {
             <a href="#community" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
               Community
             </a>
+            {!adminLoading && isAdmin && (
+              <Link to="/admin" className="text-secondary hover:text-secondary/80 transition-colors text-sm font-medium flex items-center gap-1">
+                <Shield className="w-4 h-4" />
+                Admin
+              </Link>
+            )}
           </nav>
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
-            <Link to="/login">
-              <Button variant="ghost" size="sm">
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/signup">
-              <Button variant="sage" size="sm">
-                Join Alpha
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <Link to="/welcome">
+                <Button variant="sage" size="sm">
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button variant="sage" size="sm">
+                    Join Alpha
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -81,13 +115,31 @@ const Header = () => {
               >
                 Community
               </a>
+              {!adminLoading && isAdmin && (
+                <Link 
+                  to="/admin" 
+                  className="text-secondary py-2 font-medium flex items-center gap-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Shield className="w-4 h-4" />
+                  Admin Dashboard
+                </Link>
+              )}
               <div className="flex gap-3 pt-4 border-t border-border/30">
-                <Link to="/login" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full">Sign In</Button>
-                </Link>
-                <Link to="/signup" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="sage" className="w-full">Join Alpha</Button>
-                </Link>
+                {isLoggedIn ? (
+                  <Link to="/welcome" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="sage" className="w-full">Dashboard</Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link to="/login" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="ghost" className="w-full">Sign In</Button>
+                    </Link>
+                    <Link to="/signup" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="sage" className="w-full">Join Alpha</Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </nav>
           </div>
