@@ -15,6 +15,7 @@ import Community from "./pages/Community";
 import Profile from "./pages/Profile";
 import Map from "./pages/Map";
 import Diary from "./pages/Diary";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/diary" element={<Diary />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/*" element={<Profile />} />
+            <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
