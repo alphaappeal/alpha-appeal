@@ -392,6 +392,39 @@ export type Database = {
           },
         ]
       }
+      personal_diary_entries: {
+        Row: {
+          created_at: string | null
+          entry_date: string
+          experience_notes: string | null
+          id: string
+          rating: number | null
+          strain_name: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          entry_date?: string
+          experience_notes?: string | null
+          id?: string
+          rating?: number | null
+          strain_name?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          entry_date?: string
+          experience_notes?: string | null
+          id?: string
+          rating?: number | null
+          strain_name?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       private_member_applications: {
         Row: {
           application_status: string | null
@@ -570,6 +603,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      support_requests: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+          status: string | null
+          subject: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          name: string
+          status?: string | null
+          subject: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          status?: string | null
+          subject?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       user_preferences: {
         Row: {

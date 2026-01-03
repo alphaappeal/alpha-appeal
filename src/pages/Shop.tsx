@@ -1,11 +1,26 @@
+import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import BottomNav from "@/components/BottomNav";
+import FloatingMenuButton, { MenuItem } from "@/components/FloatingMenuButton";
+import TimedPopup from "@/components/TimedPopup";
 import { ShoppingBag, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import logoLight from "@/assets/alpha-logo-light.png";
 
+interface PopupState {
+  isOpen: boolean;
+  title: string;
+  message: string;
+}
+
 const Shop = () => {
+  const [popup, setPopup] = useState<PopupState>({ isOpen: false, title: "", message: "" });
+
+  const showPopup = (title: string, message: string) => {
+    setPopup({ isOpen: true, title, message });
+  };
+
   const products = [
     { id: 1, name: "Alpha Essential Tray", price: 299, badge: "New", locked: false },
     { id: 2, name: "Signature Lighter", price: 149, badge: null, locked: false },
@@ -30,6 +45,15 @@ const Shop = () => {
             <div className="w-14" />
           </div>
         </header>
+
+        <FloatingMenuButton>
+          <MenuItem onClick={() => showPopup("Get Delivery", "Delivery Service for your local stores launching soon. Premium Members get free delivery. Add your store to our delivery list by clicking DELIVERIES in profile tab")}>
+            Get Delivery
+          </MenuItem>
+          <MenuItem onClick={() => showPopup("Suggest", "Suggest new products and items that you need in the store. Email shop@alphaappeal.co.za to submit")}>
+            Suggest
+          </MenuItem>
+        </FloatingMenuButton>
 
         <main className="container mx-auto px-4 py-8">
           <div className="text-center mb-8">
@@ -86,6 +110,15 @@ const Shop = () => {
 
         <BottomNav />
       </div>
+
+      {popup.isOpen && (
+        <TimedPopup
+          title={popup.title}
+          message={popup.message}
+          duration={10}
+          onClose={() => setPopup({ ...popup, isOpen: false })}
+        />
+      )}
     </>
   );
 };

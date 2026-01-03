@@ -2,14 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import BottomNav from "@/components/BottomNav";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
   User,
+  BookOpen,
   Package,
   CreditCard,
   Settings,
@@ -94,12 +93,25 @@ const Profile = () => {
     );
   }
 
+  // Updated menu items with My Diary first
   const menuItems = [
-    { icon: Package, label: "My Deliveries", path: "/profile/deliveries" },
-    { icon: CreditCard, label: "Billing & Subscription", path: "/profile/billing" },
-    { icon: Settings, label: "Account Settings", path: "/profile/settings" },
-    { icon: HelpCircle, label: "Help & Support", path: "/profile/support" },
+    { icon: BookOpen, label: "My Diary", path: "/my-diary" },
+    { icon: Package, label: "My Deliveries", path: "/deliveries" },
+    { icon: CreditCard, label: "Billing & Subscription", path: "/billing" },
+    { icon: Settings, label: "Account Settings", path: "/settings" },
+    { icon: HelpCircle, label: "Help & Support", path: "/support" },
   ];
+
+  // Determine tier display
+  const getTierDisplay = () => {
+    if (subscription?.tier) {
+      return subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1);
+    }
+    if (profile?.subscription_tier) {
+      return profile.subscription_tier.charAt(0).toUpperCase() + profile.subscription_tier.slice(1);
+    }
+    return "Free";
+  };
 
   return (
     <>
@@ -120,20 +132,19 @@ const Profile = () => {
         </header>
 
         <main className="container mx-auto px-4 py-8">
-          {/* Profile Header */}
+          {/* Profile Header with User Info */}
           <div className="text-center mb-8">
             <div className="w-20 h-20 rounded-full bg-secondary/10 border-2 border-secondary/30 flex items-center justify-center mx-auto mb-4">
               <User className="w-10 h-10 text-secondary" />
             </div>
             <h2 className="font-display text-xl font-bold text-foreground mb-1">
-              {profile?.name || "Member"}
+              {profile?.name || user?.email?.split("@")[0] || "Member"}
             </h2>
-            <p className="text-muted-foreground text-sm">{profile?.email}</p>
-            {profile?.subscription_tier && (
-              <span className="inline-block mt-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-xs font-medium capitalize">
-                {profile.subscription_tier} Member
-              </span>
-            )}
+            <p className="text-muted-foreground text-sm mb-2">{profile?.email || user?.email}</p>
+            {/* Tier Badge */}
+            <span className="inline-block px-4 py-1.5 rounded-full bg-secondary/10 text-secondary text-sm font-medium">
+              {getTierDisplay()} Member
+            </span>
           </div>
 
           {/* Subscription Card */}

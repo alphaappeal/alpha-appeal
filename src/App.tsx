@@ -14,8 +14,12 @@ import Music from "./pages/Music";
 import Community from "./pages/Community";
 import Profile from "./pages/Profile";
 import Map from "./pages/Map";
-import Diary from "./pages/Diary";
 import Admin from "./pages/Admin";
+import MyDiary from "./pages/MyDiary";
+import Deliveries from "./pages/Deliveries";
+import Billing from "./pages/Billing";
+import Settings from "./pages/Settings";
+import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,9 +41,12 @@ const App = () => (
             <Route path="/music" element={<Music />} />
             <Route path="/community" element={<Community />} />
             <Route path="/map" element={<Map />} />
-            <Route path="/diary" element={<Diary />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/profile/*" element={<Profile />} />
+            <Route path="/my-diary" element={<MyDiary />} />
+            <Route path="/deliveries" element={<Deliveries />} />
+            <Route path="/billing" element={<Billing />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/support" element={<Support />} />
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
