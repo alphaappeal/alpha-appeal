@@ -1,11 +1,12 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ShoppingBag, MapPin, BookOpen, User } from "lucide-react";
+import { ShoppingBag, MapPin, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Updated: Diary changed to Community with Users icon
 const tabs = [
   { id: "shop", icon: ShoppingBag, label: "Shop", path: "/shop" },
   { id: "map", icon: MapPin, label: "Map", path: "/map" },
-  { id: "diary", icon: BookOpen, label: "Diary", path: "/diary" },
+  { id: "community", icon: Users, label: "Community", path: "/community" },
   { id: "profile", icon: User, label: "Profile", path: "/profile" },
 ];
 

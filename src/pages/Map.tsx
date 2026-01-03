@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { MapPin, Store, Calendar, Users, Filter, Search } from "lucide-react";
+import { MapPin, Store, Users, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
+import FloatingMenuButton, { MenuItem } from "@/components/FloatingMenuButton";
+import TimedPopup from "@/components/TimedPopup";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,10 +23,15 @@ interface MapLocation {
   longitude: number | null;
 }
 
+interface PopupState {
+  isOpen: boolean;
+  title: string;
+  message: string;
+}
+
 const locationTypes = [
   { id: "all", label: "All", icon: MapPin },
-  { id: "store", label: "Stores", icon: Store },
-  { id: "event", label: "Events", icon: Calendar },
+  { id: "store", label: "Canna Stores", icon: Store },
   { id: "partner", label: "Partners", icon: Users },
 ];
 
@@ -35,6 +42,11 @@ const Map = () => {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [popup, setPopup] = useState<PopupState>({ isOpen: false, title: "", message: "" });
+
+  const showPopup = (title: string, message: string) => {
+    setPopup({ isOpen: true, title, message });
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -85,8 +97,6 @@ const Map = () => {
     switch (type) {
       case "store":
         return "bg-secondary/20 text-secondary border-secondary/30";
-      case "event":
-        return "bg-primary/20 text-primary border-primary/30";
       case "partner":
         return "bg-accent/20 text-accent-foreground border-accent/30";
       default:
@@ -118,7 +128,7 @@ const Map = () => {
               />
             </div>
 
-            {/* Filter Pills */}
+            {/* Filter Pills - Events removed, Stores renamed to Canna Stores */}
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               {locationTypes.map((type) => (
                 <Button
@@ -138,6 +148,15 @@ const Map = () => {
             </div>
           </div>
         </header>
+
+        <FloatingMenuButton>
+          <MenuItem onClick={() => showPopup("Add A Store", "Suggest your favourite store where you are already a member for ease of ordering and managing your memberships")}>
+            Add A Store
+          </MenuItem>
+          <MenuItem onClick={() => showPopup("Events", "Stay up to date with upcoming events and experiences")}>
+            Events
+          </MenuItem>
+        </FloatingMenuButton>
 
         {/* Map Placeholder */}
         <div className="h-48 bg-card/50 border-b border-border flex items-center justify-center">
@@ -175,7 +194,7 @@ const Map = () => {
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="font-medium text-foreground">{location.name}</h3>
                     <Badge variant="outline" className={getTypeColor(location.type)}>
-                      {location.type}
+                      {location.type === "store" ? "Canna Store" : location.type}
                     </Badge>
                   </div>
                   {location.description && (
@@ -201,6 +220,15 @@ const Map = () => {
 
         <BottomNav />
       </div>
+
+      {popup.isOpen && (
+        <TimedPopup
+          title={popup.title}
+          message={popup.message}
+          duration={10}
+          onClose={() => setPopup({ ...popup, isOpen: false })}
+        />
+      )}
     </>
   );
 };
