@@ -5,6 +5,7 @@ import HowItWorks from "@/components/HowItWorks";
 import TierSection from "@/components/TierSection";
 import SocialProof from "@/components/SocialProof";
 import Philosophy from "@/components/Philosophy";
+import MemberNetwork from "@/components/MemberNetwork";
 import Footer from "@/components/Footer";
 import ConsentModal from "@/components/ConsentModal";
 
@@ -30,6 +31,7 @@ const Index = () => {
           <Hero />
           <HowItWorks />
           <TierSection />
+          <MemberNetwork />
           <SocialProof />
           <Philosophy />
         </main>
