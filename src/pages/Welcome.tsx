@@ -30,6 +30,8 @@ const Welcome = () => {
         navigate("/");
         return;
       }
+      // Returning users go straight to profile
+      navigate("/profile");
       setUser(session.user);
 
       // Get profile
