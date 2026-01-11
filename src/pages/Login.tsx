@@ -24,11 +24,11 @@ const Login = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    // Check if already logged in
+    // Check if already logged in - redirect to profile (not welcome)
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/welcome");
+        navigate("/profile");
       }
     };
     checkSession();
@@ -36,7 +36,7 @@ const Login = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate("/welcome");
+        navigate("/profile");
       }
     });
 
@@ -104,7 +104,8 @@ const Login = () => {
           title: "Welcome back!",
           description: "You've successfully logged in.",
         });
-        navigate("/welcome");
+        // Redirect to profile, not welcome
+        navigate("/profile");
       }
     } catch (err) {
       toast({

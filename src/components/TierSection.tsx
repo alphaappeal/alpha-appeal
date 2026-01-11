@@ -1,21 +1,7 @@
 import TierCard from "@/components/TierCard";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 const tiers = [
-  {
-    name: "Free",
-    price: 0,
-    description: "Start your journey",
-    features: [
-      "Limited community access",
-      "Preview content",
-      "Email updates",
-      "Public events calendar",
-    ],
-    ctaText: "Join Free",
-    paymentType: "free" as const,
-  },
   {
     name: "Essential",
     price: 99,
@@ -75,9 +61,7 @@ const TierSection = () => {
   const navigate = useNavigate();
 
   const handleSelectTier = (tier: typeof tiers[0]) => {
-    if (tier.paymentType === "free") {
-      navigate("/signup?tier=free");
-    } else if (tier.paymentType === "private") {
+    if (tier.paymentType === "private") {
       navigate("/signup?tier=private&apply=true");
     } else {
       navigate(`/signup?tier=${tier.paymentType}`);
@@ -105,8 +89,8 @@ const TierSection = () => {
           </p>
         </div>
 
-        {/* Tier Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        {/* Tier Cards - 3 tiers now */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {tiers.map((tier, index) => (
             <div 
               key={tier.name}
@@ -121,8 +105,18 @@ const TierSection = () => {
           ))}
         </div>
 
+        {/* Promo Code Notice */}
+        <div className="mt-12 text-center">
+          <p className="text-muted-foreground text-sm">
+            Have a promo code?{" "}
+            <a href="/signup?promo=true" className="text-secondary hover:underline">
+              Enter it during signup
+            </a>
+          </p>
+        </div>
+
         {/* Additional Info */}
-        <div className="mt-16 text-center space-y-2">
+        <div className="mt-8 text-center space-y-2">
           <p className="text-muted-foreground text-sm">
             All memberships include free shipping within South Africa. Cancel anytime.
           </p>

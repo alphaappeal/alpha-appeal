@@ -1,14 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Eye, EyeOff, Gift } from "lucide-react";
 import { z } from "zod";
+import PromoCodeInput from "./PromoCodeInput";
 
 const accountSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -37,10 +37,15 @@ interface SignupWizardProps {
 }
 
 const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
+  const [searchParams] = useSearchParams();
+  const showPromo = searchParams.get("promo") === "true";
+  
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [validPromoCode, setValidPromoCode] = useState<string | null>(null);
+  const [usePromoCode, setUsePromoCode] = useState(showPromo);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -109,6 +114,9 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
+      // Determine final tier
+      const finalTier = validPromoCode ? "promo" : tier;
+
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
@@ -140,7 +148,7 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
           email: formData.email,
           name: formData.name,
           date_of_birth: formData.dateOfBirth,
-          subscription_tier: tier === "private" ? "pending" : tier,
+          subscription_tier: finalTier === "private" ? "pending" : finalTier,
         });
 
         if (userError) throw userError;
@@ -150,6 +158,14 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
           user_id: authData.user.id,
           interests: formData.interests,
         });
+
+        // If using promo code, record redemption
+        if (validPromoCode) {
+          await supabase.from("promo_code_redemptions").insert({
+            user_id: authData.user.id,
+            promo_code: validPromoCode,
+          });
+        }
 
         // If private application, save application
         if (isApplication) {
@@ -166,27 +182,29 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
             body: {
               email: formData.email,
               name: formData.name,
-              tier: tier,
+              tier: finalTier,
               userId: authData.user.id,
             },
           });
         } catch (mailError) {
           console.error("MailerLite sync error:", mailError);
-          // Don't block signup if email sync fails
         }
 
         toast({
-          title: isApplication ? "Application Submitted!" : "Account Created!",
+          title: isApplication ? "Application Submitted!" : "Welcome to Alpha!",
           description: isApplication 
             ? "We'll review your application and get back to you soon." 
-            : "Welcome to Alpha. Redirecting to payment...",
+            : validPromoCode 
+              ? "Your promo code was applied. Enjoy your access!"
+              : "Redirecting to payment...",
         });
 
-        // Redirect based on tier
-        if (tier === "free" || isApplication) {
-          navigate("/welcome");
+        // Redirect based on tier and promo
+        if (validPromoCode || isApplication) {
+          // Promo users go straight to profile/app
+          navigate("/profile");
         } else {
-          // Redirect to payment
+          // Paid tiers go to checkout
           navigate(`/checkout?tier=${tier}`);
         }
       }
@@ -224,6 +242,37 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
               Join the Alpha movement in under 2 minutes
             </p>
           </div>
+
+          {/* Promo Code Section */}
+          {!isApplication && (
+            <div className="mb-6">
+              {!usePromoCode ? (
+                <button
+                  onClick={() => setUsePromoCode(true)}
+                  className="flex items-center gap-2 text-secondary hover:underline text-sm w-full justify-center"
+                >
+                  <Gift className="w-4 h-4" />
+                  Have a promo code?
+                </button>
+              ) : (
+                <div className="p-4 rounded-xl bg-secondary/5 border border-secondary/20">
+                  <p className="text-sm text-foreground mb-3 flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-secondary" />
+                    Enter your promo code for free access
+                  </p>
+                  <PromoCodeInput onValidCode={setValidPromoCode} />
+                  {!validPromoCode && (
+                    <button
+                      onClick={() => setUsePromoCode(false)}
+                      className="text-xs text-muted-foreground hover:text-foreground mt-2"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="space-y-4">
             <div className="space-y-2">
@@ -372,7 +421,8 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : step === totalSteps ? (
-            isApplication ? "Submit Application" : "Continue to Payment"
+            isApplication ? "Submit Application" : 
+            validPromoCode ? "Complete Signup" : "Continue to Payment"
           ) : (
             <>
               Next
