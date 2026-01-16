@@ -1,22 +1,46 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { MapPin, Phone, Clock, Navigation, X, ShoppingBag, Plus, Minus, Send, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapPin, Phone, Clock, Navigation, X, ShoppingBag, Send, Loader2, Plus, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
-declare global {
-  interface Window {
-    mapboxgl: any;
-  }
-}
+// Fix Leaflet default marker icons
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Custom purple/gold marker icon
+const customIcon = new L.Icon({
+  iconUrl: 'data:image/svg+xml;base64,' + btoa(`
+    <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="18" fill="url(#gradient)" stroke="white" stroke-width="3"/>
+      <text x="20" y="26" font-family="serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">A</text>
+      <defs>
+        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#8b7355;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#7a9a7a;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+    </svg>
+  `),
+  iconSize: [40, 40],
+  iconAnchor: [20, 40],
+  popupAnchor: [0, -40]
+});
 
 interface Vendor {
   id: number;
   name: string;
   address: string;
-  coordinates: [number, number];
+  coordinates: [number, number]; // [lat, lng] for Leaflet
   phone: string;
   hours: string;
   type: string;
@@ -24,13 +48,44 @@ interface Vendor {
   description: string;
 }
 
+// Zoom control component
+const ZoomControls = () => {
+  const map = useMap();
+  
+  return (
+    <div className="absolute top-24 right-6 z-[1000] flex flex-col gap-2">
+      <button
+        onClick={() => map.zoomIn()}
+        className="w-10 h-10 bg-card/90 backdrop-blur border border-border rounded-lg flex items-center justify-center text-foreground hover:bg-card transition-colors"
+      >
+        <Plus className="w-5 h-5" />
+      </button>
+      <button
+        onClick={() => map.zoomOut()}
+        className="w-10 h-10 bg-card/90 backdrop-blur border border-border rounded-lg flex items-center justify-center text-foreground hover:bg-card transition-colors"
+      >
+        <Minus className="w-5 h-5" />
+      </button>
+    </div>
+  );
+};
+
+// Fly to location component
+const FlyToLocation = ({ center }: { center: [number, number] | null }) => {
+  const map = useMap();
+  
+  React.useEffect(() => {
+    if (center) {
+      map.flyTo(center, 13, { duration: 2 });
+    }
+  }, [center, map]);
+  
+  return null;
+};
+
 const AlphaMap = () => {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
-  const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [flyToCenter, setFlyToCenter] = useState<[number, number] | null>(null);
   const [showSubmitForm, setShowSubmitForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -41,16 +96,13 @@ const AlphaMap = () => {
   });
   const { toast } = useToast();
 
-  // Mapbox Token from secrets
-  const MAPBOX_TOKEN = 'pk.eyJ1IjoiYWxwaGFhcHBlYWwiLCJhIjoiY200eTNnZmMxMDU5NjJrcHRxa3M5YnpyNyJ9.hAdpRlAbmZOmQyh0yNbZxw';
-  
   // Alpha Appeal Vendor Locations in South Africa
   const vendorLocations: Vendor[] = [
     {
       id: 1,
       name: 'Alpha Appeal Flagship Store',
       address: 'Sandton City, Johannesburg',
-      coordinates: [28.0473, -26.1076],
+      coordinates: [-26.1076, 28.0473],
       phone: '+27 11 123 4567',
       hours: 'Mon-Sat: 9AM-8PM, Sun: 10AM-6PM',
       type: 'flagship',
@@ -61,7 +113,7 @@ const AlphaMap = () => {
       id: 2,
       name: 'Alpha Appeal V&A Waterfront',
       address: 'V&A Waterfront, Cape Town',
-      coordinates: [18.4194, -33.9033],
+      coordinates: [-33.9033, 18.4194],
       phone: '+27 21 456 7890',
       hours: 'Mon-Sun: 10AM-9PM',
       type: 'boutique',
@@ -72,7 +124,7 @@ const AlphaMap = () => {
       id: 3,
       name: 'Alpha Appeal Umhlanga',
       address: 'Gateway Theatre of Shopping, Durban',
-      coordinates: [31.0655, -29.7289],
+      coordinates: [-29.7289, 31.0655],
       phone: '+27 31 789 0123',
       hours: 'Mon-Sat: 9AM-7PM, Sun: 9AM-5PM',
       type: 'boutique',
@@ -83,7 +135,7 @@ const AlphaMap = () => {
       id: 4,
       name: 'Alpha Appeal Menlyn',
       address: 'Menlyn Park, Pretoria',
-      coordinates: [28.2772, -25.7847],
+      coordinates: [-25.7847, 28.2772],
       phone: '+27 12 345 6789',
       hours: 'Mon-Fri: 9AM-8PM, Sat-Sun: 9AM-6PM',
       type: 'store',
@@ -94,7 +146,7 @@ const AlphaMap = () => {
       id: 5,
       name: 'Alpha Appeal Rosebank',
       address: 'The Zone @ Rosebank, Johannesburg',
-      coordinates: [28.0423, -26.1466],
+      coordinates: [-26.1466, 28.0423],
       phone: '+27 11 987 6543',
       hours: 'Mon-Sun: 9AM-8PM',
       type: 'store',
@@ -103,130 +155,18 @@ const AlphaMap = () => {
     }
   ];
 
-  useEffect(() => {
-    // Load Mapbox GL JS
-    const script = document.createElement('script');
-    script.src = 'https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js';
-    script.async = true;
-    document.head.appendChild(script);
-
-    const link = document.createElement('link');
-    link.href = 'https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css';
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
-
-    script.onload = () => {
-      if (!mapContainerRef.current || mapRef.current) return;
-
-      const mapboxgl = window.mapboxgl;
-      mapboxgl.accessToken = MAPBOX_TOKEN;
-
-      // Initialize map
-      const map = new mapboxgl.Map({
-        container: mapContainerRef.current,
-        style: 'mapbox://styles/mapbox/dark-v11',
-        center: [28.0473, -26.2041],
-        zoom: 5.5,
-        pitch: 45,
-        bearing: 0
-      });
-
-      mapRef.current = map;
-
-      // Double-click to expand/shrink
-      map.on('dblclick', (e: any) => {
-        e.preventDefault();
-        setIsExpanded(prev => !prev);
-      });
-
-      // Add geolocate control
-      const geolocate = new mapboxgl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: true,
-        showUserHeading: true
-      });
-      map.addControl(geolocate, 'top-right');
-
-      map.on('load', () => {
-        setMapLoaded(true);
-
-        // Add markers for each vendor
-        vendorLocations.forEach(vendor => {
-          // Create custom marker element with gold/purple gradient
-          const el = document.createElement('div');
-          el.className = 'custom-marker';
-          el.innerHTML = `
-            <div style="
-              background: linear-gradient(135deg, hsl(30 26% 44%) 0%, hsl(103 22% 56%) 100%);
-              width: 40px;
-              height: 40px;
-              border-radius: 50%;
-              border: 3px solid hsl(0 0% 95%);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              cursor: pointer;
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-              transition: transform 0.2s;
-            " onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">
-              <span style="color: white; font-weight: bold; font-family: 'Playfair Display', serif; font-size: 16px;">A</span>
-            </div>
-          `;
-
-          // Add marker to map
-          new mapboxgl.Marker(el)
-            .setLngLat([vendor.coordinates[0], vendor.coordinates[1]])
-            .addTo(map);
-
-          // Click handler
-          el.addEventListener('click', () => {
-            setSelectedVendor(vendor);
-            map.flyTo({
-              center: [vendor.coordinates[0], vendor.coordinates[1]],
-              zoom: 13,
-              duration: 2000
-            });
-          });
-        });
-
-        // Try to get user location
-        geolocate.trigger();
-      });
-
-      // Cleanup
-      return () => {
-        if (mapRef.current) {
-          mapRef.current.remove();
-          mapRef.current = null;
-        }
-      };
-    };
-  }, []);
-
   const getDirections = (vendor: Vendor) => {
-    if (userLocation) {
-      const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.latitude},${userLocation.longitude}&destination=${vendor.coordinates[1]},${vendor.coordinates[0]}`;
-      window.open(url, '_blank');
-    } else {
-      const url = `https://www.google.com/maps/search/?api=1&query=${vendor.coordinates[1]},${vendor.coordinates[0]}`;
-      window.open(url, '_blank');
-    }
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${vendor.coordinates[0]},${vendor.coordinates[1]}`;
+    window.open(url, '_blank');
   };
 
   const callStore = (phone: string) => {
     window.location.href = `tel:${phone}`;
   };
 
-  const handleZoomIn = () => {
-    if (mapRef.current) {
-      mapRef.current.zoomIn();
-    }
-  };
-
-  const handleZoomOut = () => {
-    if (mapRef.current) {
-      mapRef.current.zoomOut();
-    }
+  const handleVendorClick = (vendor: Vendor) => {
+    setSelectedVendor(vendor);
+    setFlyToCenter(vendor.coordinates);
   };
 
   const handleSubmitVendor = async (e: React.FormEvent) => {
@@ -273,40 +213,56 @@ const AlphaMap = () => {
   };
 
   return (
-    <div className={`relative w-full bg-background transition-all duration-500 ${isExpanded ? 'fixed inset-0 z-50' : 'h-[80vh]'}`}>
-      {/* Map Container */}
-      <div ref={mapContainerRef} className="w-full h-full" />
-
+    <div className="relative w-full h-[80vh] bg-background">
       {/* Header Overlay */}
-      <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-background to-transparent p-6 z-10">
+      <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-background to-transparent p-6 z-[1000] pointer-events-none">
         <h1 className="text-3xl font-display font-bold text-gradient-gold">
           Alpha Appeal Locations
         </h1>
-        <p className="text-muted-foreground mt-2">Find your nearest Alpha experience • Double-click to expand</p>
+        <p className="text-muted-foreground mt-2">Find your nearest Alpha experience</p>
       </div>
 
-      {/* Custom Zoom Controls */}
-      <div className="absolute top-24 right-6 z-20 flex flex-col gap-2">
-        <button
-          onClick={handleZoomIn}
-          className="w-10 h-10 bg-card/90 backdrop-blur border border-border rounded-lg flex items-center justify-center text-foreground hover:bg-card transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-        </button>
-        <button
-          onClick={handleZoomOut}
-          className="w-10 h-10 bg-card/90 backdrop-blur border border-border rounded-lg flex items-center justify-center text-foreground hover:bg-card transition-colors"
-        >
-          <Minus className="w-5 h-5" />
-        </button>
-      </div>
+      {/* Map Container */}
+      <MapContainer
+        center={[-26.2041, 28.0473]}
+        zoom={6}
+        style={{ height: '100%', width: '100%' }}
+        className="z-0"
+        zoomControl={false}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        />
+        
+        <ZoomControls />
+        <FlyToLocation center={flyToCenter} />
+        
+        {vendorLocations.map(vendor => (
+          <Marker
+            key={vendor.id}
+            position={vendor.coordinates}
+            icon={customIcon}
+            eventHandlers={{
+              click: () => handleVendorClick(vendor)
+            }}
+          >
+            <Popup>
+              <div className="text-center">
+                <h3 className="font-bold text-lg mb-1">{vendor.name}</h3>
+                <p className="text-sm text-gray-600">{vendor.address}</p>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
 
       {/* Submit Vendor Button */}
-      <div className="absolute top-24 left-6 z-20">
+      <div className="absolute top-24 left-6 z-[1000]">
         <Button
           onClick={() => setShowSubmitForm(!showSubmitForm)}
-          variant="sage"
-          className="flex items-center gap-2"
+          variant="default"
+          className="flex items-center gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90"
         >
           <Send className="w-4 h-4" />
           Suggest a Store
@@ -315,8 +271,13 @@ const AlphaMap = () => {
 
       {/* Vendor Submission Form */}
       {showSubmitForm && (
-        <div className="absolute top-36 left-6 z-20 w-80 bg-card/95 backdrop-blur border border-secondary/30 rounded-2xl p-6">
-          <h3 className="font-display text-lg font-semibold text-foreground mb-4">Suggest a Vendor</h3>
+        <div className="absolute top-36 left-6 z-[1000] w-80 bg-card/95 backdrop-blur border border-secondary/30 rounded-2xl p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-display text-lg font-semibold text-foreground">Suggest a Vendor</h3>
+            <button onClick={() => setShowSubmitForm(false)} className="text-muted-foreground hover:text-foreground">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
           <form onSubmit={handleSubmitVendor} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="vendorName">Vendor Name *</Label>
@@ -355,10 +316,10 @@ const AlphaMap = () => {
               />
             </div>
             <div className="flex gap-2">
-              <Button type="button" variant="glass" onClick={() => setShowSubmitForm(false)} className="flex-1">
+              <Button type="button" variant="outline" onClick={() => setShowSubmitForm(false)} className="flex-1">
                 Cancel
               </Button>
-              <Button type="submit" variant="sage" disabled={submitting} className="flex-1">
+              <Button type="submit" disabled={submitting} className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90">
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit"}
               </Button>
             </div>
@@ -367,22 +328,13 @@ const AlphaMap = () => {
       )}
 
       {/* Vendor List Sidebar */}
-      <div className="absolute left-6 top-44 bottom-6 w-80 bg-card/95 backdrop-blur rounded-2xl p-6 overflow-y-auto z-10 hidden lg:block border border-secondary/20">
+      <div className="absolute left-6 top-36 bottom-6 w-80 bg-card/95 backdrop-blur rounded-2xl p-6 overflow-y-auto z-[1000] hidden lg:block border border-secondary/20">
         <h2 className="text-xl font-display font-bold text-foreground mb-4">Our Locations</h2>
         <div className="space-y-3">
           {vendorLocations.map(vendor => (
             <button
               key={vendor.id}
-              onClick={() => {
-                setSelectedVendor(vendor);
-                if (mapRef.current) {
-                  mapRef.current.flyTo({
-                    center: [vendor.coordinates[0], vendor.coordinates[1]],
-                    zoom: 13,
-                    duration: 2000
-                  });
-                }
-              }}
+              onClick={() => handleVendorClick(vendor)}
               className={`w-full text-left p-4 rounded-xl transition-all border ${
                 selectedVendor?.id === vendor.id
                   ? 'bg-secondary/20 border-secondary'
@@ -415,7 +367,7 @@ const AlphaMap = () => {
 
       {/* Selected Vendor Details Panel */}
       {selectedVendor && (
-        <div className="absolute bottom-6 left-6 right-6 lg:left-auto lg:right-6 lg:w-96 bg-card/95 backdrop-blur rounded-2xl p-6 z-20 border-2 border-secondary shadow-2xl">
+        <div className="absolute bottom-6 left-6 right-6 lg:left-auto lg:right-6 lg:w-96 bg-card/95 backdrop-blur rounded-2xl p-6 z-[1000] border-2 border-secondary shadow-2xl">
           <button
             onClick={() => setSelectedVendor(null)}
             className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
@@ -469,15 +421,14 @@ const AlphaMap = () => {
           <div className="flex gap-3">
             <Button
               onClick={() => getDirections(selectedVendor)}
-              variant="sage"
-              className="flex-1"
+              className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90"
             >
               <Navigation className="w-5 h-5 mr-2" />
               Directions
             </Button>
             <Button
               onClick={() => callStore(selectedVendor.phone)}
-              variant="glass"
+              variant="outline"
               className="flex-1"
             >
               <Phone className="w-5 h-5 mr-2" />
@@ -485,26 +436,6 @@ const AlphaMap = () => {
             </Button>
           </div>
         </div>
-      )}
-
-      {/* Loading State */}
-      {!mapLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background z-30">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-secondary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading map...</p>
-          </div>
-        </div>
-      )}
-
-      {/* Expand/Collapse hint */}
-      {isExpanded && (
-        <button
-          onClick={() => setIsExpanded(false)}
-          className="absolute top-6 right-6 z-30 px-4 py-2 bg-card/90 backdrop-blur border border-border rounded-lg text-sm text-foreground hover:bg-card transition-colors"
-        >
-          Exit Fullscreen
-        </button>
       )}
     </div>
   );
