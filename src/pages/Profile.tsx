@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import BottomNav from "@/components/BottomNav";
+import MemberPortal from "@/components/MemberPortal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -18,6 +19,7 @@ import {
   Shield,
   HelpCircle,
   Loader2,
+  Crown,
 } from "lucide-react";
 import logoLight from "@/assets/alpha-logo-light.png";
 
@@ -29,6 +31,7 @@ const Profile = () => {
   const [profile, setProfile] = useState<any>(null);
   const [subscription, setSubscription] = useState<any>(null);
   const [preferences, setPreferences] = useState<any>(null);
+  const [showMemberPortal, setShowMemberPortal] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -110,8 +113,10 @@ const Profile = () => {
     if (profile?.subscription_tier) {
       return profile.subscription_tier.charAt(0).toUpperCase() + profile.subscription_tier.slice(1);
     }
-    return "Free";
+    return "Private";
   };
+
+  const currentTier = subscription?.tier || profile?.subscription_tier || "private";
 
   return (
     <>
@@ -147,7 +152,14 @@ const Profile = () => {
             </span>
           </div>
 
-          {/* Subscription Card */}
+          {/* Member Portal Button */}
+          <Button
+            onClick={() => setShowMemberPortal(true)}
+            className="w-full mb-8 py-6 bg-gradient-to-r from-gold/80 to-secondary/80 hover:from-gold hover:to-secondary text-foreground font-semibold text-lg border border-gold/30"
+          >
+            <Crown className="w-5 h-5 mr-2" />
+            Enter Member Portal
+          </Button>
           {subscription && (
             <div className="mb-8 p-6 rounded-2xl bg-gradient-to-br from-secondary/10 to-card/50 border border-secondary/30">
               <div className="flex items-center justify-between mb-4">
@@ -255,6 +267,12 @@ const Profile = () => {
 
         <BottomNav />
       </div>
+
+      <MemberPortal 
+        isOpen={showMemberPortal} 
+        onClose={() => setShowMemberPortal(false)} 
+        tier={currentTier}
+      />
     </>
   );
 };
