@@ -10,7 +10,7 @@ const Map = () => {
         <meta name="description" content="Find Alpha Appeal locations across South Africa." />
       </Helmet>
 
-      <div className="min-h-screen bg-background pb-20">
+      <div className="h-screen w-full bg-background">
         <AlphaMap />
         <BottomNav />
       </div>
