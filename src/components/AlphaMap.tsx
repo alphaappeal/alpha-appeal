@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { MapPin, Phone, Clock, Navigation, X, ShoppingBag, Send, Loader2, Plus, Minus } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapPin, Phone, Clock, Navigation, X, ShoppingBag, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
 // Fix Leaflet default marker icons
@@ -40,7 +39,7 @@ interface Vendor {
   id: number;
   name: string;
   address: string;
-  coordinates: [number, number]; // [lat, lng] for Leaflet
+  coordinates: [number, number];
   phone: string;
   hours: string;
   type: string;
@@ -48,44 +47,8 @@ interface Vendor {
   description: string;
 }
 
-// Zoom control component
-const ZoomControls = () => {
-  const map = useMap();
-  
-  return (
-    <div className="absolute top-24 right-6 z-[1000] flex flex-col gap-2">
-      <button
-        onClick={() => map.zoomIn()}
-        className="w-10 h-10 bg-card/90 backdrop-blur border border-border rounded-lg flex items-center justify-center text-foreground hover:bg-card transition-colors"
-      >
-        <Plus className="w-5 h-5" />
-      </button>
-      <button
-        onClick={() => map.zoomOut()}
-        className="w-10 h-10 bg-card/90 backdrop-blur border border-border rounded-lg flex items-center justify-center text-foreground hover:bg-card transition-colors"
-      >
-        <Minus className="w-5 h-5" />
-      </button>
-    </div>
-  );
-};
-
-// Fly to location component
-const FlyToLocation = ({ center }: { center: [number, number] | null }) => {
-  const map = useMap();
-  
-  React.useEffect(() => {
-    if (center) {
-      map.flyTo(center, 13, { duration: 2 });
-    }
-  }, [center, map]);
-  
-  return null;
-};
-
 const AlphaMap = () => {
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
-  const [flyToCenter, setFlyToCenter] = useState<[number, number] | null>(null);
   const [showSubmitForm, setShowSubmitForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -166,7 +129,6 @@ const AlphaMap = () => {
 
   const handleVendorClick = (vendor: Vendor) => {
     setSelectedVendor(vendor);
-    setFlyToCenter(vendor.coordinates);
   };
 
   const handleSubmitVendor = async (e: React.FormEvent) => {
@@ -224,19 +186,16 @@ const AlphaMap = () => {
 
       {/* Map Container */}
       <MapContainer
-        center={[-26.2041, 28.0473]}
-        zoom={6}
+        center={[-28.0, 25.0]}
+        zoom={5}
         style={{ height: '100%', width: '100%' }}
         className="z-0"
-        zoomControl={false}
+        scrollWheelZoom={true}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
-        
-        <ZoomControls />
-        <FlyToLocation center={flyToCenter} />
         
         {vendorLocations.map(vendor => (
           <Marker
