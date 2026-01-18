@@ -213,7 +213,7 @@ const AlphaMap = () => {
   };
 
   return (
-    <div className="relative w-full h-[80vh] bg-background">
+    <div className="relative w-full h-screen bg-background">
       {/* Header Overlay */}
       <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-background to-transparent p-6 z-[1000] pointer-events-none">
         <h1 className="text-3xl font-display font-bold text-gradient-gold">
