@@ -24,7 +24,9 @@ import {
   Shield,
   ArrowLeft,
   RefreshCw,
+  Leaf,
 } from "lucide-react";
+import StrainsTab from "@/components/admin/StrainsTab";
 import logoLight from "@/assets/alpha-logo-light.png";
 
 const Admin = () => {
@@ -275,6 +277,9 @@ const Admin = () => {
               <TabsTrigger value="applications" className="gap-2">
                 <FileText className="w-4 h-4" /> Applications
               </TabsTrigger>
+              <TabsTrigger value="strains" className="gap-2">
+                <Leaf className="w-4 h-4" /> Strains
+              </TabsTrigger>
               <TabsTrigger value="content" className="gap-2">
                 <BookOpen className="w-4 h-4" /> Content
               </TabsTrigger>
@@ -477,6 +482,11 @@ const Admin = () => {
                   </div>
                 )}
               </div>
+            </TabsContent>
+
+            {/* Strains Tab */}
+            <TabsContent value="strains">
+              <StrainsTab />
             </TabsContent>
 
             {/* Content Tab */}

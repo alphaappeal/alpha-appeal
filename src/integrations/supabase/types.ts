@@ -58,42 +58,132 @@ export type Database = {
           },
         ]
       }
+      admin_actions: {
+        Row: {
+          action_type: string
+          admin_id: string
+          created_at: string | null
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          target_id: string | null
+          target_table: string
+        }
+        Insert: {
+          action_type: string
+          admin_id: string
+          created_at?: string | null
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          target_id?: string | null
+          target_table: string
+        }
+        Update: {
+          action_type?: string
+          admin_id?: string
+          created_at?: string | null
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          target_id?: string | null
+          target_table?: string
+        }
+        Relationships: []
+      }
+      comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          post_id: string | null
+          strain_id: string | null
+          updated_at: string | null
+          upvotes: number | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          strain_id?: string | null
+          updated_at?: string | null
+          upvotes?: number | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          strain_id?: string | null
+          updated_at?: string | null
+          upvotes?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "diary_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strains"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diary_entries: {
         Row: {
           author_id: string | null
           category: string | null
           content: string
           created_at: string | null
+          downvotes: number | null
           excerpt: string | null
           id: string
           published: boolean | null
+          stars: number | null
           tags: string[] | null
           title: string
           updated_at: string | null
+          upvotes: number | null
         }
         Insert: {
           author_id?: string | null
           category?: string | null
           content: string
           created_at?: string | null
+          downvotes?: number | null
           excerpt?: string | null
           id?: string
           published?: boolean | null
+          stars?: number | null
           tags?: string[] | null
           title: string
           updated_at?: string | null
+          upvotes?: number | null
         }
         Update: {
           author_id?: string | null
           category?: string | null
           content?: string
           created_at?: string | null
+          downvotes?: number | null
           excerpt?: string | null
           id?: string
           published?: boolean | null
+          stars?: number | null
           tags?: string[] | null
           title?: string
           updated_at?: string | null
+          upvotes?: number | null
         }
         Relationships: []
       }
@@ -425,6 +515,41 @@ export type Database = {
         }
         Relationships: []
       }
+      post_interactions: {
+        Row: {
+          created_at: string | null
+          id: string
+          interaction_type: string | null
+          post_id: string | null
+          strain_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          interaction_type?: string | null
+          post_id?: string | null
+          strain_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          interaction_type?: string | null
+          post_id?: string | null
+          strain_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_interactions_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strains"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       private_member_applications: {
         Row: {
           application_status: string | null
@@ -589,6 +714,63 @@ export type Database = {
           expires_at?: string | null
           id?: string
           max_uses?: number | null
+        }
+        Relationships: []
+      }
+      strains: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          downvotes: number | null
+          effects: Json | null
+          id: string
+          img_url: string | null
+          most_common_terpene: string | null
+          name: string
+          overall_rating: number | null
+          slug: string | null
+          stars: number | null
+          thc_level: string | null
+          total_reviews: number | null
+          type: string | null
+          updated_at: string | null
+          upvotes: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          downvotes?: number | null
+          effects?: Json | null
+          id?: string
+          img_url?: string | null
+          most_common_terpene?: string | null
+          name: string
+          overall_rating?: number | null
+          slug?: string | null
+          stars?: number | null
+          thc_level?: string | null
+          total_reviews?: number | null
+          type?: string | null
+          updated_at?: string | null
+          upvotes?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          downvotes?: number | null
+          effects?: Json | null
+          id?: string
+          img_url?: string | null
+          most_common_terpene?: string | null
+          name?: string
+          overall_rating?: number | null
+          slug?: string | null
+          stars?: number | null
+          thc_level?: string | null
+          total_reviews?: number | null
+          type?: string | null
+          updated_at?: string | null
+          upvotes?: number | null
         }
         Relationships: []
       }
