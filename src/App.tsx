@@ -21,6 +21,8 @@ import Billing from "./pages/Billing";
 import Settings from "./pages/Settings";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
+import Legal from "./pages/Legal";
+import AgeGate from "./components/AgeGate";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <AgeGate />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/signup" element={<Signup />} />
@@ -48,6 +51,7 @@ const App = () => (
             <Route path="/settings" element={<Settings />} />
             <Route path="/support" element={<Support />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/legal" element={<Legal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
