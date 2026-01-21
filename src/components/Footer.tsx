@@ -63,26 +63,33 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold text-foreground mb-4">Legal</h4>
             <ul className="space-y-3">
-              <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Terms & Conditions</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Privacy Policy</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Shipping Policy</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Refund Policy</a></li>
+              <li><a href="/legal#terms" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Terms & Conditions</a></li>
+              <li><a href="/legal#privacy" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Privacy Policy</a></li>
+              <li><a href="/legal#disclaimer" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Disclaimers</a></li>
+              <li><a href="/legal#contact" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Contact Legal</a></li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-border/30 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-muted-foreground text-sm">
-            © {new Date().getFullYear()} Alpha Appeal. All rights reserved.
-          </p>
-          <div className="flex items-center gap-6">
-            <span className="text-muted-foreground text-sm">
-              🇿🇦 Made in South Africa
-            </span>
-            <span className="text-muted-foreground text-xs px-3 py-1 rounded-full border border-border">
-              18+ Only
-            </span>
+        <div className="pt-8 border-t border-border/30">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+            <p className="text-muted-foreground text-sm">
+              © {new Date().getFullYear()} Alpha Appeal. All rights reserved.
+            </p>
+            <div className="flex items-center gap-6">
+              <span className="text-muted-foreground text-sm">
+                🇿🇦 Made in South Africa
+              </span>
+              <span className="text-destructive/80 text-xs px-3 py-1 rounded-full border border-destructive/30 bg-destructive/10">
+                21+ Only
+              </span>
+            </div>
+          </div>
+          <div className="text-center pt-4 border-t border-border/20">
+            <p className="text-muted-foreground/60 text-xs">
+              ⚠️ For Educational Purposes Only | Not Medical Advice | Cannabis laws vary by jurisdiction
+            </p>
           </div>
         </div>
       </div>
