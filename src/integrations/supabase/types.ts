@@ -91,45 +91,6 @@ export type Database = {
         }
         Relationships: []
       }
-      comment_interactions: {
-        Row: {
-          comment_id: string | null
-          created_at: string | null
-          id: string
-          interaction_type: string | null
-          user_id: string | null
-        }
-        Insert: {
-          comment_id?: string | null
-          created_at?: string | null
-          id?: string
-          interaction_type?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          comment_id?: string | null
-          created_at?: string | null
-          id?: string
-          interaction_type?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "comment_interactions_comment_id_fkey"
-            columns: ["comment_id"]
-            isOneToOne: false
-            referencedRelation: "post_comments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "comment_interactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       comments: {
         Row: {
           content: string
@@ -182,17 +143,13 @@ export type Database = {
         Row: {
           author_id: string | null
           category: string | null
-          consumption_method: string | null
           content: string
           created_at: string | null
           downvotes: number | null
           excerpt: string | null
-          experience_rating: number | null
           id: string
           published: boolean | null
           stars: number | null
-          strain_id: string | null
-          strain_name: string | null
           tags: string[] | null
           title: string
           updated_at: string | null
@@ -201,17 +158,13 @@ export type Database = {
         Insert: {
           author_id?: string | null
           category?: string | null
-          consumption_method?: string | null
           content: string
           created_at?: string | null
           downvotes?: number | null
           excerpt?: string | null
-          experience_rating?: number | null
           id?: string
           published?: boolean | null
           stars?: number | null
-          strain_id?: string | null
-          strain_name?: string | null
           tags?: string[] | null
           title: string
           updated_at?: string | null
@@ -220,31 +173,19 @@ export type Database = {
         Update: {
           author_id?: string | null
           category?: string | null
-          consumption_method?: string | null
           content?: string
           created_at?: string | null
           downvotes?: number | null
           excerpt?: string | null
-          experience_rating?: number | null
           id?: string
           published?: boolean | null
           stars?: number | null
-          strain_id?: string | null
-          strain_name?: string | null
           tags?: string[] | null
           title?: string
           updated_at?: string | null
           upvotes?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "diary_entries_strain_id_fkey"
-            columns: ["strain_id"]
-            isOneToOne: false
-            referencedRelation: "strains"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       email_logs: {
         Row: {
@@ -573,64 +514,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      post_comments: {
-        Row: {
-          comment_text: string
-          created_at: string | null
-          downvotes: number | null
-          id: string
-          parent_comment_id: string | null
-          post_id: string | null
-          updated_at: string | null
-          upvotes: number | null
-          user_id: string | null
-        }
-        Insert: {
-          comment_text: string
-          created_at?: string | null
-          downvotes?: number | null
-          id?: string
-          parent_comment_id?: string | null
-          post_id?: string | null
-          updated_at?: string | null
-          upvotes?: number | null
-          user_id?: string | null
-        }
-        Update: {
-          comment_text?: string
-          created_at?: string | null
-          downvotes?: number | null
-          id?: string
-          parent_comment_id?: string | null
-          post_id?: string | null
-          updated_at?: string | null
-          upvotes?: number | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "post_comments_parent_comment_id_fkey"
-            columns: ["parent_comment_id"]
-            isOneToOne: false
-            referencedRelation: "post_comments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "post_comments_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "diary_entries"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "post_comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       post_interactions: {
         Row: {
@@ -1069,68 +952,50 @@ export type Database = {
       users: {
         Row: {
           avatar_url: string | null
-          consent_date: string | null
-          consent_given: boolean | null
           created_at: string | null
           date_of_birth: string
           email: string
           email_verified: boolean | null
           id: string
-          is_admin: boolean | null
           last_login: string | null
           mailerlite_subscriber_id: string | null
           name: string
           onboarding_completed: boolean | null
           phone: string | null
-          phone_number: string | null
-          preferences: Json | null
           status: string | null
           subscription_tier: string | null
-          tier: string | null
           updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
-          consent_date?: string | null
-          consent_given?: boolean | null
           created_at?: string | null
           date_of_birth: string
           email: string
           email_verified?: boolean | null
           id?: string
-          is_admin?: boolean | null
           last_login?: string | null
           mailerlite_subscriber_id?: string | null
           name: string
           onboarding_completed?: boolean | null
           phone?: string | null
-          phone_number?: string | null
-          preferences?: Json | null
           status?: string | null
           subscription_tier?: string | null
-          tier?: string | null
           updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
-          consent_date?: string | null
-          consent_given?: boolean | null
           created_at?: string | null
           date_of_birth?: string
           email?: string
           email_verified?: boolean | null
           id?: string
-          is_admin?: boolean | null
           last_login?: string | null
           mailerlite_subscriber_id?: string | null
           name?: string
           onboarding_completed?: boolean | null
           phone?: string | null
-          phone_number?: string | null
-          preferences?: Json | null
           status?: string | null
           subscription_tier?: string | null
-          tier?: string | null
           updated_at?: string | null
         }
         Relationships: []
