@@ -22,6 +22,7 @@ import Settings from "./pages/Settings";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import Legal from "./pages/Legal";
+import PartnerDetail from "./pages/PartnerDetail";
 import AgeGate from "./components/AgeGate";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/music" element={<Music />} />
             <Route path="/community" element={<Community />} />
             <Route path="/map" element={<Map />} />
+            <Route path="/partner/:partnerId" element={<PartnerDetail />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/my-diary" element={<MyDiary />} />
             <Route path="/deliveries" element={<Deliveries />} />

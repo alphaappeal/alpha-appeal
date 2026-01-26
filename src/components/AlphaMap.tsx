@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { MapPin, Phone, Clock, Navigation, X, ShoppingBag, Send, Loader2 } from 'lucide-react';
+import { 
+  MapPin, Phone, Clock, Navigation, X, Send, Loader2, 
+  Star, Gift, Shield, Filter, Search, Calendar, ChevronRight
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { vendorLocations, VendorLocation } from '@/data/locations';
+import { alphaPartners, AlphaPartner, isPartnerOpen, AlphaStatus } from '@/data/alphaPartners';
 import L from 'leaflet';
 
 // Fix Leaflet default marker icons
@@ -18,52 +21,67 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Custom purple/gold marker icon
-const customIcon = new L.Icon({
-  iconUrl: 'data:image/svg+xml;base64,' + btoa(`
-    <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="20" cy="20" r="18" fill="url(#gradient)" stroke="white" stroke-width="3"/>
-      <text x="20" y="26" font-family="serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">A</text>
-      <defs>
-        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:#8b7355;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#7a9a7a;stop-opacity:1" />
-        </linearGradient>
-      </defs>
-    </svg>
-  `),
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-  popupAnchor: [0, -40]
-});
+// Custom marker icons based on partner status
+const createMarkerIcon = (status: AlphaStatus) => {
+  const colors = {
+    exclusive: { primary: '#c4a052', secondary: '#8b7355' },
+    featured: { primary: '#7a9a7a', secondary: '#5a7a5a' },
+    verified: { primary: '#6b7280', secondary: '#4b5563' }
+  };
 
-// Products data for showing availability at stores
-const products = [
-  { id: 1, name: "Alpha Signature Hoodie", price: 1299, image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500", availableAt: [1, 5] },
-  { id: 2, name: "Wellness Starter Kit", price: 899, image: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500", availableAt: [1, 2, 3] },
-  { id: 3, name: "Alpha Tote Bag", price: 599, image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500", availableAt: [1, 2, 4, 5] },
-  { id: 4, name: "Premium Lifestyle Box", price: 2499, image: "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=500", availableAt: [1] },
-  { id: 5, name: "Alpha Snapback", price: 499, image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500", availableAt: [1, 2, 3, 4, 5] },
-  { id: 6, name: "Botanical Blend Set", price: 1499, image: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=500", availableAt: [1, 2, 3] },
-  { id: 7, name: "Alpha Track Jacket", price: 1899, image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500", availableAt: [1, 4, 5] },
-  { id: 8, name: "Culture Zine Vol. 1", price: 299, image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500", availableAt: [1, 2, 3, 4, 5] }
-];
+  const { primary, secondary } = colors[status];
+
+  return new L.Icon({
+    iconUrl: 'data:image/svg+xml;base64,' + btoa(`
+      <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="18" fill="url(#gradient-${status})" stroke="white" stroke-width="3"/>
+        <text x="20" y="26" font-family="serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">A</text>
+        <defs>
+          <linearGradient id="gradient-${status}" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:${primary};stop-opacity:1" />
+            <stop offset="100%" style="stop-color:${secondary};stop-opacity:1" />
+          </linearGradient>
+        </defs>
+      </svg>
+    `),
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40]
+  });
+};
+
+interface FilterState {
+  status: 'all' | AlphaStatus;
+  openNow: boolean;
+  hasPerks: boolean;
+  reservations: boolean;
+  region: string;
+}
 
 const AlphaMap = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Get selected store from navigation state
-  const navigationState = location.state as { selectedStoreId?: number } | null;
-  const initialStoreId = navigationState?.selectedStoreId;
+  const navigationState = location.state as { selectedPartnerId?: number } | null;
+  const initialPartnerId = navigationState?.selectedPartnerId;
 
-  const [selectedVendor, setSelectedVendor] = useState<VendorLocation | null>(() => {
-    if (initialStoreId) {
-      return vendorLocations.find(v => v.id === initialStoreId) || null;
+  const [selectedPartner, setSelectedPartner] = useState<AlphaPartner | null>(() => {
+    if (initialPartnerId) {
+      return alphaPartners.find(p => p.id === initialPartnerId) || null;
     }
     return null;
   });
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState<FilterState>({
+    status: 'all',
+    openNow: false,
+    hasPerks: false,
+    reservations: false,
+    region: 'all'
+  });
+  const [showFilters, setShowFilters] = useState(false);
   const [showSubmitForm, setShowSubmitForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -73,28 +91,57 @@ const AlphaMap = () => {
     description: ''
   });
 
-  // Calculate map center and zoom based on navigation
-  const mapCenter: [number, number] = initialStoreId
-    ? vendorLocations.find(v => v.id === initialStoreId)?.coordinates || [-28.0, 25.0]
-    : [-28.0, 25.0];
-  const mapZoom = initialStoreId ? 13 : 5;
+  // Filter partners
+  const filteredPartners = useMemo(() => {
+    return alphaPartners.filter(partner => {
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesSearch = 
+          partner.name.toLowerCase().includes(query) ||
+          partner.city.toLowerCase().includes(query) ||
+          partner.address.toLowerCase().includes(query) ||
+          partner.specialties.some(s => s.toLowerCase().includes(query));
+        if (!matchesSearch) return false;
+      }
 
-  // Get products available at a store
-  const getStoreProducts = (storeId: number) => {
-    return products.filter(p => p.availableAt.includes(storeId));
-  };
+      // Status filter
+      if (filter.status !== 'all' && partner.alphaStatus !== filter.status) {
+        return false;
+      }
 
-  const getDirections = (vendor: VendorLocation) => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${vendor.coordinates[0]},${vendor.coordinates[1]}`;
+      // Open now filter
+      if (filter.openNow && !isPartnerOpen(partner)) {
+        return false;
+      }
+
+      // Has perks filter (all partners have perks in this case)
+      if (filter.hasPerks && !partner.alphaPerks) {
+        return false;
+      }
+
+      // Reservations filter
+      if (filter.reservations && !partner.openForReservations) {
+        return false;
+      }
+
+      // Region filter
+      if (filter.region !== 'all' && partner.region !== filter.region) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [searchQuery, filter]);
+
+  const mapCenter: [number, number] = initialPartnerId
+    ? alphaPartners.find(p => p.id === initialPartnerId)?.coordinates || [-26.1, 28.0]
+    : [-26.1, 28.0];
+  const mapZoom = initialPartnerId ? 13 : 10;
+
+  const getDirections = (partner: AlphaPartner) => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${partner.coordinates[0]},${partner.coordinates[1]}`;
     window.open(url, '_blank');
-  };
-
-  const callStore = (phone: string) => {
-    window.location.href = `tel:${phone}`;
-  };
-
-  const handleVendorClick = (vendor: VendorLocation) => {
-    setSelectedVendor(vendor);
   };
 
   const handleSubmitVendor = async (e: React.FormEvent) => {
@@ -140,14 +187,134 @@ const AlphaMap = () => {
     }
   };
 
+  const regions = [...new Set(alphaPartners.map(p => p.region))];
+
   return (
     <div className="relative w-full h-screen bg-background">
-      {/* Header Overlay */}
-      <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-background to-transparent p-6 z-[1000] pointer-events-none">
-        <h1 className="text-3xl font-display font-bold text-gradient-gold">
-          Alpha Appeal Locations
+      {/* Alpha-Branded Header */}
+      <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-background via-background/90 to-transparent p-4 md:p-6 z-[1000] pointer-events-none">
+        <h1 className="text-2xl md:text-3xl font-display font-bold text-gradient-gold">
+          Alpha Partner Network
         </h1>
-        <p className="text-muted-foreground mt-2">Find your nearest Alpha experience</p>
+        <p className="text-muted-foreground text-sm md:text-base mt-1">
+          Curated locations for the discerning cannabis enthusiast
+        </p>
+        <p className="text-gold text-xs md:text-sm mt-1">
+          Members receive exclusive perks at all partner locations
+        </p>
+      </div>
+
+      {/* Elegant Filter Bar */}
+      <div className="absolute top-24 md:top-28 left-4 right-4 z-[1000] space-y-3">
+        {/* Search */}
+        <div className="relative max-w-md">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search partners, cities, specialties..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-card/95 backdrop-blur text-foreground rounded-xl border-border focus:border-secondary"
+          />
+        </div>
+
+        {/* Filter Toggle (Mobile) */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+          className="md:hidden flex items-center gap-2"
+        >
+          <Filter className="w-4 h-4" />
+          Filters
+        </Button>
+
+        {/* Refined Filters */}
+        <div className={`flex flex-wrap gap-2 ${showFilters ? 'block' : 'hidden md:flex'}`}>
+          {/* Alpha Status Filter */}
+          <div className="flex gap-1 flex-wrap">
+            <Button
+              variant={filter.status === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter({...filter, status: 'all'})}
+              className={filter.status === 'all' ? 'bg-gradient-to-r from-secondary to-gold text-background' : ''}
+            >
+              All Partners
+            </Button>
+            <Button
+              variant={filter.status === 'exclusive' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter({...filter, status: 'exclusive'})}
+              className={filter.status === 'exclusive' ? 'bg-gradient-to-r from-gold to-secondary text-background' : ''}
+            >
+              ⭐ Exclusive
+            </Button>
+            <Button
+              variant={filter.status === 'featured' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter({...filter, status: 'featured'})}
+              className={filter.status === 'featured' ? 'bg-secondary text-secondary-foreground' : ''}
+            >
+              Featured
+            </Button>
+          </div>
+
+          {/* Quick Filters */}
+          <Button
+            variant={filter.openNow ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter({...filter, openNow: !filter.openNow})}
+            className={filter.openNow ? 'bg-green-600 text-white hover:bg-green-700' : ''}
+          >
+            <span className={filter.openNow ? 'text-white' : 'text-green-500'}>●</span>
+            <span className="ml-1">Open Now</span>
+          </Button>
+
+          <Button
+            variant={filter.hasPerks ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter({...filter, hasPerks: !filter.hasPerks})}
+            className={filter.hasPerks ? 'bg-secondary text-secondary-foreground' : ''}
+          >
+            🎁 Member Perks
+          </Button>
+
+          <Button
+            variant={filter.reservations ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter({...filter, reservations: !filter.reservations})}
+          >
+            Reservations
+          </Button>
+
+          {/* Region Filter */}
+          <select
+            value={filter.region}
+            onChange={(e) => setFilter({...filter, region: e.target.value})}
+            className="px-3 py-1.5 bg-card text-foreground rounded-lg text-sm font-medium border border-border focus:border-secondary focus:outline-none"
+          >
+            <option value="all">All Regions</option>
+            {regions.map(region => (
+              <option key={region} value={region}>{region}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Results Summary */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            {filteredPartners.length} partner location{filteredPartners.length !== 1 ? 's' : ''} found
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowSubmitForm(!showSubmitForm)}
+            className="text-gold hover:text-gold/80"
+          >
+            <Send className="w-4 h-4 mr-2" />
+            Suggest a Store
+          </Button>
+        </div>
       </div>
 
       {/* Map Container */}
@@ -163,40 +330,28 @@ const AlphaMap = () => {
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
         
-        {vendorLocations.map(vendor => (
+        {filteredPartners.map(partner => (
           <Marker
-            key={vendor.id}
-            position={vendor.coordinates}
-            icon={customIcon}
+            key={partner.id}
+            position={partner.coordinates}
+            icon={createMarkerIcon(partner.alphaStatus)}
             eventHandlers={{
-              click: () => handleVendorClick(vendor)
+              click: () => setSelectedPartner(partner)
             }}
           >
             <Popup>
               <div className="text-center">
-                <h3 className="font-bold text-lg mb-1">{vendor.name}</h3>
-                <p className="text-sm text-gray-600">{vendor.address}</p>
+                <h3 className="font-bold text-lg mb-1">{partner.name}</h3>
+                <p className="text-sm text-gray-600">{partner.vibe}</p>
               </div>
             </Popup>
           </Marker>
         ))}
       </MapContainer>
 
-      {/* Submit Vendor Button */}
-      <div className="absolute top-24 left-6 z-[1000]">
-        <Button
-          onClick={() => setShowSubmitForm(!showSubmitForm)}
-          variant="default"
-          className="flex items-center gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90"
-        >
-          <Send className="w-4 h-4" />
-          Suggest a Store
-        </Button>
-      </div>
-
       {/* Vendor Submission Form */}
       {showSubmitForm && (
-        <div className="absolute top-36 left-6 z-[1000] w-80 bg-card/95 backdrop-blur border border-secondary/30 rounded-2xl p-6">
+        <div className="absolute top-48 left-4 z-[1000] w-80 bg-card/95 backdrop-blur border border-border rounded-2xl p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-display text-lg font-semibold text-foreground">Suggest a Vendor</h3>
             <button onClick={() => setShowSubmitForm(false)} className="text-muted-foreground hover:text-foreground">
@@ -252,143 +407,253 @@ const AlphaMap = () => {
         </div>
       )}
 
-      {/* Vendor List Sidebar */}
-      <div className="absolute left-6 top-36 bottom-6 w-80 bg-card/95 backdrop-blur rounded-2xl p-6 overflow-y-auto z-[1000] hidden lg:block border border-secondary/20">
-        <h2 className="text-xl font-display font-bold text-foreground mb-4">Our Locations</h2>
+      {/* Partner List Sidebar (Desktop) */}
+      <div className="absolute left-4 top-52 bottom-6 w-80 bg-card/95 backdrop-blur rounded-2xl p-4 overflow-y-auto z-[1000] hidden lg:block border border-border">
+        <h2 className="text-lg font-display font-bold text-foreground mb-4">Partner Locations</h2>
         <div className="space-y-3">
-          {vendorLocations.map(vendor => (
-            <button
-              key={vendor.id}
-              onClick={() => handleVendorClick(vendor)}
-              className={`w-full text-left p-4 rounded-xl transition-all border ${
-                selectedVendor?.id === vendor.id
-                  ? 'bg-secondary/20 border-secondary'
-                  : 'bg-muted/30 border-border hover:border-secondary/50'
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <MapPin className={`w-5 h-5 flex-shrink-0 mt-1 ${
-                  selectedVendor?.id === vendor.id ? 'text-secondary' : 'text-gold'
-                }`} />
-                <div>
-                  <h3 className="font-semibold text-foreground text-sm">{vendor.name}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{vendor.address}</p>
-                  <div className="flex gap-1 mt-2 flex-wrap">
-                    {vendor.type === 'flagship' && (
-                      <span className="text-xs bg-gold text-gold-foreground px-2 py-0.5 rounded-full font-semibold">
-                        Flagship
-                      </span>
+          {filteredPartners.map(partner => {
+            const isOpen = isPartnerOpen(partner);
+            return (
+              <button
+                key={partner.id}
+                onClick={() => setSelectedPartner(partner)}
+                className={`w-full text-left p-4 rounded-xl transition-all border ${
+                  selectedPartner?.id === partner.id
+                    ? 'bg-secondary/20 border-secondary'
+                    : 'bg-muted/30 border-border hover:border-secondary/50'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="relative">
+                    <img 
+                      src={partner.images.hero} 
+                      alt={partner.name}
+                      className="w-16 h-16 object-cover rounded-lg"
+                    />
+                    {partner.alphaStatus === 'exclusive' && (
+                      <span className="absolute -top-1 -right-1 text-xs">⭐</span>
                     )}
-                    <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-full">
-                      {getStoreProducts(vendor.id).length} Products
-                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-foreground text-sm truncate">{partner.name}</h3>
+                    <p className="text-xs text-gold">{partner.vibe}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Star className="w-3 h-3 text-gold fill-gold" />
+                      <span className="text-xs text-foreground">{partner.rating.overall}</span>
+                      <span className="text-xs text-muted-foreground">({partner.rating.reviews})</span>
+                    </div>
+                    <div className="flex gap-1 mt-2 flex-wrap">
+                      {isOpen ? (
+                        <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded-full">Open</span>
+                      ) : (
+                        <span className="text-xs bg-destructive text-destructive-foreground px-2 py-0.5 rounded-full">Closed</span>
+                      )}
+                      {partner.featured && (
+                        <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-full">Featured</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Selected Vendor Details Panel */}
-      {selectedVendor && (
-        <div className="absolute bottom-6 left-6 right-6 lg:left-auto lg:right-6 lg:w-96 bg-card/95 backdrop-blur rounded-2xl p-6 z-[1000] border-2 border-secondary shadow-2xl max-h-[80vh] overflow-y-auto">
-          <button
-            onClick={() => setSelectedVendor(null)}
-            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
+      {/* Selected Partner Details Panel */}
+      {selectedPartner && (
+        <div className="absolute bottom-6 left-4 right-4 lg:left-auto lg:right-4 lg:w-[420px] bg-card/95 backdrop-blur rounded-2xl z-[1000] border-2 border-secondary shadow-2xl max-h-[70vh] overflow-hidden">
+          {/* Hero Image with Status Badge */}
+          <div className="relative h-40">
+            <img 
+              src={selectedPartner.images.hero} 
+              alt={selectedPartner.name}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
 
-          <div className="mb-4">
-            {selectedVendor.type === 'flagship' && (
-              <span className="inline-block bg-gradient-to-r from-gold to-secondary text-foreground text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                ⭐ Flagship Store
-              </span>
-            )}
-            <h2 className="text-2xl font-display font-bold text-foreground mb-2">{selectedVendor.name}</h2>
-            <p className="text-muted-foreground text-sm mb-4">{selectedVendor.description}</p>
+            {/* Status Badge */}
+            <div className="absolute top-3 left-3">
+              {selectedPartner.alphaStatus === 'exclusive' && (
+                <span className="bg-gradient-to-r from-gold to-secondary text-background text-xs font-bold px-3 py-1 rounded-full">
+                  ⭐ ALPHA EXCLUSIVE
+                </span>
+              )}
+              {selectedPartner.alphaStatus === 'featured' && (
+                <span className="bg-secondary text-secondary-foreground text-xs font-bold px-3 py-1 rounded-full">
+                  FEATURED PARTNER
+                </span>
+              )}
+              {selectedPartner.alphaStatus === 'verified' && (
+                <span className="bg-muted text-foreground text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
+                  <Shield className="w-3 h-3" /> VERIFIED
+                </span>
+              )}
+            </div>
+
+            {/* Quick Status */}
+            <div className="absolute top-3 right-3 flex gap-2">
+              {isPartnerOpen(selectedPartner) && (
+                <span className="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                  ● OPEN
+                </span>
+              )}
+              {selectedPartner.featured && (
+                <span className="bg-destructive/80 text-white text-xs font-bold px-2 py-1 rounded-full">
+                  🔥 HOT
+                </span>
+              )}
+            </div>
+
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedPartner(null)}
+              className="absolute bottom-3 right-3 bg-background/60 backdrop-blur p-2 rounded-full text-foreground hover:bg-background/80 transition-all"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
-          <div className="space-y-3 mb-6">
-            <div className="flex items-start gap-3 text-muted-foreground">
-              <MapPin className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
-              <span className="text-sm">{selectedVendor.address}</span>
+          {/* Content */}
+          <div className="p-5 overflow-y-auto max-h-[calc(70vh-160px)]">
+            {/* Header */}
+            <div className="mb-4">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h2 className="text-xl font-display font-bold text-foreground">{selectedPartner.name}</h2>
+                  <p className="text-gold text-sm">{selectedPartner.vibe}</p>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1 justify-end">
+                    <Star className="w-5 h-5 text-gold fill-gold" />
+                    <span className="font-bold text-foreground">{selectedPartner.rating.overall}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{selectedPartner.rating.reviews} reviews</p>
+                </div>
+              </div>
+              <p className="text-muted-foreground text-sm mt-2">{selectedPartner.atmosphere}</p>
             </div>
 
-            <div className="flex items-start gap-3 text-muted-foreground">
-              <Phone className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
-              <button
-                onClick={() => callStore(selectedVendor.phone)}
-                className="text-sm hover:text-secondary transition-colors"
-              >
-                {selectedVendor.phone}
-              </button>
+            {/* Alpha Member Perks - PROMINENT */}
+            <div className="bg-gradient-to-br from-secondary/10 to-gold/10 border border-secondary/30 rounded-xl p-4 mb-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Gift className="w-5 h-5 text-gold" />
+                <span className="font-semibold text-foreground text-sm">Alpha Member Perks</span>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-start gap-2">
+                  <span className="text-gold">•</span>
+                  <span className="text-muted-foreground">{selectedPartner.alphaPerks.memberDiscount}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-gold">•</span>
+                  <span className="text-muted-foreground">{selectedPartner.alphaPerks.exclusiveAccess}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-gold">•</span>
+                  <span className="text-muted-foreground">{selectedPartner.alphaPerks.specialEvents}</span>
+                </div>
+              </div>
+              <p className="text-xs text-gold/70 mt-3">
+                Show your Alpha membership at checkout to redeem
+              </p>
             </div>
 
-            <div className="flex items-start gap-3 text-muted-foreground">
-              <Clock className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
-              <span className="text-sm">{selectedVendor.hours}</span>
-            </div>
-
-            <div className="flex items-start gap-3 text-muted-foreground">
-              <ShoppingBag className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
-              <div className="flex flex-wrap gap-1">
-                {selectedVendor.products.map((product, idx) => (
-                  <span key={idx} className="text-xs bg-secondary/20 text-secondary px-2 py-1 rounded">
-                    {product}
+            {/* Specialties */}
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-foreground mb-2">Known For</h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedPartner.specialties.map((specialty, idx) => (
+                  <span key={idx} className="bg-secondary/20 text-secondary text-xs px-3 py-1.5 rounded-lg border border-secondary/30">
+                    {specialty}
                   </span>
                 ))}
               </div>
             </div>
-          </div>
 
-          <div className="flex gap-3 mb-6">
-            <Button
-              onClick={() => getDirections(selectedVendor)}
-              className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90"
-            >
-              <Navigation className="w-5 h-5 mr-2" />
-              Directions
-            </Button>
-            <Button
-              onClick={() => callStore(selectedVendor.phone)}
-              variant="outline"
-              className="flex-1"
-            >
-              <Phone className="w-5 h-5 mr-2" />
-              Call
-            </Button>
-          </div>
-
-          {/* Available Products at This Store */}
-          <div className="pt-4 border-t border-border">
-            <h3 className="text-foreground font-bold mb-3 flex items-center gap-2">
-              <ShoppingBag className="w-4 h-4 text-secondary" />
-              Available Products
-            </h3>
-            <div className="space-y-2">
-              {getStoreProducts(selectedVendor.id).slice(0, 5).map(product => (
-                <div key={product.id} className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg">
-                  <img 
-                    src={product.image} 
-                    alt={product.name}
-                    className="w-10 h-10 object-cover rounded"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-foreground text-sm font-medium truncate">{product.name}</p>
-                    <p className="text-secondary text-xs">R{product.price}</p>
-                  </div>
-                </div>
-              ))}
+            {/* Quick Info */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="bg-muted/50 rounded-lg p-3">
+                <p className="text-xs text-muted-foreground">Hours Today</p>
+                <p className="text-sm font-semibold text-foreground">{selectedPartner.hours.weekdays}</p>
+              </div>
+              <div className="bg-muted/50 rounded-lg p-3">
+                <p className="text-xs text-muted-foreground">Partner Since</p>
+                <p className="text-sm font-semibold text-foreground">{selectedPartner.partnerSince}</p>
+              </div>
             </div>
-            <Button
-              onClick={() => navigate('/shop', { state: { selectedLocation: selectedVendor.id } })}
-              variant="outline"
-              className="w-full mt-3 text-sm"
-            >
-              View All Products at This Store
-            </Button>
+
+            {/* Contact */}
+            <div className="space-y-2 mb-4">
+              <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                <MapPin className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
+                <span>{selectedPartner.address}</span>
+              </div>
+              {selectedPartner.contact.phone && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="w-4 h-4 text-gold flex-shrink-0" />
+                  <a href={`tel:${selectedPartner.contact.phone}`} className="text-gold hover:underline">
+                    {selectedPartner.contact.phone}
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Amenities */}
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-foreground mb-2">Amenities</h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedPartner.amenities.map((amenity, idx) => (
+                  <span key={idx} className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded">
+                    {amenity}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="space-y-2">
+              {selectedPartner.openForReservations && (
+                <Button className="w-full bg-gradient-to-r from-secondary to-gold text-background hover:opacity-90">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Reserve Visit
+                </Button>
+              )}
+
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => getDirections(selectedPartner)}
+                >
+                  <Navigation className="w-4 h-4 mr-2" />
+                  Directions
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => window.location.href = `tel:${selectedPartner.contact.phone}`}
+                >
+                  <Phone className="w-4 h-4 mr-2" />
+                  Call
+                </Button>
+              </div>
+
+              <Button
+                variant="ghost"
+                onClick={() => navigate(`/partner/${selectedPartner.id}`)}
+                className="w-full text-gold hover:text-gold/80 hover:bg-gold/10"
+              >
+                View Full Details
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+
+            {/* Partner Badge */}
+            <div className="mt-4 pt-4 border-t border-border text-center">
+              <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
+                <Shield className="w-4 h-4 text-gold" />
+                Verified Alpha Appeal Partner since {selectedPartner.partnerSince}
+              </p>
+            </div>
           </div>
         </div>
       )}
