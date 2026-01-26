@@ -48,15 +48,7 @@ export type Database = {
           user_agent?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "activity_logs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       admin_actions: {
         Row: {
@@ -90,6 +82,38 @@ export type Database = {
           target_table?: string
         }
         Relationships: []
+      }
+      comment_interactions: {
+        Row: {
+          comment_id: string | null
+          created_at: string | null
+          id: string
+          interaction_type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          comment_id?: string | null
+          created_at?: string | null
+          id?: string
+          interaction_type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          comment_id?: string | null
+          created_at?: string | null
+          id?: string
+          interaction_type?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_interactions_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "post_comments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       comments: {
         Row: {
@@ -139,17 +163,51 @@ export type Database = {
           },
         ]
       }
+      community_posts: {
+        Row: {
+          author_name: string | null
+          category: string | null
+          content: string
+          created_at: string | null
+          id: string
+          image_url: string | null
+          title: string
+        }
+        Insert: {
+          author_name?: string | null
+          category?: string | null
+          content: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          title: string
+        }
+        Update: {
+          author_name?: string | null
+          category?: string | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       diary_entries: {
         Row: {
           author_id: string | null
           category: string | null
+          consumption_method: string | null
           content: string
           created_at: string | null
           downvotes: number | null
           excerpt: string | null
+          experience_rating: number | null
           id: string
           published: boolean | null
           stars: number | null
+          strain_id: string | null
+          strain_name: string | null
           tags: string[] | null
           title: string
           updated_at: string | null
@@ -158,13 +216,17 @@ export type Database = {
         Insert: {
           author_id?: string | null
           category?: string | null
+          consumption_method?: string | null
           content: string
           created_at?: string | null
           downvotes?: number | null
           excerpt?: string | null
+          experience_rating?: number | null
           id?: string
           published?: boolean | null
           stars?: number | null
+          strain_id?: string | null
+          strain_name?: string | null
           tags?: string[] | null
           title: string
           updated_at?: string | null
@@ -173,19 +235,31 @@ export type Database = {
         Update: {
           author_id?: string | null
           category?: string | null
+          consumption_method?: string | null
           content?: string
           created_at?: string | null
           downvotes?: number | null
           excerpt?: string | null
+          experience_rating?: number | null
           id?: string
           published?: boolean | null
           stars?: number | null
+          strain_id?: string | null
+          strain_name?: string | null
           tags?: string[] | null
           title?: string
           updated_at?: string | null
           upvotes?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "diary_entries_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strains"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_logs: {
         Row: {
@@ -233,15 +307,7 @@ export type Database = {
           subject?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "email_logs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       kit_deliveries: {
         Row: {
@@ -303,13 +369,6 @@ export type Database = {
             referencedRelation: "subscriptions"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "kit_deliveries_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       map_locations: {
@@ -354,6 +413,36 @@ export type Database = {
           name?: string
           province?: string | null
           type?: string
+        }
+        Relationships: []
+      }
+      member_events: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          event_date: string
+          event_name: string
+          id: string
+          location: string
+          tier_access: string[] | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          event_date: string
+          event_name: string
+          id?: string
+          location: string
+          tier_access?: string[] | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          event_date?: string
+          event_name?: string
+          id?: string
+          location?: string
+          tier_access?: string[] | null
         }
         Relationships: []
       }
@@ -432,13 +521,6 @@ export type Database = {
             referencedRelation: "subscriptions"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "orders_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       payments: {
@@ -514,6 +596,57 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      post_comments: {
+        Row: {
+          comment_text: string
+          created_at: string | null
+          downvotes: number | null
+          id: string
+          parent_comment_id: string | null
+          post_id: string | null
+          updated_at: string | null
+          upvotes: number | null
+          user_id: string | null
+        }
+        Insert: {
+          comment_text: string
+          created_at?: string | null
+          downvotes?: number | null
+          id?: string
+          parent_comment_id?: string | null
+          post_id?: string | null
+          updated_at?: string | null
+          upvotes?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          comment_text?: string
+          created_at?: string | null
+          downvotes?: number | null
+          id?: string
+          parent_comment_id?: string | null
+          post_id?: string | null
+          updated_at?: string | null
+          upvotes?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "post_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "diary_entries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       post_interactions: {
         Row: {
@@ -602,22 +735,43 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "private_member_applications_reviewed_by_fkey"
-            columns: ["reviewed_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "private_member_applications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      private_membership_applications: {
+        Row: {
+          additional_info: string | null
+          admin_notes: string | null
+          created_at: string | null
+          id: string
+          motivation_text: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          additional_info?: string | null
+          admin_notes?: string | null
+          created_at?: string | null
+          id?: string
+          motivation_text: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          additional_info?: string | null
+          admin_notes?: string | null
+          created_at?: string | null
+          id?: string
+          motivation_text?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       products: {
         Row: {
@@ -658,6 +812,33 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+          username: string | null
+          website: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+          username?: string | null
+          website?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+          username?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       promo_code_redemptions: {
         Row: {
           id: string
@@ -677,15 +858,7 @@ export type Database = {
           redeemed_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "promo_code_redemptions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       promo_codes: {
         Row: {
@@ -835,15 +1008,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "subscriptions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       support_requests: {
         Row: {
@@ -918,15 +1083,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_preferences_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -952,51 +1109,21 @@ export type Database = {
       users: {
         Row: {
           avatar_url: string | null
-          created_at: string | null
-          date_of_birth: string
-          email: string
-          email_verified: boolean | null
+          full_name: string | null
           id: string
-          last_login: string | null
-          mailerlite_subscriber_id: string | null
-          name: string
-          onboarding_completed: boolean | null
-          phone: string | null
-          status: string | null
-          subscription_tier: string | null
-          updated_at: string | null
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
-          created_at?: string | null
-          date_of_birth: string
-          email: string
-          email_verified?: boolean | null
-          id?: string
-          last_login?: string | null
-          mailerlite_subscriber_id?: string | null
-          name: string
-          onboarding_completed?: boolean | null
-          phone?: string | null
-          status?: string | null
-          subscription_tier?: string | null
-          updated_at?: string | null
+          full_name?: string | null
+          id: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
-          created_at?: string | null
-          date_of_birth?: string
-          email?: string
-          email_verified?: boolean | null
+          full_name?: string | null
           id?: string
-          last_login?: string | null
-          mailerlite_subscriber_id?: string | null
-          name?: string
-          onboarding_completed?: boolean | null
-          phone?: string | null
-          status?: string | null
-          subscription_tier?: string | null
-          updated_at?: string | null
+          username?: string | null
         }
         Relationships: []
       }
@@ -1037,22 +1164,7 @@ export type Database = {
           user_id?: string | null
           vendor_name?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "vendor_submissions_reviewed_by_fkey"
-            columns: ["reviewed_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "vendor_submissions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
