@@ -61,10 +61,10 @@ export const CommentsSection = ({ postId, strainId }: CommentsSectionProps) => {
       if (userIds.length > 0) {
         const { data: users } = await supabase
           .from("users")
-          .select("id, name")
+          .select("id, username, full_name")
           .in("id", userIds);
 
-        const userMap = new Map(users?.map(u => [u.id, u.name]) || []);
+        const userMap = new Map(users?.map(u => [u.id, u.full_name || u.username || "User"]) || []);
         const commentsWithNames = data?.map(c => ({
           ...c,
           user_name: userMap.get(c.user_id) || "Anonymous",

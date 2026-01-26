@@ -31,15 +31,15 @@ const Settings = () => {
 
       const { data: profile } = await supabase
         .from("users")
-        .select("name, email, phone")
+        .select("full_name, username")
         .eq("id", session.user.id)
         .maybeSingle();
 
       if (profile) {
         setFormData({
-          name: profile.name || "",
-          email: profile.email || session.user.email || "",
-          phone: profile.phone || "",
+          name: profile.full_name || profile.username || "",
+          email: session.user.email || "",
+          phone: "",
         });
       } else {
         setFormData({
@@ -62,8 +62,7 @@ const Settings = () => {
     const { error } = await supabase
       .from("users")
       .update({
-        name: formData.name,
-        phone: formData.phone,
+        full_name: formData.name,
       })
       .eq("id", session.user.id);
 
