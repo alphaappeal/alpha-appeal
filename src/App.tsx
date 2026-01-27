@@ -15,6 +15,7 @@ import Community from "./pages/Community";
 import Profile from "./pages/Profile";
 import Map from "./pages/Map";
 import Admin from "./pages/Admin";
+import VendorPortal from "./pages/VendorPortal";
 import MyDiary from "./pages/MyDiary";
 import Deliveries from "./pages/Deliveries";
 import Billing from "./pages/Billing";
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/settings" element={<Settings />} />
             <Route path="/support" element={<Support />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/vendor" element={<VendorPortal />} />
             <Route path="/legal" element={<Legal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

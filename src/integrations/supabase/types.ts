@@ -83,6 +83,111 @@ export type Database = {
         }
         Relationships: []
       }
+      alpha_partners: {
+        Row: {
+          address: string
+          alpha_status: string | null
+          amenities: string[] | null
+          atmosphere: string | null
+          city: string
+          created_at: string | null
+          currently_open: boolean | null
+          email: string | null
+          exclusive_access: string | null
+          featured: boolean | null
+          has_delivery: boolean | null
+          hero_image: string | null
+          hours_saturday: string | null
+          hours_sunday: string | null
+          hours_weekdays: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          member_discount: string | null
+          name: string
+          open_for_reservations: boolean | null
+          partner_since: string | null
+          payment_methods: string[] | null
+          phone: string | null
+          rating_overall: number | null
+          region: string
+          review_count: number | null
+          special_events: string | null
+          specialties: string[] | null
+          updated_at: string | null
+          vibe: string | null
+          website: string | null
+        }
+        Insert: {
+          address: string
+          alpha_status?: string | null
+          amenities?: string[] | null
+          atmosphere?: string | null
+          city: string
+          created_at?: string | null
+          currently_open?: boolean | null
+          email?: string | null
+          exclusive_access?: string | null
+          featured?: boolean | null
+          has_delivery?: boolean | null
+          hero_image?: string | null
+          hours_saturday?: string | null
+          hours_sunday?: string | null
+          hours_weekdays?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          member_discount?: string | null
+          name: string
+          open_for_reservations?: boolean | null
+          partner_since?: string | null
+          payment_methods?: string[] | null
+          phone?: string | null
+          rating_overall?: number | null
+          region: string
+          review_count?: number | null
+          special_events?: string | null
+          specialties?: string[] | null
+          updated_at?: string | null
+          vibe?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string
+          alpha_status?: string | null
+          amenities?: string[] | null
+          atmosphere?: string | null
+          city?: string
+          created_at?: string | null
+          currently_open?: boolean | null
+          email?: string | null
+          exclusive_access?: string | null
+          featured?: boolean | null
+          has_delivery?: boolean | null
+          hero_image?: string | null
+          hours_saturday?: string | null
+          hours_sunday?: string | null
+          hours_weekdays?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          member_discount?: string | null
+          name?: string
+          open_for_reservations?: boolean | null
+          partner_since?: string | null
+          payment_methods?: string[] | null
+          phone?: string | null
+          rating_overall?: number | null
+          region?: string
+          review_count?: number | null
+          special_events?: string | null
+          specialties?: string[] | null
+          updated_at?: string | null
+          vibe?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       comment_interactions: {
         Row: {
           comment_id: string | null
@@ -519,6 +624,74 @@ export type Database = {
             columns: ["subscription_id"]
             isOneToOne: false
             referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_products: {
+        Row: {
+          category: string | null
+          cbd_percentage: number | null
+          created_at: string | null
+          description: string | null
+          effects: string[] | null
+          flavors: string[] | null
+          id: string
+          image_url: string | null
+          in_stock: boolean | null
+          name: string
+          partner_id: string
+          price: number | null
+          price_unit: string | null
+          stock_quantity: number | null
+          strain_type: string | null
+          thc_percentage: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          cbd_percentage?: number | null
+          created_at?: string | null
+          description?: string | null
+          effects?: string[] | null
+          flavors?: string[] | null
+          id?: string
+          image_url?: string | null
+          in_stock?: boolean | null
+          name: string
+          partner_id: string
+          price?: number | null
+          price_unit?: string | null
+          stock_quantity?: number | null
+          strain_type?: string | null
+          thc_percentage?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          cbd_percentage?: number | null
+          created_at?: string | null
+          description?: string | null
+          effects?: string[] | null
+          flavors?: string[] | null
+          id?: string
+          image_url?: string | null
+          in_stock?: boolean | null
+          name?: string
+          partner_id?: string
+          price?: number | null
+          price_unit?: string | null
+          stock_quantity?: number | null
+          strain_type?: string | null
+          thc_percentage?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_products_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "alpha_partners"
             referencedColumns: ["id"]
           },
         ]
@@ -1109,23 +1282,58 @@ export type Database = {
       users: {
         Row: {
           avatar_url: string | null
+          email: string
           full_name: string | null
           id: string
           username: string | null
         }
         Insert: {
           avatar_url?: string | null
+          email: string
           full_name?: string | null
           id: string
           username?: string | null
         }
         Update: {
           avatar_url?: string | null
+          email?: string
           full_name?: string | null
           id?: string
           username?: string | null
         }
         Relationships: []
+      }
+      vendor_accounts: {
+        Row: {
+          created_at: string | null
+          id: string
+          partner_id: string
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          partner_id: string
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          partner_id?: string
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_accounts_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "alpha_partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vendor_submissions: {
         Row: {

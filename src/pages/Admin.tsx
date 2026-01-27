@@ -25,8 +25,10 @@ import {
   ArrowLeft,
   RefreshCw,
   Leaf,
+  Store,
 } from "lucide-react";
 import StrainsTab from "@/components/admin/StrainsTab";
+import PartnersTab from "@/components/admin/PartnersTab";
 import logoLight from "@/assets/alpha-logo-light.png";
 
 const Admin = () => {
@@ -280,6 +282,9 @@ const Admin = () => {
               <TabsTrigger value="strains" className="gap-2">
                 <Leaf className="w-4 h-4" /> Strains
               </TabsTrigger>
+              <TabsTrigger value="partners" className="gap-2">
+                <Store className="w-4 h-4" /> Partners
+              </TabsTrigger>
               <TabsTrigger value="content" className="gap-2">
                 <BookOpen className="w-4 h-4" /> Content
               </TabsTrigger>
@@ -487,6 +492,11 @@ const Admin = () => {
             {/* Strains Tab */}
             <TabsContent value="strains">
               <StrainsTab />
+            </TabsContent>
+
+            {/* Partners Tab */}
+            <TabsContent value="partners">
+              <PartnersTab />
             </TabsContent>
 
             {/* Content Tab */}
