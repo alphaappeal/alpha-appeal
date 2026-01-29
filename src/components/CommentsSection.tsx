@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Send, User, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,17 +27,12 @@ export const CommentsSection = ({ postId, strainId }: CommentsSectionProps) => {
   const [submitting, setSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchComments();
-    getCurrentUser();
-  }, [postId, strainId]);
-
-  const getCurrentUser = async () => {
+  const getCurrentUser = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setCurrentUserId(user?.id || null);
-  };
+  }, []);
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     setLoading(true);
     
     let query = supabase
@@ -81,7 +76,12 @@ export const CommentsSection = ({ postId, strainId }: CommentsSectionProps) => {
     }
     
     setLoading(false);
-  };
+  }, [postId, strainId, toast]);
+
+  useEffect(() => {
+    fetchComments();
+    getCurrentUser();
+  }, [postId, strainId, fetchComments, getCurrentUser]);
 
   const handleSubmit = async () => {
     if (!newComment.trim()) return;

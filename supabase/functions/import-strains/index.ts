@@ -1,5 +1,4 @@
-// Supabase Edge Function (Deno) — skip TS type checking in the editor environment
-// @ts-nocheck
+// Supabase Edge Function (Deno)
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -73,7 +72,7 @@ serve(async (req) => {
     // Process strains in batches
     const batchSize = 100;
     let imported = 0;
-    let errors: string[] = [];
+    const errors: string[] = [];
 
     for (let i = 0; i < strains.length; i += batchSize) {
       const batch = strains.slice(i, i + batchSize).map((strain) => ({

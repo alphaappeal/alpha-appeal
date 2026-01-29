@@ -35,13 +35,13 @@ const Admin = () => {
   const { toast } = useToast();
   const { isAdmin, loading: adminLoading } = useAdminCheck();
   
-  const [users, setUsers] = useState<any[]>([]);
-  const [subscriptions, setSubscriptions] = useState<any[]>([]);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [applications, setApplications] = useState<any[]>([]);
-  const [diaryEntries, setDiaryEntries] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
-  const [locations, setLocations] = useState<any[]>([]);
+  const [users, setUsers] = useState<Tables<'users'>[]>([]);
+  const [subscriptions, setSubscriptions] = useState<(Tables<'subscriptions'> & { users?: Tables<'users'> })[]>([]);
+  const [orders, setOrders] = useState<(Tables<'orders'> & { users?: Tables<'users'> })[]>([]);
+  const [applications, setApplications] = useState<(Tables<'private_member_applications'> & { users?: Tables<'users'> })[]>([]);
+  const [diaryEntries, setDiaryEntries] = useState<Tables<'diary_entries'>[]>([]);
+  const [products, setProducts] = useState<Tables<'products'>[]>([]);
+  const [locations, setLocations] = useState<Tables<'map_locations'>[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -56,13 +56,7 @@ const Admin = () => {
     }
   }, [isAdmin, adminLoading, navigate, toast]);
 
-  useEffect(() => {
-    if (isAdmin) {
-      loadAllData();
-    }
-  }, [isAdmin]);
-
-  const loadAllData = async () => {
+  const loadAllData = useCallback(async () => {
     setLoading(true);
     await Promise.all([
       loadUsers(),
@@ -74,7 +68,13 @@ const Admin = () => {
       loadLocations(),
     ]);
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadAllData();
+    }
+  }, [isAdmin, loadAllData]);
 
   const loadUsers = async () => {
     const { data } = await supabase.from("users").select("*").order("created_at", { ascending: false });
@@ -137,16 +137,17 @@ const Admin = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; icon: any }> = {
-      active: { variant: "default", icon: CheckCircle },
-      pending: { variant: "secondary", icon: Clock },
-      cancelled: { variant: "destructive", icon: XCircle },
-      approved: { variant: "default", icon: CheckCircle },
-      rejected: { variant: "destructive", icon: XCircle },
-      completed: { variant: "default", icon: CheckCircle },
-      failed: { variant: "destructive", icon: XCircle },
+    type IconType = React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; icon: IconType }> = {
+      active: { variant: "default", icon: CheckCircle as IconType },
+      pending: { variant: "secondary", icon: Clock as IconType },
+      cancelled: { variant: "destructive", icon: XCircle as IconType },
+      approved: { variant: "default", icon: CheckCircle as IconType },
+      rejected: { variant: "destructive", icon: XCircle as IconType },
+      completed: { variant: "default", icon: CheckCircle as IconType },
+      failed: { variant: "destructive", icon: XCircle as IconType },
     };
-    const config = variants[status] || { variant: "outline" as const, icon: Clock };
+    const config = variants[status] || { variant: "outline" as const, icon: Clock as IconType };
     const Icon = config.icon;
     return (
       <Badge variant={config.variant} className="gap-1">

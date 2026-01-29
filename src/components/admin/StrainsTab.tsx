@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,11 +62,7 @@ const StrainsTab = () => {
     img_url: "",
   });
 
-  useEffect(() => {
-    fetchStrains();
-  }, []);
-
-  const fetchStrains = async () => {
+  const fetchStrains = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("strains")
@@ -83,7 +79,13 @@ const StrainsTab = () => {
       setStrains((data as Strain[]) || []);
     }
     setLoading(false);
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchStrains();
+  }, [fetchStrains]);
+
+
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -104,15 +106,28 @@ const StrainsTab = () => {
       let imported = 0;
 
       for (let i = 0; i < strainsData.length; i += batchSize) {
-        const batch = strainsData.slice(i, i + batchSize).map((strain: any) => ({
-          name: strain.name,
-          type: strain.type?.toLowerCase() || "hybrid",
-          thc_level: strain.thc_level,
-          most_common_terpene: strain.most_common_terpene,
-          description: strain.description,
-          img_url: strain.img_url,
-          effects: strain.effects || {},
-        }));
+        type IncomingStrain = Partial<{
+          name: string;
+          type: string;
+          thc_level: string | null;
+          most_common_terpene: string | null;
+          description: string | null;
+          img_url: string | null;
+          effects: Record<string, string>;
+        }>;
+
+        const batch = strainsData.slice(i, i + batchSize).map((s: unknown) => {
+          const strain = s as IncomingStrain;
+          return {
+            name: strain.name,
+            type: strain.type?.toLowerCase() || "hybrid",
+            thc_level: strain.thc_level,
+            most_common_terpene: strain.most_common_terpene,
+            description: strain.description,
+            img_url: strain.img_url,
+            effects: strain.effects || {},
+          };
+        });
 
         const { error } = await supabase
           .from("strains")
@@ -129,10 +144,11 @@ const StrainsTab = () => {
       });
 
       fetchStrains();
-    } catch (error: any) {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       toast({
         title: "Import Failed",
-        description: error.message,
+        description: message,
         variant: "destructive",
       });
     } finally {

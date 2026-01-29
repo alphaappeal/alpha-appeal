@@ -13,8 +13,8 @@ const Billing = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [subscription, setSubscription] = useState<any>(null);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [subscription, setSubscription] = useState<Tables<'subscriptions'> | null>(null);
+  const [orders, setOrders] = useState<Tables<'orders'>[]>([]);
 
   useEffect(() => {
     const loadData = async () => {

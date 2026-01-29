@@ -20,8 +20,8 @@ import logoLight from "@/assets/alpha-logo-light.png";
 
 const Welcome = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [user, setUser] = useState<import('@supabase/supabase-js').User | null>(null);
+  const [profile, setProfile] = useState<Tables<'users'> | null>(null);
 
   useEffect(() => {
     const getUser = async () => {

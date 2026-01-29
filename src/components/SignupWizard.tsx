@@ -208,10 +208,11 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
           navigate(`/checkout?tier=${tier}`);
         }
       }
-    } catch (error: any) {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       toast({
         title: "Error",
-        description: error?.message || "Something went wrong. Please try again.",
+        description: message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {

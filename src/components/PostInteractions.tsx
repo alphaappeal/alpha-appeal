@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ThumbsUp, ThumbsDown, Star, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,11 +45,7 @@ export const PostInteractions = ({
   });
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchUserInteractions();
-  }, [postId, strainId]);
-
-  const fetchUserInteractions = async () => {
+  const fetchUserInteractions = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -79,7 +75,13 @@ export const PostInteractions = ({
       });
       setUserInteractions(interactions);
     }
-  };
+  }, [postId, strainId]);
+
+  useEffect(() => {
+    fetchUserInteractions();
+  }, [fetchUserInteractions]);
+
+
 
   const handleInteraction = async (type: "upvote" | "downvote" | "star") => {
     const { data: { user } } = await supabase.auth.getUser();

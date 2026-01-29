@@ -81,12 +81,13 @@ const PromoCodeInput = ({ onValidCode, userId }: PromoCodeInputProps) => {
       });
       onValidCode(code.trim().toUpperCase());
 
-    } catch (error: any) {
+    } catch (err) {
       // Handle promo validation error silently
+      const message = err instanceof Error ? err.message : String(err);
       setStatus("invalid");
       toast({
         title: "Error",
-        description: "Failed to validate code. Please try again.",
+        description: message || "Failed to validate code. Please try again.",
         variant: "destructive"
       });
     } finally {

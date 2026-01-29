@@ -1,5 +1,4 @@
-// Supabase Edge Function (Deno) — skip TS type checking in the editor environment
-// @ts-nocheck
+// Supabase Edge Function (Deno)
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -86,10 +85,11 @@ const handler = async (req: Request): Promise<Response> => {
         headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
-  } catch (error: any) {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
     // Log error for debugging (consider using proper logging service in production)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: message }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

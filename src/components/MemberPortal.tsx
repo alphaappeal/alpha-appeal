@@ -92,7 +92,7 @@ const MemberPortal = ({ isOpen, onClose, tier = "private" }: MemberPortalProps) 
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as "overview" | "events" | "rewards")}
               className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all ${
                 activeTab === tab.id
                   ? "bg-secondary text-secondary-foreground"
@@ -101,7 +101,7 @@ const MemberPortal = ({ isOpen, onClose, tier = "private" }: MemberPortalProps) 
             >
               {tab.label}
             </button>
-          ))}
+          ))} 
         </div>
 
         {/* Tab Content */}

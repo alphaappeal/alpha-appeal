@@ -27,10 +27,10 @@ const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [subscription, setSubscription] = useState<any>(null);
-  const [preferences, setPreferences] = useState<any>(null);
+  const [user, setUser] = useState<import('@supabase/supabase-js').User | null>(null);
+  const [profile, setProfile] = useState<Tables<'users'> | null>(null);
+  const [subscription, setSubscription] = useState<Tables<'subscriptions'> | null>(null);
+  const [preferences, setPreferences] = useState<Tables<'user_preferences'> | null>(null);
   const [showMemberPortal, setShowMemberPortal] = useState(false);
 
   useEffect(() => {
@@ -84,7 +84,7 @@ const Profile = () => {
       .update(updates)
       .eq("user_id", user.id);
     
-    setPreferences((prev: any) => ({ ...prev, ...updates }));
+    setPreferences((prev) => ({ ...(prev || {}), ...updates } as Tables<'user_preferences'>));
     toast({ title: "Preferences updated" });
   };
 
