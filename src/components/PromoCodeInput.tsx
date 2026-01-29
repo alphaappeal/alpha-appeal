@@ -82,7 +82,7 @@ const PromoCodeInput = ({ onValidCode, userId }: PromoCodeInputProps) => {
       onValidCode(code.trim().toUpperCase());
 
     } catch (error: any) {
-      console.error("Promo validation error:", error);
+      // Handle promo validation error silently
       setStatus("invalid");
       toast({
         title: "Error",

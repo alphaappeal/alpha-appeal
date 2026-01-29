@@ -54,7 +54,11 @@ export const CommentsSection = ({ postId, strainId }: CommentsSectionProps) => {
     const { data, error } = await query;
 
     if (error) {
-      console.error("Error fetching comments:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to load comments.",
+        variant: "destructive",
+      });
     } else {
       // Fetch user names for comments
       const userIds = [...new Set(data?.map(c => c.user_id) || [])];

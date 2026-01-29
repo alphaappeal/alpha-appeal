@@ -187,7 +187,7 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
             },
           });
         } catch (mailError) {
-          console.error("MailerLite sync error:", mailError);
+          // MailerLite sync failed - continue with signup
         }
 
         toast({
@@ -209,10 +209,9 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
         }
       }
     } catch (error: any) {
-      console.error("Signup error:", error);
       toast({
         title: "Error",
-        description: error.message || "Something went wrong. Please try again.",
+        description: error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {

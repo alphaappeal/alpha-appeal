@@ -135,7 +135,7 @@ export const PostInteractions = ({
         }
       }
     } catch (error) {
-      console.error("Interaction error:", error);
+      // Handle interaction error silently or log to analytics if needed
     } finally {
       setLoading(false);
     }

@@ -25,7 +25,7 @@ export const useAdminCheck = () => {
       });
 
       if (error) {
-        console.error("Error checking admin role:", error);
+        // Error checking admin role - silently fail for security
         setIsAdmin(false);
       } else {
         setIsAdmin(data === true);

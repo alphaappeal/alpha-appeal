@@ -74,7 +74,11 @@ const StrainsTab = () => {
       .order("name");
 
     if (error) {
-      console.error("Error fetching strains:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to load strains.",
+        variant: "destructive",
+      });
     } else {
       setStrains((data as Strain[]) || []);
     }
