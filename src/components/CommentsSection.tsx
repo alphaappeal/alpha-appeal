@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Send, User, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -39,7 +39,7 @@ export const CommentsSection = ({ postId, strainId }: CommentsSectionProps) => {
 
   const fetchComments = async () => {
     setLoading(true);
-    
+
     let query = supabase
       .from("comments")
       .select("*")
@@ -69,13 +69,13 @@ export const CommentsSection = ({ postId, strainId }: CommentsSectionProps) => {
           ...c,
           user_name: userMap.get(c.user_id) || "Anonymous",
         })) || [];
-        
+
         setComments(commentsWithNames);
       } else {
         setComments([]);
       }
     }
-    
+
     setLoading(false);
   };
 

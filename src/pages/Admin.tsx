@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -35,7 +35,7 @@ const Admin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin, loading: adminLoading } = useAdminCheck();
-  
+
   const [users, setUsers] = useState<any[]>([]);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -115,7 +115,7 @@ const Admin = () => {
   const handleApplicationStatus = async (id: string, status: "approved" | "rejected") => {
     const { error } = await supabase
       .from("private_member_applications")
-      .update({ 
+      .update({
         application_status: status,
         reviewed_at: new Date().toISOString(),
       })
@@ -439,7 +439,7 @@ const Admin = () => {
                       </div>
                       {getStatusBadge(app.application_status || "pending")}
                     </div>
-                    
+
                     <div className="mb-4">
                       <p className="text-sm text-muted-foreground mb-1">Motivation:</p>
                       <p className="text-foreground">{app.motivation}</p>
@@ -456,7 +456,7 @@ const Admin = () => {
                       <span className="text-muted-foreground text-sm">
                         Submitted: {app.submitted_at ? formatDate(app.submitted_at) : "N/A"}
                       </span>
-                      
+
                       {app.application_status === "pending" && (
                         <div className="flex gap-2">
                           <Button

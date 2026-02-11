@@ -1,14 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { 
-  MapPin, Phone, Clock, Navigation, X, Send, Loader2, 
+import {
+  MapPin, Phone, Clock, Navigation, X, Send, Loader2,
   Star, Gift, Shield, Filter, Search, Calendar, ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from "@/lib/supabase";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { alphaPartners, AlphaPartner, isPartnerOpen, AlphaStatus } from '@/data/alphaPartners';
 import L from 'leaflet';
@@ -62,7 +62,7 @@ const AlphaMap = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const navigationState = location.state as { selectedPartnerId?: number } | null;
   const initialPartnerId = navigationState?.selectedPartnerId;
 
@@ -72,7 +72,7 @@ const AlphaMap = () => {
     }
     return null;
   });
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterState>({
     status: 'all',
@@ -97,7 +97,7 @@ const AlphaMap = () => {
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           partner.name.toLowerCase().includes(query) ||
           partner.city.toLowerCase().includes(query) ||
           partner.address.toLowerCase().includes(query) ||
@@ -158,7 +158,7 @@ const AlphaMap = () => {
     setSubmitting(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       const { error } = await supabase.from('vendor_submissions').insert({
         user_id: session?.user?.id || null,
         vendor_name: formData.vendorName,
@@ -236,7 +236,7 @@ const AlphaMap = () => {
             <Button
               variant={filter.status === 'all' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setFilter({...filter, status: 'all'})}
+              onClick={() => setFilter({ ...filter, status: 'all' })}
               className={filter.status === 'all' ? 'bg-gradient-to-r from-secondary to-gold text-background' : ''}
             >
               All Partners
@@ -244,7 +244,7 @@ const AlphaMap = () => {
             <Button
               variant={filter.status === 'exclusive' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setFilter({...filter, status: 'exclusive'})}
+              onClick={() => setFilter({ ...filter, status: 'exclusive' })}
               className={filter.status === 'exclusive' ? 'bg-gradient-to-r from-gold to-secondary text-background' : ''}
             >
               ⭐ Exclusive
@@ -252,7 +252,7 @@ const AlphaMap = () => {
             <Button
               variant={filter.status === 'featured' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setFilter({...filter, status: 'featured'})}
+              onClick={() => setFilter({ ...filter, status: 'featured' })}
               className={filter.status === 'featured' ? 'bg-secondary text-secondary-foreground' : ''}
             >
               Featured
@@ -263,7 +263,7 @@ const AlphaMap = () => {
           <Button
             variant={filter.openNow ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setFilter({...filter, openNow: !filter.openNow})}
+            onClick={() => setFilter({ ...filter, openNow: !filter.openNow })}
             className={filter.openNow ? 'bg-green-600 text-white hover:bg-green-700' : ''}
           >
             <span className={filter.openNow ? 'text-white' : 'text-green-500'}>●</span>
@@ -273,7 +273,7 @@ const AlphaMap = () => {
           <Button
             variant={filter.hasPerks ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setFilter({...filter, hasPerks: !filter.hasPerks})}
+            onClick={() => setFilter({ ...filter, hasPerks: !filter.hasPerks })}
             className={filter.hasPerks ? 'bg-secondary text-secondary-foreground' : ''}
           >
             🎁 Member Perks
@@ -282,7 +282,7 @@ const AlphaMap = () => {
           <Button
             variant={filter.reservations ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setFilter({...filter, reservations: !filter.reservations})}
+            onClick={() => setFilter({ ...filter, reservations: !filter.reservations })}
           >
             Reservations
           </Button>
@@ -290,7 +290,7 @@ const AlphaMap = () => {
           {/* Region Filter */}
           <select
             value={filter.region}
-            onChange={(e) => setFilter({...filter, region: e.target.value})}
+            onChange={(e) => setFilter({ ...filter, region: e.target.value })}
             className="px-3 py-1.5 bg-card text-foreground rounded-lg text-sm font-medium border border-border focus:border-secondary focus:outline-none"
           >
             <option value="all">All Regions</option>
@@ -329,7 +329,7 @@ const AlphaMap = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
-        
+
         {filteredPartners.map(partner => (
           <Marker
             key={partner.id}
@@ -417,16 +417,15 @@ const AlphaMap = () => {
               <button
                 key={partner.id}
                 onClick={() => setSelectedPartner(partner)}
-                className={`w-full text-left p-4 rounded-xl transition-all border ${
-                  selectedPartner?.id === partner.id
+                className={`w-full text-left p-4 rounded-xl transition-all border ${selectedPartner?.id === partner.id
                     ? 'bg-secondary/20 border-secondary'
                     : 'bg-muted/30 border-border hover:border-secondary/50'
-                }`}
+                  }`}
               >
                 <div className="flex items-start gap-3">
                   <div className="relative">
-                    <img 
-                      src={partner.images.hero} 
+                    <img
+                      src={partner.images.hero}
                       alt={partner.name}
                       className="w-16 h-16 object-cover rounded-lg"
                     />
@@ -465,8 +464,8 @@ const AlphaMap = () => {
         <div className="absolute bottom-6 left-4 right-4 lg:left-auto lg:right-4 lg:w-[420px] bg-card/95 backdrop-blur rounded-2xl z-[1000] border-2 border-secondary shadow-2xl max-h-[70vh] overflow-hidden">
           {/* Hero Image with Status Badge */}
           <div className="relative h-40">
-            <img 
-              src={selectedPartner.images.hero} 
+            <img
+              src={selectedPartner.images.hero}
               alt={selectedPartner.name}
               className="w-full h-full object-cover"
             />

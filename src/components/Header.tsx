@@ -3,7 +3,10 @@ import { Link } from "react-router-dom";
 import { Menu, X, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { MiniCart } from "./cart/MiniCart";
 import alphaLogo from "@/assets/alpha-logo-light.png";
 
 const Header = () => {
@@ -31,9 +34,9 @@ const Header = () => {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <img 
-              src={alphaLogo} 
-              alt="Alpha Appeal" 
+            <img
+              src={alphaLogo}
+              alt="Alpha Appeal"
               className="h-8 md:h-10 w-auto"
             />
           </Link>
@@ -59,6 +62,7 @@ const Header = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
+            <LanguageSwitcher />
             {isLoggedIn ? (
               <Link to="/welcome">
                 <Button variant="sage" size="sm">
@@ -94,30 +98,30 @@ const Header = () => {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-border/30 animate-fade-in">
             <nav className="flex flex-col gap-4">
-              <a 
-                href="#tiers" 
+              <a
+                href="#tiers"
                 className="text-foreground py-2 font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Membership
               </a>
-              <a 
-                href="#philosophy" 
+              <a
+                href="#philosophy"
                 className="text-foreground py-2 font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Philosophy
               </a>
-              <a 
-                href="#community" 
+              <a
+                href="#community"
                 className="text-foreground py-2 font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Community
               </a>
               {!adminLoading && isAdmin && (
-                <Link 
-                  to="/admin" 
+                <Link
+                  to="/admin"
                   className="text-secondary py-2 font-medium flex items-center gap-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >

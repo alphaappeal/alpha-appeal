@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Phone, Mail, Send, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,7 +71,7 @@ const Support = () => {
           {/* Contact Info */}
           <div className="p-6 rounded-2xl bg-card/50 border border-border/50 space-y-4">
             <h2 className="font-display font-semibold text-foreground">Contact Us</h2>
-            
+
             <a
               href="tel:+27123456789"
               className="flex items-center gap-3 p-4 rounded-xl border border-border/50 hover:border-secondary/50 transition-colors"
@@ -98,7 +98,7 @@ const Support = () => {
           {/* Contact Form */}
           <div className="p-6 rounded-2xl bg-card/50 border border-border/50">
             <h2 className="font-display font-semibold text-foreground mb-4">Send us a message</h2>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="name">Name</Label>

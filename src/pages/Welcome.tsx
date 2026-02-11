@@ -3,14 +3,14 @@ import { useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import BottomNav from "@/components/BottomNav";
-import { supabase } from "@/integrations/supabase/client";
-import { 
-  Package, 
-  Music, 
-  Users, 
-  ShoppingBag, 
-  Instagram, 
-  Twitter, 
+import { supabase } from "@/lib/supabase";
+import {
+  Package,
+  Music,
+  Users,
+  ShoppingBag,
+  Instagram,
+  Twitter,
   ArrowRight,
   Sparkles,
   Calendar,
@@ -40,7 +40,7 @@ const Welcome = () => {
         .select("*")
         .eq("id", session.user.id)
         .maybeSingle();
-      
+
       setProfile(profileData);
     };
     getUser();

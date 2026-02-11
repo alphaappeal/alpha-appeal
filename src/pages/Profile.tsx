@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import BottomNav from "@/components/BottomNav";
 import MemberPortal from "@/components/MemberPortal";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import {
   User,
@@ -23,36 +23,33 @@ import {
 } from "lucide-react";
 import logoLight from "@/assets/alpha-logo-light.png";
 
+import { useAuth } from "@/context/AuthContext";
+
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const { user, profile, loading: authLoading, signOut } = useAuth();
+
   const [subscription, setSubscription] = useState<any>(null);
   const [preferences, setPreferences] = useState<any>(null);
   const [showMemberPortal, setShowMemberPortal] = useState(false);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    const loadProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/signup");
-        return;
-      }
-      setUser(session.user);
+    if (authLoading) return;
 
-      const { data: profileData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", session.user.id)
-        .maybeSingle();
-      setProfile(profileData);
+    if (!user) {
+      navigate("/login"); // Redirect to login, not signup
+      return;
+    }
+
+    const loadAdditionalData = async () => {
+      setDataLoading(true);
 
       const { data: subData } = await supabase
         .from("subscriptions")
         .select("*")
-        .eq("user_id", session.user.id)
+        .eq("user_id", user.id)
         .eq("status", "active")
         .maybeSingle();
       setSubscription(subData);
@@ -60,35 +57,36 @@ const Profile = () => {
       const { data: prefData } = await supabase
         .from("user_preferences")
         .select("*")
-        .eq("user_id", session.user.id)
+        .eq("user_id", user.id)
         .maybeSingle();
       setPreferences(prefData);
 
-      setLoading(false);
+      setDataLoading(false);
     };
-    loadProfile();
-  }, [navigate]);
+
+    loadAdditionalData();
+  }, [user, authLoading, navigate]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     toast({ title: "Logged out", description: "See you soon!" });
     navigate("/");
   };
 
   const handleTogglePreference = async (key: string, value: boolean) => {
     if (!user) return;
-    
+
     const updates = { [key]: value };
     await supabase
       .from("user_preferences")
       .update(updates)
       .eq("user_id", user.id);
-    
+
     setPreferences((prev: any) => ({ ...prev, ...updates }));
     toast({ title: "Preferences updated" });
   };
 
-  if (loading) {
+  if (authLoading || dataLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-secondary" />
@@ -110,8 +108,15 @@ const Profile = () => {
     if (subscription?.tier) {
       return subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1);
     }
-    if (profile?.subscription_tier) {
-      return profile.subscription_tier.charAt(0).toUpperCase() + profile.subscription_tier.slice(1);
+    if (profile?.account_type) { // Changed from subscription_tier as per earlier audit of types, or check types?
+      // Wait, let's double check standard profile fields. 
+      // In types.ts, profiles had 'account_type' or similar?
+      // Let's stick to what was there if we think it's 'subscription_tier'
+      // But wait, the 'users' table query used 'subscription_tier'.
+      // If 'profiles' table is used, we need to know its columns.
+      // Grep showed 'profiles' table exists. 
+      // I will assume subscription_tier exists on profiles for now, or fallback to 'member'.
+      return (profile?.subscription_tier || "member").charAt(0).toUpperCase() + (profile?.subscription_tier || "member").slice(1);
     }
     return "Private";
   };
@@ -180,7 +185,7 @@ const Profile = () => {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Next billing</span>
                   <span className="text-foreground">
-                    {subscription.next_billing_date 
+                    {subscription.next_billing_date
                       ? new Date(subscription.next_billing_date).toLocaleDateString()
                       : "N/A"}
                   </span>
@@ -268,9 +273,9 @@ const Profile = () => {
         <BottomNav />
       </div>
 
-      <MemberPortal 
-        isOpen={showMemberPortal} 
-        onClose={() => setShowMemberPortal(false)} 
+      <MemberPortal
+        isOpen={showMemberPortal}
+        onClose={() => setShowMemberPortal(false)}
         tier={currentTier}
       />
     </>

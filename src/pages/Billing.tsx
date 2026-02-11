@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, CreditCard, Plus, TrendingUp, XCircle, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -47,7 +47,7 @@ const Billing = () => {
 
   const handleCancelSubscription = async () => {
     if (!subscription) return;
-    
+
     const { error } = await supabase
       .from("subscriptions")
       .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
@@ -165,7 +165,7 @@ const Billing = () => {
           {/* Transaction History */}
           <div className="p-6 rounded-2xl bg-card/50 border border-border/50">
             <h2 className="font-display font-semibold text-foreground mb-4">Transaction History</h2>
-            
+
             {orders.length === 0 ? (
               <p className="text-muted-foreground text-sm text-center py-4">No transactions yet</p>
             ) : (

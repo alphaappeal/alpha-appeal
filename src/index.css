@@ -16,13 +16,13 @@
     --popover: 0 0% 8%;
     --popover-foreground: 0 0% 95%;
 
-    /* Charcoal Primary */
-    --primary: 0 0% 10%;
-    --primary-foreground: 0 0% 95%;
-
-    /* Sage Green Secondary */
-    --secondary: 103 22% 56%;
-    --secondary-foreground: 0 0% 6%;
+      /* Sage Green Primary - #6b8e6b matches 103 22% 56% approx */
+      --primary: 103 22% 56%;
+      --primary-foreground: 0 0% 6%;
+      
+      /* Charcoal Secondary */
+      --secondary: 0 0% 10%;
+      --secondary-foreground: 0 0% 95%;
 
     /* Muted Charcoal */
     --muted: 0 0% 15%;

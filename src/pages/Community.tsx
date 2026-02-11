@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Users, Search, Tag, Calendar, ChevronRight, Leaf, Sparkles } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -192,11 +192,11 @@ const Community = () => {
 
   useEffect(() => {
     let filtered = entries;
-    
+
     if (activeCategory !== "all") {
       filtered = filtered.filter((entry) => entry.category === activeCategory);
     }
-    
+
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -206,7 +206,7 @@ const Community = () => {
           entry.tags?.some((tag) => tag.toLowerCase().includes(query))
       );
     }
-    
+
     setFilteredEntries(filtered);
   }, [activeCategory, searchQuery, entries]);
 
@@ -251,24 +251,24 @@ const Community = () => {
                   {selectedEntry.category}
                 </Badge>
               )}
-              
+
               <h1 className="text-3xl font-display font-bold text-foreground mb-4">
                 {selectedEntry.title}
               </h1>
-              
+
               {selectedEntry.created_at && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
                   <Calendar className="w-4 h-4" />
                   <span>{format(new Date(selectedEntry.created_at), "MMMM d, yyyy")}</span>
                 </div>
               )}
-              
+
               <div className="prose prose-invert prose-sm max-w-none">
                 <div className="text-foreground/90 leading-relaxed whitespace-pre-wrap">
                   {selectedEntry.content}
                 </div>
               </div>
-              
+
               {selectedEntry.tags && selectedEntry.tags.length > 0 && (
                 <div className="mt-8 pt-6 border-t border-border">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -301,7 +301,7 @@ const Community = () => {
         <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border">
           <div className="container mx-auto px-4 py-4">
             <h1 className="text-2xl font-display font-bold text-foreground mb-4">Community</h1>
-            
+
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -348,54 +348,55 @@ const Community = () => {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
               {filteredEntries.map((entry) => (
-                <button
-                  key={entry.id}
-                  onClick={() => setSelectedEntry(entry)}
-                  className="w-full text-left bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-4 hover:bg-card/80 transition-colors group"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      {entry.category && (
-                        <Badge variant="outline" className={cn("mb-2", getCategoryColor(entry.category))}>
-                          {entry.category}
-                        </Badge>
-                      )}
-                      <h3 className="font-medium text-foreground group-hover:text-secondary transition-colors">
-                        {entry.title}
-                      </h3>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-secondary transition-colors" />
-                  </div>
-                  
-                  {entry.excerpt && (
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                      {entry.excerpt}
-                    </p>
-                  )}
-                  
-                  <div className="flex items-center justify-between">
-                    {entry.created_at && (
-                      <span className="text-xs text-muted-foreground">
-                        {format(new Date(entry.created_at), "MMM d, yyyy")}
-                      </span>
-                    )}
-                    
-                    {entry.tags && entry.tags.length > 0 && (
-                      <div className="flex gap-1">
-                        {entry.tags.slice(0, 2).map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {tag}
+                <div key={entry.id} className="break-inside-avoid mb-6">
+                  <button
+                    onClick={() => setSelectedEntry(entry)}
+                    className="w-full text-left bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 hover:bg-card/80 transition-colors group shadow-sm hover:shadow-md"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        {entry.category && (
+                          <Badge variant="outline" className={cn("mb-3", getCategoryColor(entry.category))}>
+                            {entry.category}
                           </Badge>
-                        ))}
-                        {entry.tags.length > 2 && (
-                          <span className="text-xs text-muted-foreground">+{entry.tags.length - 2}</span>
                         )}
+                        <h3 className="text-lg font-medium font-display text-foreground group-hover:text-secondary transition-colors leading-tight">
+                          {entry.title}
+                        </h3>
                       </div>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-secondary transition-colors mt-1" />
+                    </div>
+
+                    {entry.excerpt && (
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-3 leading-relaxed">
+                        {entry.excerpt}
+                      </p>
                     )}
-                  </div>
-                </button>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                      {entry.created_at && (
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(entry.created_at), "MMM d, yyyy")}
+                        </span>
+                      )}
+
+                      {entry.tags && entry.tags.length > 0 && (
+                        <div className="flex gap-1 flex-wrap justify-end">
+                          {entry.tags.slice(0, 2).map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 h-5">
+                              {tag}
+                            </Badge>
+                          ))}
+                          {entry.tags.length > 2 && (
+                            <span className="text-[10px] text-muted-foreground flex items-center">+{entry.tags.length - 2}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                </div>
               ))}
             </div>
           )}

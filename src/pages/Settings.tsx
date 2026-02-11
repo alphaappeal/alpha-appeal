@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import logoLight from "@/assets/alpha-logo-light.png";
+import { AddressBook } from "@/components/AddressBook";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -102,8 +103,9 @@ const Settings = () => {
           </div>
         </header>
 
-        <main className="container mx-auto px-4 py-6">
+        <main className="container mx-auto px-4 py-6 space-y-8">
           <div className="p-6 rounded-2xl bg-card/50 border border-border/50 space-y-6">
+            <h2 className="text-lg font-semibold font-display">Personal Details</h2>
             <div>
               <Label htmlFor="name">Name</Label>
               <Input
@@ -154,6 +156,8 @@ const Settings = () => {
               Save Changes
             </Button>
           </div>
+
+          <AddressBook />
         </main>
 
         <BottomNav />

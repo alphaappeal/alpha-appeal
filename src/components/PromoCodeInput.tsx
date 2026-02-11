@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 
 interface PromoCodeInputProps {
@@ -105,10 +105,9 @@ const PromoCodeInput = ({ onValidCode, userId }: PromoCodeInputProps) => {
               setCode(e.target.value.toUpperCase());
               setStatus("idle");
             }}
-            className={`uppercase ${
-              status === "valid" ? "border-secondary" : 
-              status === "invalid" ? "border-destructive" : ""
-            }`}
+            className={`uppercase ${status === "valid" ? "border-secondary" :
+                status === "invalid" ? "border-destructive" : ""
+              }`}
             disabled={loading || status === "valid"}
           />
           {status === "valid" && (

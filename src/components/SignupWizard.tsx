@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { ArrowLeft, ArrowRight, Loader2, Eye, EyeOff, Gift } from "lucide-react";
 import { z } from "zod";
 import PromoCodeInput from "./PromoCodeInput";
@@ -39,7 +39,7 @@ interface SignupWizardProps {
 const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
   const [searchParams] = useSearchParams();
   const showPromo = searchParams.get("promo") === "true";
-  
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -113,7 +113,7 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
     setLoading(true);
     try {
       const redirectUrl = `${window.location.origin}/`;
-      
+
       // Determine final tier
       const finalTier = validPromoCode ? "promo" : tier;
 
@@ -192,9 +192,9 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
 
         toast({
           title: isApplication ? "Application Submitted!" : "Welcome to Alpha!",
-          description: isApplication 
-            ? "We'll review your application and get back to you soon." 
-            : validPromoCode 
+          description: isApplication
+            ? "We'll review your application and get back to you soon."
+            : validPromoCode
               ? "Your promo code was applied. Enjoy your access!"
               : "Redirecting to payment...",
         });
@@ -359,11 +359,10 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
               <button
                 key={interest.id}
                 onClick={() => toggleInterest(interest.id)}
-                className={`p-4 rounded-xl border text-left transition-all duration-300 ${
-                  formData.interests.includes(interest.id)
+                className={`p-4 rounded-xl border text-left transition-all duration-300 ${formData.interests.includes(interest.id)
                     ? "bg-secondary/10 border-secondary text-foreground"
                     : "bg-card/50 border-border hover:border-secondary/50 text-muted-foreground"
-                }`}
+                  }`}
               >
                 <span className="text-sm font-medium">{interest.label}</span>
               </button>
@@ -421,8 +420,8 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : step === totalSteps ? (
-            isApplication ? "Submit Application" : 
-            validPromoCode ? "Complete Signup" : "Continue to Payment"
+            isApplication ? "Submit Application" :
+              validPromoCode ? "Complete Signup" : "Continue to Payment"
           ) : (
             <>
               Next
