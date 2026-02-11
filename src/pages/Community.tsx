@@ -1,13 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Users, Search, Tag, Calendar, ChevronRight, Leaf, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
-import BottomNav from "@/components/BottomNav";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 interface DiaryEntry {
@@ -24,385 +19,209 @@ interface DiaryEntry {
 const demoEntries: DiaryEntry[] = [
   {
     id: "demo-1",
-    title: "Blue Dream: The Daytime Classic",
-    excerpt: "A legendary sativa-dominant hybrid that delivers swift euphoria and full-body relaxation.",
-    content: `Blue Dream remains one of the most popular strains for good reason. This sativa-dominant hybrid originated in California and has since become a staple for both novice and veteran consumers.
-
-**Effects:** The high begins with a cerebral rush, bringing motivation and focus. As it progresses, a calming body sensation takes over without heavy sedation.
-
-**Flavor Profile:** Sweet berry aroma reminiscent of blueberries, with earthy and herbal undertones.
-
-**Best For:** Daytime use, creative activities, social situations, mild pain relief.
-
-**THC Content:** Typically 17-24%
-
-This strain is perfect for those seeking relief from depression, chronic pain, and nausea while remaining functional throughout the day.`,
-    category: "strains",
-    tags: ["sativa", "daytime", "creative", "california"],
+    title: "The Art of Mindful Consumption",
+    excerpt: "Exploring the intersection of cannabis culture and intentional living.",
+    content: "Full content here...",
+    category: "culture",
+    tags: ["mindfulness", "lifestyle", "wellness"],
     created_at: new Date().toISOString()
   },
   {
     id: "demo-2",
-    title: "Morning Wellness Ritual",
-    excerpt: "How to start your day with intention and botanical balance.",
-    content: `A mindful morning sets the tone for the entire day. Here's how to create a wellness ritual that centers your mind and energizes your body.
-
-**5:30 AM - Wake with Purpose**
-Skip the snooze button. Set an intention for the day before your feet hit the floor.
-
-**6:00 AM - Hydration First**
-Warm water with lemon to activate your digestive system and flush toxins.
-
-**6:30 AM - Movement**
-15-30 minutes of yoga, stretching, or light exercise. Focus on breath work.
-
-**7:00 AM - Botanical Support**
-If part of your routine, this is an ideal time for a low-dose, sativa-dominant strain to enhance focus without drowsiness.
-
-**7:30 AM - Nourish**
-A nutrient-rich breakfast. Avoid processed sugars that lead to crashes.
-
-Consistency is key. Start with one element and build gradually.`,
-    category: "wellness",
-    tags: ["morning", "ritual", "mindfulness", "health"],
+    title: "Curating Your Cannabis Experience",
+    excerpt: "A guide to selecting products that align with your lifestyle and values.",
+    content: "Full content here...",
+    category: "education",
+    tags: ["guide", "products", "selection"],
     created_at: new Date(Date.now() - 86400000).toISOString()
   },
   {
     id: "demo-3",
-    title: "The Rise of SA Cannabis Culture",
-    excerpt: "Exploring the evolving landscape of cannabis culture in South Africa.",
-    content: `South Africa's relationship with cannabis is undergoing a remarkable transformation. Since the Constitutional Court ruling in 2018, a vibrant culture has emerged.
-
-**The Private Club Scene**
-Members-only clubs have become the new social spaces, offering curated experiences, education, and community. These establishments prioritize quality, safety, and sophistication.
-
-**Craft Cannabis Movement**
-Local cultivators are developing unique strains adapted to South African terroir. Names like "Durban Poison" have global recognition, but new genetics are constantly emerging.
-
-**The Fashion Connection**
-Streetwear brands are embracing cannabis culture with subtle, sophisticated designs. It's no longer about loud statements but refined aesthetics.
-
-**Looking Ahead**
-As regulations evolve, expect to see more integration with wellness, hospitality, and lifestyle sectors. The future is premium, curated, and conscious.`,
-    category: "culture",
-    tags: ["south africa", "culture", "community", "lifestyle"],
+    title: "Community Spotlight: Local Artisans",
+    excerpt: "Meet the craftspeople behind our premium accessories.",
+    content: "Full content here...",
+    category: "community",
+    tags: ["artisans", "local", "craftsmanship"],
     created_at: new Date(Date.now() - 172800000).toISOString()
-  },
-  {
-    id: "demo-4",
-    title: "OG Kush: The Legend",
-    excerpt: "Understanding why OG Kush remains the backbone of countless modern strains.",
-    content: `OG Kush needs no introduction. This iconic strain has shaped modern cannabis culture more than perhaps any other.
-
-**Origins:** While debated, OG Kush is believed to have originated in Florida in the early 90s before making its way to Los Angeles.
-
-**Effects:** A balanced hybrid that delivers both cerebral euphoria and physical relaxation. Expect stress relief, mood elevation, and a sense of calm focus.
-
-**Flavor Profile:** Complex. Fuel, skunk, and spice with earthy, pine undertones. The aroma is unmistakable.
-
-**Lineage Impact:** OG Kush has parented countless popular strains including GSC, Headband, and Bubba Kush.
-
-**THC Content:** 19-26%
-
-**Best For:** Evening relaxation, social settings, stress relief, appetite stimulation.
-
-A true classic that continues to define quality cannabis.`,
-    category: "strains",
-    tags: ["indica", "classic", "evening", "legendary"],
-    created_at: new Date(Date.now() - 259200000).toISOString()
-  },
-  {
-    id: "demo-5",
-    title: "Sleep Optimization with Botanicals",
-    excerpt: "Natural approaches to improving sleep quality and duration.",
-    content: `Quality sleep is the foundation of wellness. Here's how to optimize your rest using botanical support.
-
-**The 10-3-2-1-0 Rule**
-- 10 hours before bed: No more caffeine
-- 3 hours before bed: No more food or alcohol
-- 2 hours before bed: No more work
-- 1 hour before bed: No more screens
-- 0 times hitting snooze
-
-**Botanical Support**
-Indica-dominant strains with high myrcene content can promote relaxation. Look for strains with:
-- Linalool (lavender-like, calming)
-- Myrcene (sedating, musky)
-- Caryophyllene (stress-relieving)
-
-**Timing Matters**
-Consume 1-2 hours before desired sleep time. Start with low doses and adjust.
-
-**Environment**
-Dark room, cool temperature (65-68°F), white noise if needed.
-
-**Consistency**
-Same bedtime, same wake time, even on weekends.`,
-    category: "wellness",
-    tags: ["sleep", "indica", "relaxation", "health"],
-    created_at: new Date(Date.now() - 345600000).toISOString()
   }
-];
-
-const categories = [
-  { id: "all", label: "All", icon: Sparkles },
-  { id: "strains", label: "Strains", icon: Leaf },
-  { id: "wellness", label: "Wellness", icon: Sparkles },
-  { id: "culture", label: "Culture", icon: Users },
 ];
 
 const Community = () => {
   const navigate = useNavigate();
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
-  const [filteredEntries, setFilteredEntries] = useState<DiaryEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const categories = [
+    { id: "all", name: "All", icon: "grid_view" },
+    { id: "culture", name: "Culture", icon: "palette" },
+    { id: "education", name: "Education", icon: "school" },
+    { id: "wellness", name: "Wellness", icon: "spa" },
+    { id: "community", name: "Community", icon: "groups" }
+  ];
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/signup");
-        return;
-      }
-      fetchEntries();
-    };
-    checkAuth();
-  }, [navigate]);
+    fetchEntries();
+  }, []);
 
   const fetchEntries = async () => {
-    const { data, error } = await supabase
-      .from("diary_entries")
-      .select("*")
-      .eq("published", true)
-      .order("created_at", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("diary_entries")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-    if (!error && data && data.length > 0) {
-      setEntries(data);
-      setFilteredEntries(data);
-    } else {
-      // Use demo entries if database is empty
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        setEntries(data);
+      } else {
+        setEntries(demoEntries);
+      }
+    } catch (error) {
+      console.error("Error fetching entries:", error);
       setEntries(demoEntries);
-      setFilteredEntries(demoEntries);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    let filtered = entries;
-
-    if (activeCategory !== "all") {
-      filtered = filtered.filter((entry) => entry.category === activeCategory);
-    }
-
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (entry) =>
-          entry.title.toLowerCase().includes(query) ||
-          entry.excerpt?.toLowerCase().includes(query) ||
-          entry.tags?.some((tag) => tag.toLowerCase().includes(query))
-      );
-    }
-
-    setFilteredEntries(filtered);
-  }, [activeCategory, searchQuery, entries]);
-
-  const getCategoryColor = (category: string | null) => {
-    switch (category) {
-      case "strains":
-        return "bg-secondary/20 text-secondary border-secondary/30";
-      case "wellness":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
-      case "culture":
-        return "bg-purple-500/20 text-purple-400 border-purple-500/30";
-      default:
-        return "bg-muted text-muted-foreground";
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (selectedEntry) {
-    return (
-      <>
-        <Helmet>
-          <title>{selectedEntry.title} | Alpha Community</title>
-        </Helmet>
-
-        <div className="min-h-screen bg-background pb-20">
-          <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border">
-            <div className="container mx-auto px-4 py-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedEntry(null)}
-                className="mb-2"
-              >
-                ← Back to Community
-              </Button>
-            </div>
-          </header>
-
-          <article className="container mx-auto px-4 py-6">
-            <div className="max-w-2xl mx-auto">
-              {selectedEntry.category && (
-                <Badge variant="outline" className={cn("mb-4", getCategoryColor(selectedEntry.category))}>
-                  {selectedEntry.category}
-                </Badge>
-              )}
-
-              <h1 className="text-3xl font-display font-bold text-foreground mb-4">
-                {selectedEntry.title}
-              </h1>
-
-              {selectedEntry.created_at && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-                  <Calendar className="w-4 h-4" />
-                  <span>{format(new Date(selectedEntry.created_at), "MMMM d, yyyy")}</span>
-                </div>
-              )}
-
-              <div className="prose prose-invert prose-sm max-w-none">
-                <div className="text-foreground/90 leading-relaxed whitespace-pre-wrap">
-                  {selectedEntry.content}
-                </div>
-              </div>
-
-              {selectedEntry.tags && selectedEntry.tags.length > 0 && (
-                <div className="mt-8 pt-6 border-t border-border">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Tag className="w-4 h-4 text-muted-foreground" />
-                    {selectedEntry.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </article>
-
-          <BottomNav />
-        </div>
-      </>
-    );
-  }
+  const filteredEntries = entries.filter((entry) => {
+    const matchesSearch = entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      entry.excerpt?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = !selectedCategory || selectedCategory === "all" || entry.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <>
       <Helmet>
-        <title>Community | Alpha</title>
-        <meta name="description" content="Explore the Alpha community knowledge hub - strains, wellness, and culture." />
+        <title>Journal | Alpha Appeal</title>
+        <meta name="description" content="Insights, stories, and education from the Alpha Appeal community" />
       </Helmet>
 
-      <div className="min-h-screen bg-background pb-20">
-        <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border">
-          <div className="container mx-auto px-4 py-4">
-            <h1 className="text-2xl font-display font-bold text-foreground mb-4">Community</h1>
+      <div className="min-h-screen bg-background-dark">
+        {/* Hero Section */}
+        <div className="bg-surface-dark border-b border-white/10 py-20">
+          <div className="container mx-auto px-6">
+            <div className="max-w-3xl">
+              <h1 className="font-display text-5xl md:text-6xl font-bold text-white mb-4">
+                The Journal
+              </h1>
+              <p className="text-gray-400 text-lg">
+                Insights, stories, and education from our community of mindful enthusiasts
+              </p>
+            </div>
+          </div>
+        </div>
 
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search entries..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-card border-border"
-              />
+        <div className="container mx-auto px-6 py-12">
+          {/* Filters */}
+          <div className="mb-12">
+            {/* Search */}
+            <div className="max-w-xl mb-8">
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                  search
+                </span>
+                <Input
+                  type="search"
+                  placeholder="Search articles..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 bg-surface-dark border-border-dark h-12 text-white"
+                />
+              </div>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {categories.map((cat) => (
-                <Button
-                  key={cat.id}
-                  variant={activeCategory === cat.id ? "secondary" : "outline"}
-                  size="sm"
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={cn(
-                    "whitespace-nowrap flex items-center gap-2",
-                    activeCategory === cat.id && "bg-secondary text-secondary-foreground"
-                  )}
+            {/* Category Pills */}
+            <div className="flex flex-wrap gap-3">
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id === "all" ? null : category.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${(selectedCategory === category.id || (!selectedCategory && category.id === "all"))
+                      ? "bg-primary border-primary text-white"
+                      : "bg-transparent border-border-dark text-gray-400 hover:border-primary hover:text-primary"
+                    }`}
                 >
-                  <cat.icon className="w-4 h-4" />
-                  {cat.label}
-                </Button>
+                  <span className="material-symbols-outlined text-sm">{category.icon}</span>
+                  <span className="text-sm font-medium">{category.name}</span>
+                </button>
               ))}
             </div>
           </div>
-        </header>
 
-        <main className="container mx-auto px-4 py-6">
-          {loading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-32 bg-card/50 rounded-xl animate-pulse" />
-              ))}
+          {/* Articles Grid */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
             </div>
           ) : filteredEntries.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="text-lg font-medium text-foreground mb-2">No entries found</h3>
-              <p className="text-muted-foreground text-sm">
-                Try adjusting your search or filters
-              </p>
+            <div className="text-center py-20">
+              <span className="material-symbols-outlined text-gray-600 text-6xl mb-4 block">article</span>
+              <p className="text-gray-400">No articles found</p>
             </div>
           ) : (
-            <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredEntries.map((entry) => (
-                <div key={entry.id} className="break-inside-avoid mb-6">
-                  <button
-                    onClick={() => setSelectedEntry(entry)}
-                    className="w-full text-left bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 hover:bg-card/80 transition-colors group shadow-sm hover:shadow-md"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        {entry.category && (
-                          <Badge variant="outline" className={cn("mb-3", getCategoryColor(entry.category))}>
-                            {entry.category}
-                          </Badge>
-                        )}
-                        <h3 className="text-lg font-medium font-display text-foreground group-hover:text-secondary transition-colors leading-tight">
-                          {entry.title}
-                        </h3>
-                      </div>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-secondary transition-colors mt-1" />
+                <article
+                  key={entry.id}
+                  onClick={() => navigate(`/community/${entry.id}`)}
+                  className="card-dark card-hover cursor-pointer group"
+                >
+                  {/* Category Badge */}
+                  {entry.category && (
+                    <div className="mb-4">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs uppercase tracking-wider">
+                        {entry.category}
+                      </span>
                     </div>
+                  )}
 
-                    {entry.excerpt && (
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-3 leading-relaxed">
-                        {entry.excerpt}
-                      </p>
-                    )}
+                  {/* Title */}
+                  <h2 className="font-display text-2xl font-bold text-white mb-3 group-hover:text-primary transition-colors">
+                    {entry.title}
+                  </h2>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-border/30">
-                      {entry.created_at && (
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(entry.created_at), "MMM d, yyyy")}
+                  {/* Excerpt */}
+                  {entry.excerpt && (
+                    <p className="text-gray-400 text-sm mb-4 line-clamp-3">
+                      {entry.excerpt}
+                    </p>
+                  )}
+
+                  {/* Meta */}
+                  <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                    <div className="flex items-center gap-2 text-gray-500 text-xs">
+                      <span className="material-symbols-outlined text-sm">calendar_today</span>
+                      {entry.created_at && format(new Date(entry.created_at), "MMM d, yyyy")}
+                    </div>
+                    <div className="flex items-center gap-1 text-primary text-sm group-hover:translate-x-1 transition-transform">
+                      Read more
+                      <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                    </div>
+                  </div>
+
+                  {/* Tags */}
+                  {entry.tags && entry.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      {entry.tags.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-xs text-gray-500 bg-white/5 px-2 py-1 rounded"
+                        >
+                          #{tag}
                         </span>
-                      )}
-
-                      {entry.tags && entry.tags.length > 0 && (
-                        <div className="flex gap-1 flex-wrap justify-end">
-                          {entry.tags.slice(0, 2).map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 h-5">
-                              {tag}
-                            </Badge>
-                          ))}
-                          {entry.tags.length > 2 && (
-                            <span className="text-[10px] text-muted-foreground flex items-center">+{entry.tags.length - 2}</span>
-                          )}
-                        </div>
-                      )}
+                      ))}
                     </div>
-                  </button>
-                </div>
+                  )}
+                </article>
               ))}
             </div>
           )}
-        </main>
-
-        <BottomNav />
+        </div>
       </div>
     </>
   );

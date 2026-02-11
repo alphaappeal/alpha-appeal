@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ProductGrid, Product } from '@/components/shop/ProductGrid';
-import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabaseClient } from '@/lib/supabase/client';
@@ -37,7 +36,7 @@ const Shop: React.FC = () => {
       };
 
       const data = await supabaseClient.getProducts(filters);
-      
+
       // Apply sorting
       const sortedProducts = sortProducts(data || [], sortBy);
       setProducts(sortedProducts);
@@ -57,7 +56,7 @@ const Shop: React.FC = () => {
   // Sort products based on selected option
   const sortProducts = (products: Product[], sortOption: string): Product[] => {
     const sorted = [...products];
-    
+
     switch (sortOption) {
       case 'price-low':
         return sorted.sort((a, b) => a.price - b.price);
@@ -75,7 +74,7 @@ const Shop: React.FC = () => {
   // Update URL parameters when filters change
   useEffect(() => {
     const params: Record<string, string> = {};
-    
+
     if (searchQuery) params.search = searchQuery;
     if (categoryFilter) params.category = categoryFilter;
     if (sortBy) params.sort = sortBy;
@@ -124,111 +123,136 @@ const Shop: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background-dark">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Shop Our Collection</h1>
-        <p className="text-gray-600">Discover sustainable, hemp-based products and more</p>
+      <div className="bg-surface-dark border-b border-white/10 py-16">
+        <div className="container mx-auto px-6">
+          <div className="max-w-3xl">
+            <h1 className="font-display text-5xl md:text-6xl font-bold text-white mb-4">
+              Shop Collection
+            </h1>
+            <p className="text-gray-400 text-lg">
+              Discover premium cannabis accessories and lifestyle products
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Filters Section */}
-      <Card className="mb-6 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Search Input */}
-          <div className="lg:col-span-2">
-            <Input
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={handleSearch}
-              className="w-full"
-            />
+      <div className="container mx-auto px-6 py-12">
+        {/* Filters Section */}
+        <div className="glass-panel rounded-2xl p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            {/* Search Input */}
+            <div className="lg:col-span-2">
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                  search
+                </span>
+                <Input
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  className="pl-10 bg-surface-dark border-border-dark"
+                />
+              </div>
+            </div>
+
+            {/* Category Filter */}
+            <div>
+              <Select value={categoryFilter} onValueChange={handleCategoryChange}>
+                <SelectTrigger className="w-full bg-surface-dark border-border-dark">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent className="bg-surface-dark border-border-dark">
+                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="accessories">Accessories</SelectItem>
+                  <SelectItem value="wellness">Wellness</SelectItem>
+                  <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                  <SelectItem value="apparel">Apparel</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Sort Options */}
+            <div>
+              <Select value={sortBy} onValueChange={handleSortChange}>
+                <SelectTrigger className="w-full bg-surface-dark border-border-dark">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent className="bg-surface-dark border-border-dark">
+                  <SelectItem value="name">Name A-Z</SelectItem>
+                  <SelectItem value="price-low">Price: Low to High</SelectItem>
+                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  <SelectItem value="sustainability">Sustainability</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          {/* Category Filter */}
-          <div>
-            <Select value={categoryFilter} onValueChange={handleCategoryChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
-                <SelectItem value="fashion">Fashion</SelectItem>
-                <SelectItem value="wellness">Wellness</SelectItem>
-                <SelectItem value="music">Music</SelectItem>
-                <SelectItem value="nfts">NFTs</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Sort Options */}
-          <div>
-            <Select value={sortBy} onValueChange={handleSortChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">Name A-Z</SelectItem>
-                <SelectItem value="price-low">Price: Low to High</SelectItem>
-                <SelectItem value="price-high">Price: High to Low</SelectItem>
-                <SelectItem value="sustainability">Sustainability Score</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Clear Filters */}
-          <div className="flex items-end">
-            <button
-              onClick={clearFilters}
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:border-gray-400 transition-colors"
-            >
-              Clear Filters
-            </button>
+          {/* Price Range Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Min Price (R)</label>
+              <Input
+                type="number"
+                placeholder="0"
+                value={minPrice}
+                onChange={handleMinPriceChange}
+                className="bg-surface-dark border-border-dark"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Max Price (R)</label>
+              <Input
+                type="number"
+                placeholder="1000"
+                value={maxPrice}
+                onChange={handleMaxPriceChange}
+                className="bg-surface-dark border-border-dark"
+              />
+            </div>
+            <div className="flex items-end">
+              <button
+                onClick={clearFilters}
+                className="w-full px-4 py-2 text-sm text-gray-400 hover:text-white border border-border-dark rounded-lg hover:border-primary transition-colors"
+              >
+                Clear Filters
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Price Range Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Min Price</label>
-            <Input
-              type="number"
-              placeholder="0"
-              value={minPrice}
-              onChange={handleMinPriceChange}
-              className="w-full"
-            />
+        {/* Results Info */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="text-sm text-gray-400">
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                Loading products...
+              </span>
+            ) : (
+              <>
+                <span className="text-white font-medium">{products.length}</span> products found
+                {searchQuery && ` for "${searchQuery}"`}
+                {categoryFilter && ` in ${categoryFilter}`}
+              </>
+            )}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Max Price</label>
-            <Input
-              type="number"
-              placeholder="1000"
-              value={maxPrice}
-              onChange={handleMaxPriceChange}
-              className="w-full"
-            />
-          </div>
+          {error && (
+            <div className="text-red-400 text-sm flex items-center gap-2">
+              <span className="material-symbols-outlined text-sm">error</span>
+              {error}
+            </div>
+          )}
         </div>
-      </Card>
 
-      {/* Results Info */}
-      <div className="mb-4 flex items-center justify-between">
-        <div className="text-sm text-gray-600">
-          {isLoading ? 'Loading products...' : `${products.length} products found`}
-          {searchQuery && ` for "${searchQuery}"`}
-          {categoryFilter && ` in ${categoryFilter}`}
-        </div>
-        {error && (
-          <div className="text-red-600 text-sm">{error}</div>
-        )}
+        {/* Product Grid */}
+        <ProductGrid
+          products={products}
+          isLoading={isLoading}
+          isEmpty={products.length === 0 && !isLoading}
+        />
       </div>
-
-      {/* Product Grid */}
-      <ProductGrid
-        products={products}
-        isLoading={isLoading}
-        isEmpty={products.length === 0 && !isLoading}
-      />
     </div>
   );
 };

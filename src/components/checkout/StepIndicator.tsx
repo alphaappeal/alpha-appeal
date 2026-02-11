@@ -1,18 +1,17 @@
 import React from 'react';
-import { CheckCircle, Circle, Clock, Truck, CreditCard, BadgeCheck } from 'lucide-react';
-import { useCheckoutStep } from '@/lib/stores/checkoutStore';
+import { cn } from "@/lib/utils";
 
 interface Step {
   number: number;
   title: string;
-  icon: React.ReactNode;
+  icon: string;
 }
 
 const steps: Step[] = [
-  { number: 1, title: 'Review Cart', icon: <CheckCircle className="w-4 h-4" /> },
-  { number: 2, title: 'Shipping Info', icon: <Truck className="w-4 h-4" /> },
-  { number: 3, title: 'Payment', icon: <CreditCard className="w-4 h-4" /> },
-  { number: 4, title: 'Confirmation', icon: <BadgeCheck className="w-4 h-4" /> }
+  { number: 1, title: 'Review', icon: 'shopping_cart' },
+  { number: 2, title: 'Shipping', icon: 'local_shipping' },
+  { number: 3, title: 'Payment', icon: 'payments' },
+  { number: 4, title: 'Confirm', icon: 'verified' }
 ];
 
 interface StepIndicatorProps {
@@ -21,131 +20,98 @@ interface StepIndicatorProps {
   className?: string;
 }
 
-export const StepIndicator: React.FC<StepIndicatorProps> = ({ 
-  currentStep, 
+export const StepIndicator: React.FC<StepIndicatorProps> = ({
+  currentStep,
   onStepClick,
-  className = '' 
+  className = ''
 }) => {
-  const getStepStatus = (stepNumber: number) => {
-    if (stepNumber < currentStep) return 'completed';
-    if (stepNumber === currentStep) return 'current';
-    return 'pending';
-  };
-
-  const getStepColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'text-green-600 bg-green-100 border-green-200';
-      case 'current': return 'text-blue-600 bg-blue-100 border-blue-200';
-      default: return 'text-gray-400 bg-gray-100 border-gray-200';
-    }
-  };
-
-  const getStepIcon = (step: Step, status: string) => {
-    if (status === 'completed') {
-      return <CheckCircle className="w-4 h-4 text-green-600" />;
-    }
-    return step.icon;
-  };
-
   return (
-    <div className={`space-y-4 ${className}`}>
-      <div className="flex items-center justify-between mb-2">
+    <div className={cn("flex flex-col items-center md:items-end", className)}>
+      <div className="flex items-center gap-4">
         {steps.map((step, index) => {
-          const status = getStepStatus(step.number);
-          const isClickable = onStepClick && step.number < currentStep;
-          
+          const isCompleted = step.number < currentStep;
+          const isCurrent = step.number === currentStep;
+          const isPending = step.number > currentStep;
+          const isClickable = onStepClick && isCompleted;
+
           return (
             <React.Fragment key={step.number}>
-              {/* Step */}
-              <div 
-                className={`
-                  flex flex-col items-center flex-1 group cursor-pointer
-                  ${isClickable ? 'hover:scale-105 transition-transform' : ''}
-                `}
+              {/* Step Item */}
+              <div
+                className={cn(
+                  "flex flex-col items-center gap-2 group relative",
+                  isClickable ? "cursor-pointer" : "cursor-default"
+                )}
                 onClick={() => isClickable && onStepClick(step.number)}
               >
-                {/* Step Circle */}
-                <div className={`
-                  w-10 h-10 rounded-full border-2 flex items-center justify-center
-                  transition-all duration-300 shadow-sm
-                  ${getStepColor(status)}
-                  ${isClickable ? 'hover:shadow-md' : ''}
-                `}>
-                  {getStepIcon(step, status)}
+                {/* Icon Container */}
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border",
+                  isCompleted ? "bg-primary border-primary text-white" : "",
+                  isCurrent ? "bg-primary/10 border-primary text-primary shadow-[0_0_15px_rgba(107,142,107,0.3)]" : "",
+                  isPending ? "bg-white/5 border-white/10 text-gray-500" : ""
+                )}>
+                  {isCompleted ? (
+                    <span className="material-symbols-outlined text-lg">check</span>
+                  ) : (
+                    <span className="material-symbols-outlined text-lg">{step.icon}</span>
+                  )}
                 </div>
 
-                {/* Step Title */}
-                <span className={`
-                  mt-2 text-xs font-medium text-center transition-colors
-                  ${status === 'completed' ? 'text-green-600' : ''}
-                  ${status === 'current' ? 'text-blue-600 font-semibold' : ''}
-                  ${status === 'pending' ? 'text-gray-500' : ''}
-                `}>
+                {/* Step Title (Floating on desktop) */}
+                <span className={cn(
+                  "text-[10px] uppercase tracking-widest font-bold transition-colors",
+                  isCompleted || isCurrent ? "text-primary" : "text-gray-500"
+                )}>
                   {step.title}
                 </span>
 
-                {/* Step Number (for current step) */}
-                {status === 'current' && (
-                  <div className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                    {step.number}
-                  </div>
+                {/* Status Dot for current */}
+                {isCurrent && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-background-dark animate-pulse" />
                 )}
               </div>
 
-              {/* Connector */}
+              {/* Connector Line */}
               {index < steps.length - 1 && (
-                <div className="flex-1 mx-2">
-                  <div className={`
-                    h-0.5 w-full transition-colors duration-300
-                    ${step.number < currentStep ? 'bg-green-300' : 'bg-gray-200'}
-                  `} />
-                </div>
+                <div className={cn(
+                  "w-8 h-[1px] -mt-6",
+                  step.number < currentStep ? "bg-primary" : "bg-white/10"
+                )} />
               )}
             </React.Fragment>
           );
         })}
       </div>
-
-      {/* Step Description */}
-      <div className="text-center">
-        <p className="text-sm text-gray-600">
-          Step {currentStep} of {steps.length}: {steps[currentStep - 1].title}
-        </p>
-        <div className="mt-1 flex items-center justify-center space-x-2 text-xs text-gray-500">
-          <Clock className="w-3 h-3" />
-          <span>Estimated time: {5 + (currentStep * 2)} minutes</span>
-        </div>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
-        />
-      </div>
     </div>
   );
 };
 
-// Compact version for mobile
 export const CompactStepIndicator: React.FC<{ currentStep: number }> = ({ currentStep }) => {
   const step = steps[currentStep - 1];
-  
+
   return (
-    <div className="flex items-center space-x-3 p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-      <div className="flex items-center space-x-2">
-        <div className="w-8 h-8 bg-blue-100 border-2 border-blue-200 rounded-full flex items-center justify-center">
-          <CheckCircle className="w-4 h-4 text-blue-600" />
+    <div className="flex items-center justify-between p-4 glass-panel border border-white/10 rounded-xl">
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary flex items-center justify-center text-primary">
+          <span className="material-symbols-outlined">{step.icon}</span>
         </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-medium text-gray-900">Step {currentStep}</span>
-          <span className="text-xs text-gray-600">{step.title}</span>
+        <div>
+          <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Step {currentStep} of 4</p>
+          <h3 className="font-display font-bold text-white uppercase tracking-wider">{step.title}</h3>
         </div>
       </div>
-      
-      <div className="ml-auto text-xs text-gray-500">
-        {currentStep} of {steps.length}
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4].map(num => (
+          <div
+            key={num}
+            className={cn(
+              "h-1 rounded-full transition-all",
+              num === currentStep ? "w-6 bg-primary" : "w-2 bg-white/10",
+              num < currentStep ? "bg-primary/50" : ""
+            )}
+          />
+        ))}
       </div>
     </div>
   );

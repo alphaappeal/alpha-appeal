@@ -3,21 +3,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { useCheckoutPromo, useCheckoutActions } from '@/lib/stores/checkoutStore';
-import { Percent, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
 export const PromoCodeInput: React.FC = () => {
   const { promoCode, promoCodeValid, promoDiscount } = useCheckoutPromo();
   const { setPromoCode, clearPromoCode } = useCheckoutActions();
   const { toast } = useToast();
-  
+
   const [inputValue, setInputValue] = useState(promoCode || '');
   const [isApplying, setIsApplying] = useState(false);
 
   const handleApplyPromo = async () => {
     if (!inputValue.trim()) {
       toast({
-        title: "Invalid Promo Code",
-        description: "Please enter a promo code.",
+        title: "Input Required",
+        description: "Please define an invitation or promotion certificate identifier.",
         variant: "destructive",
       });
       return;
@@ -27,6 +27,10 @@ export const PromoCodeInput: React.FC = () => {
     try {
       await setPromoCode(inputValue.trim());
       setInputValue('');
+      toast({
+        title: "Certificate Authenticated",
+        description: "Your promotion identifier has been successfully validated.",
+      });
     } catch (error) {
       console.error('Error applying promo code:', error);
     } finally {
@@ -38,8 +42,8 @@ export const PromoCodeInput: React.FC = () => {
     clearPromoCode();
     setInputValue('');
     toast({
-      title: "Promo Code Removed",
-      description: "The promo code has been removed from your order.",
+      title: "Certificate Deactivated",
+      description: "The promotion identifier has been removed from your current order framework.",
     });
   };
 
@@ -50,93 +54,87 @@ export const PromoCodeInput: React.FC = () => {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-900">Promo Code</h3>
+        <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Privilege Certificates</label>
         {promoCodeValid && promoDiscount > 0 && (
-          <div className="flex items-center space-x-1 text-green-600">
-            <CheckCircle className="w-4 h-4" />
-            <span className="text-sm font-medium">
-              Applied: -{promoDiscount.toFixed(2)}
-            </span>
+          <div className="flex items-center gap-2 text-primary animate-in fade-in duration-500">
+            <span className="material-symbols-outlined text-sm">verified</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest">Authenticated</span>
           </div>
         )}
       </div>
 
-      <div className="flex space-x-2">
-        <div className="flex-1 relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Percent className="h-4 w-4 text-gray-400" />
+      <div className="flex gap-3">
+        <div className="flex-1 relative group">
+          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none transition-colors group-focus-within:text-primary text-gray-500">
+            <span className="material-symbols-outlined text-sm">confirmation_number</span>
           </div>
           <Input
             type="text"
-            placeholder="Enter promo code"
+            placeholder="Promotion Identifier"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             disabled={isApplying || promoCodeValid}
-            className="pl-10"
+            className="pl-12 bg-white/5 border-white/5 rounded-xl text-white font-bold h-12 focus-visible:ring-1 focus-visible:ring-primary/30 transition-all placeholder:text-gray-700"
           />
           {promoCodeValid && (
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-              <CheckCircle className="h-4 w-4 text-green-500" />
+            <div className="absolute inset-y-0 right-4 flex items-center">
+              <span className="material-symbols-outlined text-primary text-sm animate-in zoom-in">check_circle</span>
             </div>
           )}
         </div>
-        
+
         {promoCodeValid ? (
           <Button
             variant="outline"
             onClick={handleRemovePromo}
-            className="text-red-600 border-red-200 hover:bg-red-50"
+            className="h-12 border-white/5 bg-white/5 hover:bg-red-500/10 text-gray-500 hover:text-red-400 rounded-xl transition-all font-bold uppercase tracking-widest text-[10px] px-6"
           >
-            <X className="w-4 h-4 mr-2" />
-            Remove
+            Deactivate
           </Button>
         ) : (
           <Button
             onClick={handleApplyPromo}
             disabled={isApplying || !inputValue.trim()}
-            className="bg-gray-900 hover:bg-gray-800"
+            className="h-12 bg-primary hover:bg-primary-dark text-white rounded-xl transition-all font-bold uppercase tracking-widest text-[10px] px-8 shadow-[0_0_15px_rgba(107,142,107,0.2)]"
           >
             {isApplying ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                Applying...
-              </>
+              <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
             ) : (
-              'Apply'
+              'Authenticate'
             )}
           </Button>
         )}
       </div>
 
-      {/* Promo Code Info */}
-      <div className="text-xs text-gray-600 space-y-1">
-        <div className="flex items-center space-x-1">
-          <AlertCircle className="w-3 h-3" />
-          <span>Valid promo codes will be applied automatically</span>
-        </div>
-        <div>• Promo codes are case-sensitive</div>
-        <div>• Only one promo code can be used per order</div>
-        <div>• Promo codes cannot be combined with other offers</div>
-      </div>
-
-      {/* Applied Promo Code Display */}
+      {/* Applied Promo Code Details */}
       {promoCodeValid && promoCode && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              <span className="font-medium text-green-800">Promo Code Applied</span>
+        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 flex items-center justify-between animate-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined">sell</span>
             </div>
-            <div className="text-sm text-green-700 font-medium">
-              Savings: R {promoDiscount.toFixed(2)}
+            <div>
+              <p className="text-white text-[10px] font-bold uppercase tracking-widest">Active Certificate</p>
+              <p className="text-gray-500 text-[10px] font-mono mt-1 font-bold">{promoCode}</p>
             </div>
           </div>
-          <div className="mt-1 text-xs text-green-600">
-            Code: <span className="font-mono font-semibold">{promoCode}</span>
+          <div className="text-right">
+            <p className="text-primary text-sm font-bold">-{promoDiscount.toFixed(2)} Value</p>
+            <p className="text-[9px] text-gray-600 uppercase tracking-widest font-bold mt-1">Order Modification</p>
           </div>
+        </div>
+      )}
+
+      {/* Specification Details */}
+      {!promoCodeValid && (
+        <div className="flex gap-3 px-1">
+          <span className="material-symbols-outlined text-gray-700 text-[14px]">info</span>
+          <p className="text-[9px] text-gray-600 uppercase tracking-[0.1em] font-medium leading-relaxed">
+            Certificates are case-sensitive and restricted to singular use per transaction framework. Combination with exclusive loyalty tiers may be restricted.
+          </p>
         </div>
       )}
     </div>

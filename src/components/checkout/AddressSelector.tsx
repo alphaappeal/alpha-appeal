@@ -1,9 +1,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { useCheckoutActions } from '@/lib/stores/checkoutStore';
 import { ShippingAddress } from '@/lib/types/cart';
-import { Plus, Edit, Trash2, MapPin, Star, CheckCircle } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
 interface AddressSelectorProps {
   type: 'shipping' | 'billing';
@@ -27,125 +26,133 @@ export const AddressSelector: React.FC<AddressSelectorProps> = ({
   const { toast } = useToast();
 
   const formatAddress = (address: ShippingAddress) => {
-    return `${address.street_address}, ${address.city}, ${address.province} ${address.postal_code}, ${address.country}`;
+    return `${address.street_address}, ${address.city}, ${address.province} ${address.postal_code}`;
   };
 
   const handleDeleteAddress = async (addressId: string) => {
     try {
-      // TODO: Add API call to delete address from Supabase
       onDeleteAddress(addressId);
       toast({
-        title: "Address Deleted",
-        description: "The address has been removed from your saved addresses.",
+        title: "Registry Deletion",
+        description: "The specified coordinates have been purged from your logistics registry.",
       });
     } catch (error) {
       console.error('Error deleting address:', error);
       toast({
-        title: "Error",
-        description: "Failed to delete address. Please try again.",
+        title: "Registry Fault",
+        description: "The system encountered a disruption while attempting deletion.",
         variant: "destructive",
       });
     }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium text-gray-700">
-          Select {type === 'shipping' ? 'Shipping' : 'Billing'} Address
-        </h4>
-        <Button
-          variant="outline"
-          size="sm"
+        <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+          {type === 'shipping' ? 'Logistics Registry' : 'Billing Framework'}
+        </label>
+        <button
           onClick={onAddNewAddress}
-          className="text-gray-600 hover:text-gray-900"
+          className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-primary hover:text-primary-dark transition-colors"
         >
-          <Plus className="w-4 h-4 mr-2" />
-          Add New Address
-        </Button>
+          <span className="material-symbols-outlined text-sm">add_location_alt</span>
+          Register New Coordinates
+        </button>
       </div>
 
       {savedAddresses.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {savedAddresses.map((address) => (
             <div
               key={address.id}
-              className={`p-4 border rounded-lg cursor-pointer transition-all ${
+              className={cn(
+                "p-6 rounded-2xl cursor-pointer transition-all duration-500 border relative group overflow-hidden",
                 selectedAddress?.id === address.id
-                  ? 'border-blue-300 bg-blue-50 ring-2 ring-blue-200'
-                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-              }`}
+                  ? "bg-primary/10 border-primary/40 shadow-[0_0_25px_rgba(107,142,107,0.1)]"
+                  : "bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/[0.07]"
+              )}
               onClick={() => onSelectAddress(address)}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-3">
-                  <div className={`p-2 rounded-full ${
+              <div className="flex items-start justify-between relative z-10">
+                <div className="flex items-start gap-5">
+                  <div className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 border flex-shrink-0",
                     selectedAddress?.id === address.id
-                      ? 'bg-blue-100 text-blue-600'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    <MapPin className="w-4 h-4" />
+                      ? "bg-primary border-primary text-white shadow-[0_0_15px_rgba(107,142,107,0.4)]"
+                      : "bg-white/5 border-white/10 text-gray-500 group-hover:border-primary/30 group-hover:text-primary/70"
+                  )}>
+                    <span className="material-symbols-outlined text-xl">location_on</span>
                   </div>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <h5 className="font-medium text-gray-900">{address.full_name}</h5>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3">
+                      <h5 className="font-bold text-white uppercase tracking-wider text-sm truncate">{address.full_name}</h5>
                       {address.is_default && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          <Star className="w-3 h-3 mr-1" />
-                          Default
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[8px] uppercase tracking-widest font-bold">
+                          <span className="material-symbols-outlined text-[10px]">headline</span>
+                          Primary
                         </span>
                       )}
-                      <span className="text-xs text-gray-500 capitalize">{address.address_type}</span>
                     </div>
-                    <p className="text-sm text-gray-600 mt-1">{formatAddress(address)}</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2 leading-relaxed">
+                      {formatAddress(address)}
+                    </p>
                     {address.phone && (
-                      <p className="text-sm text-gray-600 mt-1">Phone: {address.phone}</p>
+                      <div className="flex items-center gap-2 mt-3 text-gray-500">
+                        <span className="material-symbols-outlined text-xs">phone_callback</span>
+                        <span className="text-[9px] uppercase tracking-widest font-bold">{address.phone}</span>
+                      </div>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  {selectedAddress?.id === address.id && (
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                  )}
-                  
-                  <div className="flex space-x-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                <div className="flex items-center gap-4">
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         onEditAddress(address);
                       }}
-                      className="text-gray-600 hover:text-gray-900"
+                      className="w-8 h-8 rounded-full flex items-center justify-center border border-white/5 hover:border-white/20 hover:text-white text-gray-500 transition-all"
                     >
-                      <Edit className="w-4 h-4" />
-                    </Button>
+                      <span className="material-symbols-outlined text-sm">edit</span>
+                    </button>
                     {!address.is_default && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDeleteAddress(address.id);
                         }}
-                        className="text-gray-600 hover:text-red-600"
+                        className="w-8 h-8 rounded-full flex items-center justify-center border border-white/5 hover:border-red-500/20 hover:text-red-400 text-gray-500 transition-all"
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                        <span className="material-symbols-outlined text-sm">delete</span>
+                      </button>
                     )}
+                  </div>
+
+                  <div className={cn(
+                    "w-6 h-6 rounded-full border items-center justify-center flex transition-all duration-500",
+                    selectedAddress?.id === address.id ? "bg-primary border-primary text-white scale-110" : "bg-transparent border-white/10"
+                  )}>
+                    {selectedAddress?.id === address.id && <span className="material-symbols-outlined text-[16px]">check</span>}
                   </div>
                 </div>
               </div>
+
+              {/* Decorative accent for selected */}
+              {selectedAddress?.id === address.id && (
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+              )}
             </div>
           ))}
         </div>
       ) : (
-        <div className="p-4 border border-gray-200 rounded-lg text-center">
-          <div className="text-gray-500 mb-2">No saved addresses found</div>
-          <p className="text-sm text-gray-600">
-            Add a new address to save it for future orders
+        <div className="py-12 px-6 border border-dashed border-white/10 rounded-2xl text-center bg-white/5">
+          <span className="material-symbols-outlined text-gray-700 text-4xl mb-4 block">not_listed_location</span>
+          <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">No registered coordinates discovered</p>
+          <p className="text-[9px] text-gray-600 uppercase tracking-widest font-medium mt-2 leading-relaxed">
+            Please define your delivery framework to initiate logistics.
           </p>
         </div>
       )}

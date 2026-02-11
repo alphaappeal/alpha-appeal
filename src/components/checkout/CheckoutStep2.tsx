@@ -6,13 +6,13 @@ import { AddressForm } from './AddressForm';
 import { AddressSelector } from './AddressSelector';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Copy, MapPin } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
 export const CheckoutStep2: React.FC = () => {
   const { shippingAddress, billingAddress, savedAddresses } = useCheckoutAddresses();
   const { setShippingAddress, setBillingAddress } = useCheckoutActions();
   const { toast } = useToast();
-  
+
   const [useSameAsShipping, setUseSameAsShipping] = React.useState(false);
 
   const handleUseSameAddress = () => {
@@ -20,8 +20,8 @@ export const CheckoutStep2: React.FC = () => {
       setBillingAddress(shippingAddress);
       setUseSameAsShipping(true);
       toast({
-        title: "Billing Address Updated",
-        description: "Billing address set to match shipping address.",
+        title: "Configuration Synchronized",
+        description: "Billing address has been set to match your shipping destination.",
       });
     }
   };
@@ -34,30 +34,32 @@ export const CheckoutStep2: React.FC = () => {
   const handleContinue = () => {
     if (!shippingAddress || !billingAddress) {
       toast({
-        title: "Missing Information",
-        description: "Please provide both shipping and billing addresses.",
+        title: "Incomplete Details",
+        description: "Please provide both shipping and billing addresses to proceed.",
         variant: "destructive",
       });
       return;
     }
-    
-    // Navigate to payment step
+
     window.location.href = '/checkout/payment';
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Shipping Information</h2>
-        <p className="text-gray-600 mt-1">Please provide your shipping and billing addresses.</p>
+    <div className="space-y-12">
+      {/* Header Area */}
+      <div className="border-b border-white/5 pb-8">
+        <h2 className="font-display text-2xl font-bold text-white uppercase tracking-wider">Logistics & Billing</h2>
+        <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-1">Specify your delivery coordinates</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Shipping Address */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">Shipping Address</h3>
-          
-          {/* Address Selector for Shipping */}
+        <div className="space-y-8">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-primary">local_shipping</span>
+            <h3 className="font-bold text-white uppercase tracking-wider text-sm">Shipping Destination</h3>
+          </div>
+
           <AddressSelector
             type="shipping"
             selectedAddress={shippingAddress}
@@ -66,98 +68,93 @@ export const CheckoutStep2: React.FC = () => {
             onAddNewAddress={() => setShippingAddress(null)}
             onEditAddress={(address) => setShippingAddress(address)}
             onDeleteAddress={(addressId) => {
-              // TODO: Implement delete functionality
               console.log('Delete shipping address:', addressId);
             }}
           />
-          
-          {/* Address Form for Shipping */}
-          <AddressForm
-            type="shipping"
-            value={shippingAddress}
-            onChange={setShippingAddress}
-            savedAddresses={savedAddresses.filter(addr => addr.address_type === 'shipping')}
-          />
+
+          <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
+            <AddressForm
+              type="shipping"
+              value={shippingAddress}
+              onChange={setShippingAddress}
+              savedAddresses={savedAddresses.filter(addr => addr.address_type === 'shipping')}
+            />
+          </div>
         </div>
 
         {/* Billing Address */}
-        <div className="space-y-4">
+        <div className="space-y-8">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Billing Address</h3>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="sameAsShipping"
-                  checked={useSameAsShipping}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      handleUseSameAddress();
-                    } else {
-                      handleUseDifferentBilling();
-                    }
-                  }}
-                />
-                <Label htmlFor="sameAsShipping" className="text-sm font-medium">
-                  Same as shipping
-                </Label>
-              </div>
-              <Button
-                variant="outline"
-                onClick={handleUseSameAddress}
-                disabled={!shippingAddress || useSameAsShipping}
-                className="text-sm"
-              >
-                <Copy className="w-4 h-4 mr-2" />
-                Copy from Shipping
-              </Button>
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-primary">receipt</span>
+              <h3 className="font-bold text-white uppercase tracking-wider text-sm">Billing Details</h3>
+            </div>
+
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/5 rounded-full border border-white/10">
+              <Checkbox
+                id="sameAsShipping"
+                checked={useSameAsShipping}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    handleUseSameAddress();
+                  } else {
+                    handleUseDifferentBilling();
+                  }
+                }}
+                className="border-primary data-[state=checked]:bg-primary"
+              />
+              <Label htmlFor="sameAsShipping" className="text-[10px] uppercase tracking-widest font-bold text-gray-400 cursor-pointer">
+                Mirror Shipping
+              </Label>
             </div>
           </div>
-          
-          {/* Show billing address preview if using same as shipping */}
+
           {useSameAsShipping && shippingAddress && (
-            <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-100 rounded-full">
-                  <MapPin className="w-4 h-4 text-blue-600" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-blue-900">Using Shipping Address</h4>
-                  <p className="text-sm text-blue-700">
-                    {shippingAddress.full_name}<br />
-                    {shippingAddress.street_address}, {shippingAddress.city}, {shippingAddress.province} {shippingAddress.postal_code}
-                  </p>
-                </div>
+            <div className="p-6 glass-panel border border-primary/20 rounded-2xl bg-primary/5 flex gap-4 animate-in fade-in slide-in-from-top-2">
+              <span className="material-symbols-outlined text-primary">check_circle</span>
+              <div>
+                <h4 className="text-white text-xs font-bold uppercase tracking-wider">Synchronized with Shipping</h4>
+                <p className="text-gray-400 text-xs mt-2 leading-relaxed">
+                  {shippingAddress.full_name}<br />
+                  {shippingAddress.street_address}, {shippingAddress.city}<br />
+                  {shippingAddress.province}, {shippingAddress.postal_code}
+                </p>
               </div>
             </div>
           )}
-          
-          {/* Address Form for Billing (only show if not using same as shipping) */}
+
           {!useSameAsShipping && (
-            <AddressForm
-              type="billing"
-              value={billingAddress}
-              onChange={setBillingAddress}
-              savedAddresses={savedAddresses.filter(addr => addr.address_type === 'billing')}
-            />
+            <div className="bg-white/5 rounded-2xl p-6 border border-white/5 animate-in fade-in slide-in-from-top-2">
+              <AddressForm
+                type="billing"
+                value={billingAddress}
+                onChange={setBillingAddress}
+                savedAddresses={savedAddresses.filter(addr => addr.address_type === 'billing')}
+              />
+            </div>
           )}
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-        <Button
-          variant="outline"
+      {/* Footer Actions */}
+      <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row gap-8 items-center justify-between">
+        <button
           onClick={() => window.location.href = '/checkout/review'}
+          className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-gray-400 hover:text-white transition-colors group"
         >
-          Back to Review
-        </Button>
-        
+          <span className="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
+          Back to Inventory Review
+        </button>
+
         <Button
           onClick={handleContinue}
           disabled={!shippingAddress || !billingAddress}
-          className="bg-green-600 hover:bg-green-700"
+          className="px-10 py-6 bg-primary hover:bg-primary-dark text-white font-bold uppercase tracking-widest text-xs h-auto rounded-xl shadow-[0_0_20px_rgba(107,142,107,0.3)] transition-all"
         >
-          Continue to Payment
+          <span className="flex items-center gap-3">
+            Payment Selection
+            <span className="material-symbols-outlined text-sm">arrow_forward</span>
+          </span>
         </Button>
       </div>
     </div>

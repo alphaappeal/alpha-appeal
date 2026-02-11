@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { useCheckoutPayment, useCheckoutPromo, useCheckoutCart, useCheckoutAddresses, useCheckoutActions } from '@/lib/stores/checkoutStore';
-import { useCartStore } from '@/lib/stores/cartStore';
+import { useCheckoutPayment, useCheckoutPromo, useCheckoutCart, useCheckoutActions } from '@/lib/stores/checkoutStore';
 import { PaymentMethods } from './PaymentMethods';
-import { PayFastButton } from './PayFastButton';
 import { formatZAR } from '@/lib/currency';
-import { CreditCard, Truck, Percent, Star, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { cn } from "@/lib/utils";
 
 export const CheckoutStep3: React.FC = () => {
   const { paymentMethod, loyaltyPointsUsed } = useCheckoutPayment();
@@ -15,7 +12,7 @@ export const CheckoutStep3: React.FC = () => {
   const cartItems = useCheckoutCart();
   const { createOrder, validateOrder } = useCheckoutActions();
   const { toast } = useToast();
-  
+
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Calculate totals
@@ -27,8 +24,8 @@ export const CheckoutStep3: React.FC = () => {
   const handlePlaceOrder = async () => {
     if (!paymentMethod) {
       toast({
-        title: "No Payment Method",
-        description: "Please select a payment method before placing your order.",
+        title: "Secure Selection Required",
+        description: "Please designate your preferred payment architecture to authorize the transaction.",
         variant: "destructive",
       });
       return;
@@ -36,34 +33,31 @@ export const CheckoutStep3: React.FC = () => {
 
     setIsProcessing(true);
     try {
-      // Validate order first
       const isValid = await validateOrder();
-      
+
       if (!isValid) {
         toast({
-          title: "Order Validation Failed",
-          description: "Please check your order details and try again.",
+          title: "Authorization Verification Failed",
+          description: "Our security protocols identified a discrepancy. Please re-verify order configurations.",
           variant: "destructive",
         });
         return;
       }
 
-      // Create order
       const orderId = await createOrder('current_user_id'); // Would get actual user ID
-      
+
       toast({
-        title: "Order Created Successfully",
-        description: `Your order #${orderId} has been created.`,
+        title: "Transaction Successful",
+        description: `Reference #${orderId} has been successfully authenticated.`,
       });
 
-      // Navigate to confirmation
       window.location.href = `/checkout/confirmation?order=${orderId}`;
-      
+
     } catch (error) {
       console.error('Error placing order:', error);
       toast({
-        title: "Order Failed",
-        description: "Failed to place your order. Please try again.",
+        title: "Authentication Fault",
+        description: "The secure gateway encountered a disruption. Please re-initiate the request.",
         variant: "destructive",
       });
     } finally {
@@ -75,27 +69,27 @@ export const CheckoutStep3: React.FC = () => {
     switch (paymentMethod) {
       case 'payfast':
         return {
-          title: 'PayFast Payment',
-          description: 'Secure online payment processing',
-          icon: <CreditCard className="w-5 h-5" />
+          title: 'PayFast Secure Gateway',
+          description: 'South Africa\'s premier encrypted payment processor',
+          icon: 'shield_locked'
         };
       case 'cod':
         return {
-          title: 'Cash on Delivery',
-          description: 'Pay when your order is delivered',
-          icon: <Truck className="w-5 h-5" />
+          title: 'Direct Hand-over',
+          description: 'Settle via cash or card upon secure delivery',
+          icon: 'handshake'
         };
       case 'loyalty_points':
         return {
-          title: 'Loyalty Points Payment',
-          description: `Using ${loyaltyPointsUsed} loyalty points`,
-          icon: <Star className="w-5 h-5" />
+          title: 'Alpha Privilege Points',
+          description: `Redeeming ${loyaltyPointsUsed} heritage points`,
+          icon: 'stars'
         };
       default:
         return {
-          title: 'Select Payment Method',
-          description: 'Choose how you want to pay',
-          icon: <AlertCircle className="w-5 h-5" />
+          title: 'Awaiting Selection',
+          description: 'Please define your settlement framework',
+          icon: 'lock'
         };
     }
   };
@@ -103,133 +97,104 @@ export const CheckoutStep3: React.FC = () => {
   const paymentDetails = getPaymentMethodDetails();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Payment Method</h2>
-        <p className="text-gray-600 mt-1">Choose how you want to pay for your order.</p>
+    <div className="space-y-12">
+      {/* Header Area */}
+      <div className="border-b border-white/5 pb-8">
+        <h2 className="font-display text-2xl font-bold text-white uppercase tracking-wider">Financial Authentication</h2>
+        <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-1">Select your preferred settlement framework</p>
       </div>
 
-      {/* Payment Methods Selection */}
-      <div className="space-y-6">
-        <PaymentMethods />
-      </div>
-
-      {/* Order Summary */}
-      <div className="border-t border-gray-200 pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
-        
-        <div className="space-y-3 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-600">Subtotal</span>
-            <span>{formatZAR(subtotal)}</span>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        {/* Payment Selection */}
+        <div className="space-y-8">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-primary">payments</span>
+            <h3 className="font-bold text-white uppercase tracking-wider text-sm">Settlement Methods</h3>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Shipping</span>
-            <span>{formatZAR(shipping)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">VAT (15%)</span>
-            <span>{formatZAR(vat)}</span>
-          </div>
-          
-          {promoDiscount > 0 && (
-            <div className="flex justify-between text-green-600 font-medium">
-              <span>Promo Code Applied</span>
-              <span>- {formatZAR(promoDiscount)}</span>
-            </div>
-          )}
-          
-          {loyaltyPointsUsed > 0 && (
-            <div className="flex justify-between text-blue-600 font-medium">
-              <span>Loyalty Points Used</span>
-              <span>- {formatZAR(loyaltyPointsUsed)}</span>
-            </div>
-          )}
-          
-          <div className="border-t border-gray-200 pt-2 flex justify-between font-semibold text-lg">
-            <span>Total</span>
-            <span>{formatZAR(total)}</span>
+          <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
+            <PaymentMethods />
           </div>
         </div>
-      </div>
 
-      {/* Payment Method Summary */}
-      {paymentMethod && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-full text-blue-600">
-              {paymentDetails.icon}
+        {/* Payment Details & Instructions */}
+        <div className="space-y-8">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-primary">info</span>
+            <h3 className="font-bold text-white uppercase tracking-wider text-sm">Framework Specifications</h3>
+          </div>
+
+          <div className={cn(
+            "p-8 rounded-2xl border transition-all duration-500 flex gap-6",
+            paymentMethod
+              ? "glass-panel border-primary/20 bg-primary/5 shadow-[0_0_30px_rgba(107,142,107,0.1)]"
+              : "bg-white/5 border-white/10 opacity-50"
+          )}>
+            <div className={cn(
+              "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-colors",
+              paymentMethod ? "bg-primary text-white" : "bg-white/10 text-gray-500"
+            )}>
+              <span className="material-symbols-outlined">{paymentDetails.icon}</span>
             </div>
             <div>
-              <h4 className="font-medium text-blue-900">{paymentDetails.title}</h4>
-              <p className="text-sm text-blue-700">{paymentDetails.description}</p>
-            </div>
-            <div className="ml-auto">
-              <CheckCircle className="w-5 h-5 text-green-500" />
-            </div>
-          </div>
-        </div>
-      )}
+              <h4 className="text-white text-sm font-bold uppercase tracking-wider">{paymentDetails.title}</h4>
+              <p className="text-gray-400 text-xs mt-2 leading-relaxed font-medium">{paymentDetails.description}</p>
 
-      {/* Payment Instructions */}
-      <div className="border-t border-gray-200 pt-6">
-        <h4 className="font-medium text-gray-900 mb-2">Payment Instructions</h4>
-        
-        {paymentMethod === 'payfast' && (
-          <div className="text-sm text-gray-600 space-y-2">
-            <p>• You will be redirected to PayFast for secure payment processing</p>
-            <p>• Supported payment methods: Credit Card, EFT, SnapScan</p>
-            <p>• Your order will be confirmed once payment is successful</p>
-            <p>• You will receive a confirmation email with order details</p>
+              {paymentMethod && (
+                <div className="mt-6 space-y-3 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center gap-2 text-[10px] text-primary uppercase tracking-widest font-bold">
+                    <span className="material-symbols-outlined text-xs">verified_user</span>
+                    Encrypted Protocol Active
+                  </div>
+
+                  <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold leading-relaxed">
+                    {paymentMethod === 'payfast' && "Redirect to secure vaults will occur upon authorization."}
+                    {paymentMethod === 'cod' && "Valid identification is required for delivery authentication."}
+                    {paymentMethod === 'loyalty_points' && "Privilege point deduction is instantaneous and non-reversible."}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        )}
-        
-        {paymentMethod === 'cod' && (
-          <div className="text-sm text-gray-600 space-y-2">
-            <p>• Pay in cash when your order is delivered</p>
-            <p>• Valid ID required for verification</p>
-            <p>• Delivery available Monday-Saturday, 9 AM - 6 PM</p>
-            <p>• Please ensure someone is available to receive the order</p>
-          </div>
-        )}
-        
-        {paymentMethod === 'loyalty_points' && (
-          <div className="text-sm text-gray-600 space-y-2">
-            <p>• Loyalty points will be deducted from your account</p>
-            <p>• Points are non-refundable once used</p>
-            <p>• Order will be processed immediately</p>
-            <p>• You will receive a confirmation email</p>
-          </div>
-        )}
-        
-        {!paymentMethod && (
-          <div className="text-sm text-gray-600">
-            Please select a payment method to proceed with your order.
-          </div>
-        )}
+
+          {!paymentMethod && (
+            <div className="flex items-start gap-3 p-6 bg-white/5 rounded-2xl border border-white/5">
+              <span className="material-symbols-outlined text-gray-500 text-sm">help</span>
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold leading-relaxed">
+                Choose a method on the left to view specific protocol requirements and instructions.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-        <Button
-          variant="outline"
+      {/* Footer Actions */}
+      <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row gap-8 items-center justify-between">
+        <button
           onClick={() => window.location.href = '/checkout/shipping'}
+          className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-gray-400 hover:text-white transition-colors group"
         >
-          Back to Shipping
-        </Button>
-        
+          <span className="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
+          Return to Logistics
+        </button>
+
         <Button
           onClick={handlePlaceOrder}
           disabled={isProcessing || !paymentMethod}
-          className="bg-green-600 hover:bg-green-700"
+          className="px-12 py-8 bg-primary hover:bg-primary-dark text-white font-bold uppercase tracking-widest text-xs h-auto rounded-xl shadow-[0_0_30px_rgba(107,142,107,0.3)] transition-all relative overflow-hidden group min-w-[280px]"
         >
           {isProcessing ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-              Processing...
-            </>
+            <span className="flex items-center gap-3">
+              <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+              Authenticating...
+            </span>
           ) : (
-            `Place Order • ${formatZAR(total)}`
+            <div className="flex flex-col items-center">
+              <span className="flex items-center gap-3">
+                Authorize Transaction
+                <span className="material-symbols-outlined text-sm">lock</span>
+              </span>
+              <span className="text-[10px] opacity-60 mt-1 font-normal tracking-normal lowercase italic">Final Commitment • {formatZAR(total)}</span>
+            </div>
           )}
         </Button>
       </div>

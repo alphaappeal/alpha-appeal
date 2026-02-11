@@ -1,11 +1,8 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
-import alphaLogoLight from "@/assets/alpha-logo-light.png";
 import alphaLogoDark from "@/assets/alpha-logo-dark.png";
 import { cn } from "@/lib/utils";
 
@@ -18,132 +15,129 @@ const Header = () => {
 
     const navItems = [
         { name: "Shop", href: "/shop" },
-        { name: "Subscription", href: "/subscription" },
-        { name: "Music", href: "/music" },
-        { name: "NFTs", href: "/nfts" },
-        { name: "Learn", href: "/learn" },
+        { name: "Membership", href: "/subscription" },
+        { name: "About", href: "/about" },
+        { name: "Journal", href: "/community" },
     ];
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-16 items-center justify-between">
-                {/* Mobile Menu */}
-                <Sheet>
-                    <SheetTrigger asChild>
-                        <Button variant="ghost" className="md:hidden" size="icon">
-                            <Menu className="h-5 w-5" />
-                            <span className="sr-only">Toggle menu</span>
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left">
-                        <div className="flex flex-col gap-6 mt-8">
-                            <Link to="/" className="flex items-center gap-2">
-                                <img src={alphaLogoLight} alt="Alpha Appeal" className="h-8 w-auto dark:hidden" />
-                                <img src={alphaLogoDark} alt="Alpha Appeal" className="h-8 w-auto hidden dark:block" />
-                            </Link>
-                            <nav className="flex flex-col gap-4">
-                                {navItems.map((item) => (
-                                    <Link
-                                        key={item.href}
-                                        to={item.href}
-                                        className={cn(
-                                            "text-lg font-medium transition-colors hover:text-primary",
-                                            location.pathname === item.href
-                                                ? "text-foreground"
-                                                : "text-muted-foreground"
-                                        )}
-                                    >
-                                        {item.name}
-                                    </Link>
-                                ))}
-                            </nav>
-                        </div>
-                    </SheetContent>
-                </Sheet>
-
-                {/* Logo */}
-                <div className="flex items-center gap-2">
-                    <Link to="/" className="flex items-center gap-2">
-                        <img src={alphaLogoLight} alt="Alpha Appeal" className="h-8 w-auto dark:hidden" />
-                        <img src={alphaLogoDark} alt="Alpha Appeal" className="h-8 w-auto hidden dark:block" />
-                    </Link>
-                </div>
-
-                {/* Desktop Nav */}
-                <nav className="hidden md:flex items-center gap-6">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.href}
-                            to={item.href}
-                            className={cn(
-                                "text-sm font-medium transition-colors hover:text-primary",
-                                location.pathname === item.href
-                                    ? "text-foreground"
-                                    : "text-muted-foreground"
-                            )}
-                        >
-                            {item.name}
+        <header className="fixed top-0 left-0 right-0 z-50 glass-nav border-b border-white/10">
+            <div className="container mx-auto max-w-7xl px-6 lg:px-12">
+                <div className="flex items-center justify-between h-20">
+                    {/* Logo */}
+                    <div className="flex items-center gap-4">
+                        <Link to="/" className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary text-3xl">spa</span>
+                            <h2 className="font-display text-2xl font-bold tracking-widest text-white uppercase">
+                                Alpha
+                            </h2>
                         </Link>
-                    ))}
-                </nav>
+                    </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                    {isSearchOpen ? (
-                        <div className="hidden md:flex items-center animate-in fade-in slide-in-from-right-4">
-                            <Input
-                                type="search"
-                                placeholder="Search products..."
-                                className="w-64 h-9"
-                                autoFocus
-                                onBlur={() => setIsSearchOpen(false)}
-                            />
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="ml-1"
-                                onClick={() => setIsSearchOpen(false)}
+                    {/* Desktop Navigation */}
+                    <nav className="hidden md:flex items-center gap-10">
+                        {navItems.map((item) => (
+                            <Link
+                                key={item.href}
+                                to={item.href}
+                                className={cn(
+                                    "text-sm font-medium tracking-wide uppercase transition-colors",
+                                    location.pathname === item.href
+                                        ? "text-primary border-b border-primary/50"
+                                        : "text-gray-300 hover:text-primary"
+                                )}
                             >
-                                <X className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    ) : (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setIsSearchOpen(true)}
-                            className="hidden md:flex"
-                        >
-                            <Search className="h-5 w-5" />
-                            <span className="sr-only">Search</span>
-                        </Button>
-                    )}
+                                {item.name}
+                            </Link>
+                        ))}
+                    </nav>
 
-                    <Link to="/cart">
-                        <Button variant="ghost" size="icon" className="relative">
-                            <ShoppingCart className="h-5 w-5" />
-                            <span className="sr-only">Cart</span>
-                            {/* TODO: Add cart count badge */}
-                        </Button>
-                    </Link>
+                    {/* Actions */}
+                    <div className="flex items-center gap-4">
+                        {/* Search */}
+                        {isSearchOpen ? (
+                            <div className="hidden md:flex items-center animate-in fade-in slide-in-from-right-4">
+                                <Input
+                                    type="search"
+                                    placeholder="Search..."
+                                    className="w-64 h-10 bg-surface-dark border-border-dark"
+                                    autoFocus
+                                    onBlur={() => setIsSearchOpen(false)}
+                                />
+                                <button
+                                    className="ml-2 text-gray-400 hover:text-white"
+                                    onClick={() => setIsSearchOpen(false)}
+                                >
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => setIsSearchOpen(true)}
+                                className="hidden md:flex items-center justify-center h-10 w-10 rounded-full hover:bg-white/5 transition-colors text-white"
+                            >
+                                <span className="material-symbols-outlined">search</span>
+                            </button>
+                        )}
 
-                    {isAuthenticated ? (
-                        <Link to="/profile">
-                            <Button variant="ghost" size="icon">
-                                <User className="h-5 w-5" />
-                                <span className="sr-only">Profile</span>
-                            </Button>
+                        {/* Cart */}
+                        <Link to="/cart">
+                            <button className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-white/5 transition-colors text-white relative">
+                                <span className="material-symbols-outlined">shopping_bag</span>
+                                {/* TODO: Add cart count badge */}
+                            </button>
                         </Link>
-                    ) : (
-                        <Link to="/auth">
-                            <Button variant="default" size="sm" className="hidden md:flex">
-                                Sign In
-                            </Button>
-                            <Button variant="ghost" size="icon" className="md:hidden">
-                                <User className="h-5 w-5" />
-                            </Button>
-                        </Link>
-                    )}
+
+                        {/* Account */}
+                        {isAuthenticated ? (
+                            <Link to="/profile">
+                                <button className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-white/5 transition-colors text-white">
+                                    <span className="material-symbols-outlined">account_circle</span>
+                                </button>
+                            </Link>
+                        ) : (
+                            <Link to="/auth/login">
+                                <button className="hidden md:flex items-center justify-center h-10 w-10 rounded-full hover:bg-white/5 transition-colors text-white">
+                                    <span className="material-symbols-outlined">account_circle</span>
+                                </button>
+                            </Link>
+                        )}
+
+                        {/* Mobile Menu */}
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <button className="md:hidden flex items-center justify-center h-10 w-10 rounded-full hover:bg-white/5 transition-colors text-white">
+                                    <span className="material-symbols-outlined">menu</span>
+                                </button>
+                            </SheetTrigger>
+                            <SheetContent side="right" className="bg-background-dark border-border-dark">
+                                <div className="flex flex-col gap-6 mt-8">
+                                    <Link to="/" className="flex items-center gap-2 mb-4">
+                                        <span className="material-symbols-outlined text-primary text-3xl">spa</span>
+                                        <h2 className="font-display text-xl font-bold tracking-widest text-white uppercase">
+                                            Alpha
+                                        </h2>
+                                    </Link>
+                                    <nav className="flex flex-col gap-4">
+                                        {navItems.map((item) => (
+                                            <Link
+                                                key={item.href}
+                                                to={item.href}
+                                                className={cn(
+                                                    "text-lg font-medium transition-colors",
+                                                    location.pathname === item.href
+                                                        ? "text-primary"
+                                                        : "text-gray-300 hover:text-primary"
+                                                )}
+                                            >
+                                                {item.name}
+                                            </Link>
+                                        ))}
+                                    </nav>
+                                </div>
+                            </SheetContent>
+                        </Sheet>
+                    </div>
                 </div>
             </div>
         </header>
