@@ -1,135 +1,73 @@
-# Alpha Appeal - Cannabis Lifestyle Platform
+# Welcome to your Lovable project
 
-## Project Overview
+## Project info
 
-Alpha Appeal is South Africa's most intentional lifestyle movement, offering premium curated cannabis experiences delivered monthly. This project represents a complete cannabis lifestyle subscription service with e-commerce, community features, and vendor management.
+**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
 
-## Technologies Used
+## How can I edit this code?
 
-- **Frontend**: React 18, TypeScript, Vite
-- **Styling**: Tailwind CSS, shadcn/ui components
-- **State Management**: TanStack Query (React Query)
-- **Routing**: React Router DOM
-- **Backend**: Supabase (PostgreSQL, Auth, Storage)
-- **Build Tools**: Vite, ESLint, TypeScript
-- **Deployment**: Vercel
+There are several ways of editing your application.
 
-## Local Development Setup
+**Use Lovable**
 
-### Prerequisites
+Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
 
-- Node.js 18+ and npm
-- [Install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Changes made via Lovable will be committed automatically to this repo.
 
-### Installation
+**Use your preferred IDE**
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/alphaappeal/alpha-appeal.git
-   cd alpha-appeal
-   ```
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-3. **Set up environment variables**
-   Create a `.env` file in the root directory:
-   ```env
-   VITE_SUPABASE_PROJECT_ID="your-project-id"
-   VITE_SUPABASE_PUBLISHABLE_KEY="your-publishable-key"
-   VITE_SUPABASE_URL="https://your-project.supabase.co"
-   ```
+Follow these steps:
 
-4. **Start development server**
-   ```bash
-   npm run dev
-   ```
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
 
-   The application will be available at `http://localhost:8080`
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
 
-### Development Scripts
+# Step 3: Install the necessary dependencies.
+npm i
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run build:dev` - Build for development
-- `npm run lint` - Run ESLint
-- `npm run preview` - Preview production build
-
-## Project Structure
-
-```
-src/
-├── components/          # Reusable UI components
-├── pages/              # Page components
-├── hooks/              # Custom React hooks
-├── integrations/       # External service integrations
-├── lib/               # Utility functions
-├── data/              # Static data and configurations
-└── assets/            # Images, icons, and other assets
+# Step 4: Start the development server with auto-reloading and an instant preview.
+npm run dev
 ```
 
-## Features
+**Edit a file directly in GitHub**
 
-### Core Functionality
-- **Membership Tiers**: Three-tier subscription system
-- **E-commerce**: Product catalog and checkout flow
-- **Community**: User profiles, social features, and forums
-- **Vendor Portal**: Partner management and product inventory
-- **Admin Dashboard**: Complete administrative control
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
 
-### Key Pages
-- **Home**: Landing page with membership information
-- **Shop**: Product catalog and purchasing
-- **Community**: Social features and user interactions
-- **Map**: Location-based partner discovery
-- **Profile**: User account management
-- **Admin**: Administrative dashboard
+**Use GitHub Codespaces**
 
-## Database Schema
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-The application uses Supabase with the following main tables:
+## What technologies are used for this project?
 
-- `alpha_partners` - Partner/vendor information
-- `partner_products` - Product inventory
-- `vendor_accounts` - Vendor user management
-- `profiles` - User profiles and authentication
-- `memberships` - Subscription management
+This project is built with:
 
-## Deployment
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
 
-### Vercel Deployment
+## How can I deploy this project?
 
-1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Configure build settings:
-   - Build command: `npm run build`
-   - Output directory: `dist`
-   - Install command: `npm install`
+Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
 
-### Local Production Build
+## Can I connect a custom domain to my Lovable project?
 
-```bash
-npm run build
-npm run preview
-```
+Yes, you can!
 
-## Contributing
+To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License.
-
-## Support
-
-For support and questions:
-- Check the [Issues](https://github.com/alphaappeal/alpha-appeal/issues) section
-- Contact the development team
-- Review the Supabase documentation for backend-related queries
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)

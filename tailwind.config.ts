@@ -14,83 +14,63 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "Manrope", "system-ui", "sans-serif"],
-        serif: ["Playfair Display", "Georgia", "serif"],
+        sans: ["Outfit", "system-ui", "sans-serif"],
         display: ["Playfair Display", "Georgia", "serif"],
-        body: ["Inter", "Manrope", "sans-serif"],
       },
       colors: {
-        // Premium Color Palette
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#6b8e6b",
-          dark: "#557255",
-          light: "#7fa87f",
-          foreground: "#ffffff",
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
         },
-
-        // Dark Theme Backgrounds
-        "background-dark": "#0a0a0a",
-        "surface-dark": "#121212",
-        "card-dark": "#141514",
-        "panel-dark": "#1a1c1a",
-        "surface-highlight": "#1a1a1a",
-
-        // Borders
-        "border-dark": "#262626",
-        "border-subtle": "#2f322f",
-
-        // Legacy Shadcn colors (for compatibility)
-        border: "hsl(var(--border-dark))",
-        input: "#262626",
-        ring: "#6b8e6b",
-        background: "#0a0a0a",
-        foreground: "#ffffff",
         secondary: {
-          DEFAULT: "#121212",
-          foreground: "#ffffff",
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
-          DEFAULT: "#ef4444",
-          foreground: "#ffffff",
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
-          DEFAULT: "#262626",
-          foreground: "#a3a3a3",
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "#6b8e6b",
-          foreground: "#ffffff",
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
         popover: {
-          DEFAULT: "#141514",
-          foreground: "#ffffff",
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
         },
         card: {
-          DEFAULT: "#141514",
-          foreground: "#ffffff",
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
-
-        // Alpha Brand Colors (legacy)
         gold: {
-          DEFAULT: "#d4af37",
-          foreground: "#0a0a0a",
+          DEFAULT: "hsl(var(--gold))",
+          foreground: "hsl(var(--gold-foreground))",
         },
         alpha: {
-          charcoal: "#1a1a1a",
-          black: "#0a0a0a",
-          sage: "#6b8e6b",
-          gold: "#d4af37",
-          smoke: "#a3a3a3",
+          charcoal: "hsl(var(--alpha-charcoal))",
+          black: "hsl(var(--alpha-deep-black))",
+          sage: "hsl(var(--alpha-sage))",
+          gold: "hsl(var(--alpha-gold))",
+          smoke: "hsl(var(--alpha-smoke))",
         },
         sidebar: {
-          DEFAULT: "#0a0a0a",
-          foreground: "#ffffff",
-          primary: "#6b8e6b",
-          "primary-foreground": "#ffffff",
-          accent: "#262626",
-          "accent-foreground": "#ffffff",
-          border: "#262626",
-          ring: "#6b8e6b",
+          DEFAULT: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
         },
       },
       borderRadius: {
