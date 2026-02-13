@@ -260,6 +260,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "user_starred_posts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "comments_strain_id_fkey"
             columns: ["strain_id"]
             isOneToOne: false
@@ -310,6 +317,7 @@ export type Database = {
           experience_rating: number | null
           id: string
           published: boolean | null
+          search_vector: unknown
           stars: number | null
           strain_id: string | null
           strain_name: string | null
@@ -329,6 +337,7 @@ export type Database = {
           experience_rating?: number | null
           id?: string
           published?: boolean | null
+          search_vector?: unknown
           stars?: number | null
           strain_id?: string | null
           strain_name?: string | null
@@ -348,6 +357,7 @@ export type Database = {
           experience_rating?: number | null
           id?: string
           published?: boolean | null
+          search_vector?: unknown
           stars?: number | null
           strain_id?: string | null
           strain_name?: string | null
@@ -778,6 +788,7 @@ export type Database = {
           id: string
           parent_comment_id: string | null
           post_id: string | null
+          strain_id: string | null
           updated_at: string | null
           upvotes: number | null
           user_id: string | null
@@ -789,6 +800,7 @@ export type Database = {
           id?: string
           parent_comment_id?: string | null
           post_id?: string | null
+          strain_id?: string | null
           updated_at?: string | null
           upvotes?: number | null
           user_id?: string | null
@@ -800,6 +812,7 @@ export type Database = {
           id?: string
           parent_comment_id?: string | null
           post_id?: string | null
+          strain_id?: string | null
           updated_at?: string | null
           upvotes?: number | null
           user_id?: string | null
@@ -817,6 +830,20 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "diary_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "user_starred_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comments_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strains"
             referencedColumns: ["id"]
           },
         ]
@@ -988,24 +1015,42 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          email: string | null
           full_name: string | null
           id: string
+          phone: string | null
+          preferences: Json | null
+          tier: string | null
           updated_at: string | null
           username: string | null
           website: string | null
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          email?: string | null
           full_name?: string | null
           id: string
+          phone?: string | null
+          preferences?: Json | null
+          tier?: string | null
           updated_at?: string | null
           username?: string | null
           website?: string | null
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          email?: string | null
           full_name?: string | null
           id?: string
+          phone?: string | null
+          preferences?: Json | null
+          tier?: string | null
           updated_at?: string | null
           username?: string | null
           website?: string | null
@@ -1074,6 +1119,8 @@ export type Database = {
           most_common_terpene: string | null
           name: string
           overall_rating: number | null
+          published: boolean | null
+          search_vector: unknown
           slug: string | null
           stars: number | null
           thc_level: string | null
@@ -1092,6 +1139,8 @@ export type Database = {
           most_common_terpene?: string | null
           name: string
           overall_rating?: number | null
+          published?: boolean | null
+          search_vector?: unknown
           slug?: string | null
           stars?: number | null
           thc_level?: string | null
@@ -1110,6 +1159,8 @@ export type Database = {
           most_common_terpene?: string | null
           name?: string
           overall_rating?: number | null
+          published?: boolean | null
+          search_vector?: unknown
           slug?: string | null
           stars?: number | null
           thc_level?: string | null
@@ -1282,23 +1333,35 @@ export type Database = {
       users: {
         Row: {
           avatar_url: string | null
+          created_at: string | null
+          dob: string | null
           email: string
           full_name: string | null
           id: string
+          is_admin: boolean | null
+          updated_at: string | null
           username: string | null
         }
         Insert: {
           avatar_url?: string | null
+          created_at?: string | null
+          dob?: string | null
           email: string
           full_name?: string | null
           id: string
+          is_admin?: boolean | null
+          updated_at?: string | null
           username?: string | null
         }
         Update: {
           avatar_url?: string | null
+          created_at?: string | null
+          dob?: string | null
           email?: string
           full_name?: string | null
           id?: string
+          is_admin?: boolean | null
+          updated_at?: string | null
           username?: string | null
         }
         Relationships: []
@@ -1376,9 +1439,41 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_starred_posts: {
+        Row: {
+          author_id: string | null
+          category: string | null
+          consumption_method: string | null
+          content: string | null
+          created_at: string | null
+          downvotes: number | null
+          excerpt: string | null
+          experience_rating: number | null
+          id: string | null
+          published: boolean | null
+          search_vector: unknown
+          stars: number | null
+          strain_id: string | null
+          strain_name: string | null
+          tags: string[] | null
+          title: string | null
+          updated_at: string | null
+          upvotes: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diary_entries_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strains"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      current_user_id: { Args: never; Returns: string }
       generate_order_number: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -1390,6 +1485,11 @@ export type Database = {
       is_user_age_verified: {
         Args: { user_date_of_birth: string }
         Returns: boolean
+      }
+      parse_percentage: { Args: { value: string }; Returns: number }
+      set_admin_for_email: {
+        Args: { make_admin: boolean; target_email: string }
+        Returns: undefined
       }
     }
     Enums: {

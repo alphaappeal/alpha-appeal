@@ -24,6 +24,8 @@ import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import Legal from "./pages/Legal";
 import PartnerDetail from "./pages/PartnerDetail";
+import StrainDetail from "./pages/StrainDetail";
+import CommunityPostDetail from "./pages/CommunityPostDetail";
 import AgeGate from "./components/AgeGate";
 
 const queryClient = new QueryClient();
@@ -47,6 +49,8 @@ const App = () => (
             <Route path="/community" element={<Community />} />
             <Route path="/map" element={<Map />} />
             <Route path="/partner/:partnerId" element={<PartnerDetail />} />
+            <Route path="/strain/:strainSlug" element={<StrainDetail />} />
+            <Route path="/community/:postId" element={<CommunityPostDetail />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/my-diary" element={<MyDiary />} />
             <Route path="/deliveries" element={<Deliveries />} />
