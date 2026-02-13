@@ -20,6 +20,8 @@ import {
   HelpCircle,
   Loader2,
   Crown,
+  Star,
+  Leaf,
 } from "lucide-react";
 import logoLight from "@/assets/alpha-logo-light.png";
 
@@ -32,6 +34,7 @@ const Profile = () => {
   const [subscription, setSubscription] = useState<any>(null);
   const [preferences, setPreferences] = useState<any>(null);
   const [showMemberPortal, setShowMemberPortal] = useState(false);
+  const [starredStrains, setStarredStrains] = useState<any[]>([]);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -63,6 +66,23 @@ const Profile = () => {
         .eq("user_id", session.user.id)
         .maybeSingle();
       setPreferences(prefData);
+
+      // Fetch starred strains
+      const { data: starInteractions } = await supabase
+        .from("post_interactions")
+        .select("strain_id")
+        .eq("user_id", session.user.id)
+        .eq("interaction_type", "star")
+        .not("strain_id", "is", null);
+
+      if (starInteractions && starInteractions.length > 0) {
+        const strainIds = starInteractions.map(i => i.strain_id).filter(Boolean) as string[];
+        const { data: strains } = await supabase
+          .from("strains")
+          .select("id, name, slug, type")
+          .in("id", strainIds);
+        setStarredStrains(strains || []);
+      }
 
       setLoading(false);
     };
@@ -185,6 +205,35 @@ const Profile = () => {
                       : "N/A"}
                   </span>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Starred Strains */}
+          {starredStrains.length > 0 && (
+            <div className="mb-8 p-6 rounded-2xl border border-border/50 bg-card/30">
+              <div className="flex items-center gap-2 mb-4">
+                <Star className="w-5 h-5 text-yellow-400" />
+                <h3 className="font-display font-semibold text-foreground">My Starred Strains</h3>
+                <span className="text-xs text-muted-foreground">({starredStrains.length})</span>
+              </div>
+              <div className="space-y-2">
+                {starredStrains.map((strain) => (
+                  <button
+                    key={strain.id}
+                    onClick={() => navigate(`/strain/${strain.slug || strain.id}`)}
+                    className="w-full flex items-center justify-between p-3 rounded-lg border border-border/30 bg-card/20 hover:border-secondary/50 transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Leaf className="w-4 h-4 text-secondary" />
+                      <span className="text-foreground font-medium text-sm">{strain.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground capitalize">{strain.type}</span>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           )}
