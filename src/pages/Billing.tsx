@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, CreditCard, Plus, TrendingUp, XCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, CreditCard, Plus, TrendingUp, XCircle, Loader2, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
@@ -15,31 +15,22 @@ const Billing = () => {
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
+  const [wallet, setWallet] = useState<any>(null);
 
   useEffect(() => {
     const loadData = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/signup");
-        return;
-      }
+      if (!session) { navigate("/login"); return; }
 
-      const { data: subData } = await supabase
-        .from("subscriptions")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .eq("status", "active")
-        .maybeSingle();
-      setSubscription(subData);
+      const [subRes, orderRes, walletRes] = await Promise.all([
+        supabase.from("subscriptions").select("*").eq("user_id", session.user.id).eq("status", "active").maybeSingle(),
+        supabase.from("orders").select("*").eq("user_id", session.user.id).order("created_at", { ascending: false }).limit(10),
+        supabase.from("user_wallet").select("*").eq("user_id", session.user.id).maybeSingle(),
+      ]);
 
-      const { data: orderData } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .order("created_at", { ascending: false })
-        .limit(10);
-      setOrders(orderData || []);
-
+      setSubscription(subRes.data);
+      setOrders(orderRes.data || []);
+      setWallet(walletRes.data);
       setLoading(false);
     };
     loadData();
@@ -47,7 +38,6 @@ const Billing = () => {
 
   const handleCancelSubscription = async () => {
     if (!subscription) return;
-    
     const { error } = await supabase
       .from("subscriptions")
       .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
@@ -58,6 +48,21 @@ const Billing = () => {
     } else {
       toast({ title: "Subscription cancelled", description: "We're sorry to see you go" });
       setSubscription(null);
+    }
+  };
+
+  const handleTierChange = async (tier: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const { error } = await supabase
+      .from("tier_change_requests")
+      .insert({ user_id: session.user.id, requested_tier: tier });
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to submit request", variant: "destructive" });
+    } else {
+      toast({ title: "Request submitted", description: `Your ${tier} tier upgrade request is being reviewed` });
     }
   };
 
@@ -90,6 +95,28 @@ const Billing = () => {
         </header>
 
         <main className="container mx-auto px-4 py-6 space-y-6">
+          {/* Wallet Balance */}
+          <div className="p-6 rounded-2xl bg-gradient-to-br from-secondary/10 to-card/50 border border-secondary/30">
+            <div className="flex items-center gap-2 mb-4">
+              <Wallet className="w-5 h-5 text-secondary" />
+              <h2 className="font-display font-semibold text-foreground">Wallet</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-2xl font-bold text-foreground">
+                  R{(wallet?.credit_balance || 0).toFixed(2)}
+                </p>
+                <p className="text-xs text-muted-foreground">Credits</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-foreground">
+                  {wallet?.token_balance || 0}
+                </p>
+                <p className="text-xs text-muted-foreground">Tokens</p>
+              </div>
+            </div>
+          </div>
+
           {/* Current Subscription */}
           <div className="p-6 rounded-2xl bg-card/50 border border-border/50">
             <div className="flex items-center gap-2 mb-4">
@@ -110,52 +137,30 @@ const Billing = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Next billing</span>
                   <span className="text-foreground">
-                    {subscription.next_billing_date
-                      ? format(new Date(subscription.next_billing_date), "MMM d, yyyy")
-                      : "N/A"}
+                    {subscription.next_billing_date ? format(new Date(subscription.next_billing_date), "MMM d, yyyy") : "N/A"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Status</span>
-                  <span className="px-2 py-1 rounded-full bg-secondary/20 text-secondary text-xs font-medium">
-                    Active
-                  </span>
+                  <span className="px-2 py-1 rounded-full bg-secondary/20 text-secondary text-xs font-medium">Active</span>
                 </div>
               </div>
             ) : (
               <div className="text-center py-4">
                 <p className="text-muted-foreground mb-4">No active subscription</p>
-                <Button onClick={() => navigate("/signup")} className="bg-secondary text-secondary-foreground">
-                  View Plans
-                </Button>
+                <Button onClick={() => navigate("/signup")} className="bg-secondary text-secondary-foreground">View Plans</Button>
               </div>
             )}
           </div>
 
-          {/* Action Buttons */}
+          {/* Actions */}
           <div className="space-y-3">
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-3"
-              onClick={() => toast({ title: "Coming soon", description: "Credits feature launching soon" })}
-            >
-              <Plus className="w-4 h-4" />
-              Add Credits
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-3"
-              onClick={() => navigate("/signup")}
-            >
+            <Button variant="outline" className="w-full justify-start gap-3" onClick={() => handleTierChange("elite")}>
               <TrendingUp className="w-4 h-4" />
-              Upgrade Plan
+              Request Tier Upgrade
             </Button>
             {subscription && (
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-3 text-destructive hover:text-destructive"
-                onClick={handleCancelSubscription}
-              >
+              <Button variant="outline" className="w-full justify-start gap-3 text-destructive hover:text-destructive" onClick={handleCancelSubscription}>
                 <XCircle className="w-4 h-4" />
                 Cancel Subscription
               </Button>
@@ -165,7 +170,6 @@ const Billing = () => {
           {/* Transaction History */}
           <div className="p-6 rounded-2xl bg-card/50 border border-border/50">
             <h2 className="font-display font-semibold text-foreground mb-4">Transaction History</h2>
-            
             {orders.length === 0 ? (
               <p className="text-muted-foreground text-sm text-center py-4">No transactions yet</p>
             ) : (
@@ -174,9 +178,7 @@ const Billing = () => {
                   <div key={order.id} className="flex items-center justify-between py-3 border-b border-border/30 last:border-0">
                     <div>
                       <p className="text-foreground font-medium text-sm">{order.product_name || order.order_type}</p>
-                      <p className="text-muted-foreground text-xs">
-                        {format(new Date(order.created_at), "MMM d, yyyy")}
-                      </p>
+                      <p className="text-muted-foreground text-xs">{format(new Date(order.created_at), "MMM d, yyyy")}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-foreground font-medium">R{order.amount}</p>
