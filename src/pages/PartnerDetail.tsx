@@ -43,11 +43,11 @@ const PartnerDetail = () => {
 
       <div className="min-h-screen bg-background pb-24">
         {/* Hero Section */}
-        <div className="relative h-80 bg-muted">
+        <div className="relative h-80 bg-muted flex items-center justify-center">
           <img 
-            src={partner.images.hero} 
+            src={partner.logoUrl || partner.images.hero} 
             alt={partner.name}
-            className="w-full h-full object-cover opacity-50"
+            className="max-w-[280px] max-h-[200px] object-contain"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
           
