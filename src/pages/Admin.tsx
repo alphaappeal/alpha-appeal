@@ -26,9 +26,11 @@ import {
   RefreshCw,
   Leaf,
   Store,
+  Activity,
 } from "lucide-react";
 import StrainsTab from "@/components/admin/StrainsTab";
 import PartnersTab from "@/components/admin/PartnersTab";
+import SystemActivityTab from "@/components/admin/SystemActivityTab";
 import logoLight from "@/assets/alpha-logo-light.png";
 
 const Admin = () => {
@@ -78,37 +80,44 @@ const Admin = () => {
   };
 
   const loadUsers = async () => {
-    const { data } = await supabase.from("users").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("users").select("*").order("created_at", { ascending: false });
+    if (error) console.error("Error loading users:", error.message);
     setUsers(data || []);
   };
 
   const loadSubscriptions = async () => {
-    const { data } = await supabase.from("subscriptions").select("*, users(name, email)").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("subscriptions").select("*").order("created_at", { ascending: false });
+    if (error) console.error("Error loading subscriptions:", error.message);
     setSubscriptions(data || []);
   };
 
   const loadOrders = async () => {
-    const { data } = await supabase.from("orders").select("*, users(name, email)").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
+    if (error) console.error("Error loading orders:", error.message);
     setOrders(data || []);
   };
 
   const loadApplications = async () => {
-    const { data } = await supabase.from("private_member_applications").select("*, users(name, email)").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("private_member_applications").select("*").order("created_at", { ascending: false });
+    if (error) console.error("Error loading applications:", error.message);
     setApplications(data || []);
   };
 
   const loadDiaryEntries = async () => {
-    const { data } = await supabase.from("diary_entries").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("diary_entries").select("*").order("created_at", { ascending: false });
+    if (error) console.error("Error loading diary entries:", error.message);
     setDiaryEntries(data || []);
   };
 
   const loadProducts = async () => {
-    const { data } = await supabase.from("products").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false });
+    if (error) console.error("Error loading products:", error.message);
     setProducts(data || []);
   };
 
   const loadLocations = async () => {
-    const { data } = await supabase.from("map_locations").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("map_locations").select("*").order("created_at", { ascending: false });
+    if (error) console.error("Error loading locations:", error.message);
     setLocations(data || []);
   };
 
@@ -288,6 +297,9 @@ const Admin = () => {
               <TabsTrigger value="content" className="gap-2">
                 <BookOpen className="w-4 h-4" /> Content
               </TabsTrigger>
+              <TabsTrigger value="activity" className="gap-2">
+                <Activity className="w-4 h-4" /> Activity
+              </TabsTrigger>
             </TabsList>
 
             {/* Users Tab */}
@@ -316,8 +328,8 @@ const Admin = () => {
                     <tbody className="divide-y divide-border/30">
                       {filteredUsers.map((user) => (
                         <tr key={user.id} className="hover:bg-muted/10">
-                          <td className="p-4 text-foreground font-medium">{user.name}</td>
-                          <td className="p-4 text-muted-foreground">{user.email}</td>
+                          <td className="p-4 text-foreground font-medium">{user.name || user.full_name || user.username || "Unknown"}</td>
+                          <td className="p-4 text-muted-foreground">{user.email || "N/A"}</td>
                           <td className="p-4">
                             <Badge variant="secondary" className="capitalize">
                               {user.subscription_tier || "free"}
@@ -354,14 +366,14 @@ const Admin = () => {
                         <tr key={sub.id} className="hover:bg-muted/10">
                           <td className="p-4">
                             <div>
-                              <p className="text-foreground font-medium">{sub.users?.name || "Unknown"}</p>
-                              <p className="text-muted-foreground text-sm">{sub.users?.email}</p>
+                              <p className="text-foreground font-medium">User</p>
+                              <p className="text-muted-foreground text-sm font-mono text-xs truncate">{sub.user_id || "N/A"}</p>
                             </div>
                           </td>
                           <td className="p-4">
                             <Badge variant="secondary" className="capitalize">{sub.tier}</Badge>
                           </td>
-                          <td className="p-4 text-foreground">R{sub.amount}</td>
+                          <td className="p-4 text-foreground">R{sub.amount ?? 0}</td>
                           <td className="p-4">{getStatusBadge(sub.status || "pending")}</td>
                           <td className="p-4 text-muted-foreground text-sm">
                             {sub.next_billing_date ? formatDate(sub.next_billing_date) : "N/A"}
@@ -399,15 +411,14 @@ const Admin = () => {
                     <tbody className="divide-y divide-border/30">
                       {orders.map((order) => (
                         <tr key={order.id} className="hover:bg-muted/10">
-                          <td className="p-4 text-foreground font-mono text-sm">{order.order_number}</td>
+                          <td className="p-4 text-foreground font-mono text-sm">{order.order_number || "N/A"}</td>
                           <td className="p-4">
                             <div>
-                              <p className="text-foreground font-medium">{order.users?.name || "Unknown"}</p>
-                              <p className="text-muted-foreground text-sm">{order.users?.email}</p>
+                              <p className="text-muted-foreground text-sm font-mono text-xs truncate">{order.user_id || "N/A"}</p>
                             </div>
                           </td>
                           <td className="p-4 text-foreground">{order.product_name || "Subscription"}</td>
-                          <td className="p-4 text-foreground">R{order.amount}</td>
+                          <td className="p-4 text-foreground">R{order.amount ?? 0}</td>
                           <td className="p-4">{getStatusBadge(order.payment_status || "pending")}</td>
                           <td className="p-4 text-muted-foreground text-sm">
                             {order.created_at ? formatDate(order.created_at) : "N/A"}
@@ -434,8 +445,8 @@ const Admin = () => {
                   <div key={app.id} className="p-6 rounded-xl border border-border/50 bg-card/30">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="font-semibold text-foreground">{app.users?.name || "Unknown"}</h3>
-                        <p className="text-muted-foreground text-sm">{app.users?.email}</p>
+                        <h3 className="font-semibold text-foreground">Applicant</h3>
+                        <p className="text-muted-foreground text-sm font-mono text-xs truncate">{app.user_id || "N/A"}</p>
                       </div>
                       {getStatusBadge(app.application_status || "pending")}
                     </div>
@@ -497,6 +508,11 @@ const Admin = () => {
             {/* Partners Tab */}
             <TabsContent value="partners">
               <PartnersTab />
+            </TabsContent>
+
+            {/* System Activity Tab */}
+            <TabsContent value="activity">
+              <SystemActivityTab />
             </TabsContent>
 
             {/* Content Tab */}
