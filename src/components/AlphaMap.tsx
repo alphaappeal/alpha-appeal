@@ -426,9 +426,9 @@ const AlphaMap = () => {
                 <div className="flex items-start gap-3">
                   <div className="relative">
                     <img 
-                      src={partner.images.hero} 
+                      src={partner.logoUrl || partner.images.hero} 
                       alt={partner.name}
-                      className="w-16 h-16 object-cover rounded-lg"
+                      className="w-16 h-16 object-contain rounded-lg bg-muted p-1"
                     />
                     {partner.alphaStatus === 'exclusive' && (
                       <span className="absolute -top-1 -right-1 text-xs">⭐</span>
@@ -464,11 +464,11 @@ const AlphaMap = () => {
       {selectedPartner && (
         <div className="absolute bottom-6 left-4 right-4 lg:left-auto lg:right-4 lg:w-[420px] bg-card/95 backdrop-blur rounded-2xl z-[1000] border-2 border-secondary shadow-2xl max-h-[70vh] overflow-hidden">
           {/* Hero Image with Status Badge */}
-          <div className="relative h-40">
+          <div className="relative h-40 bg-muted flex items-center justify-center">
             <img 
-              src={selectedPartner.images.hero} 
+              src={selectedPartner.logoUrl || selectedPartner.images.hero} 
               alt={selectedPartner.name}
-              className="w-full h-full object-cover"
+              className="max-w-full max-h-full object-contain p-4"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
 

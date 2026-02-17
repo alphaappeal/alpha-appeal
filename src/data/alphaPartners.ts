@@ -27,6 +27,7 @@ export interface AlphaPartner {
     hero: string;
     gallery?: string[];
   };
+  logoUrl?: string;
   alphaPerks: {
     memberDiscount: string;
     exclusiveAccess: string;
@@ -74,9 +75,10 @@ export const alphaPartners: AlphaPartner[] = [
     specialties: ['Premium Flower', 'Edibles', 'Coffee Bar'],
     atmosphere: 'Relaxed cafe atmosphere with knowledgeable staff',
     images: {
-      hero: 'https://images.unsplash.com/photo-1577648188599-291bb8b831c3?w=800',
+      hero: '/images/partners/canna-cafe-logo.png',
       gallery: []
     },
+    logoUrl: '/images/partners/canna-cafe-logo.png',
     alphaPerks: {
       memberDiscount: '10% off all purchases',
       exclusiveAccess: 'Priority seating in lounge',
@@ -119,8 +121,9 @@ export const alphaPartners: AlphaPartner[] = [
     specialties: ['Rare Strains', 'Concentrates', 'Wellness Products'],
     atmosphere: 'Professional, boutique-style with expert consultation',
     images: {
-      hero: 'https://images.unsplash.com/photo-1536098759661-0b8b2f0db4f2?w=800'
+      hero: '/images/partners/canna-africa-logo.png'
     },
+    logoUrl: '/images/partners/canna-africa-logo.png',
     alphaPerks: {
       memberDiscount: '15% off first purchase',
       exclusiveAccess: 'Early access to new drops',
@@ -164,8 +167,9 @@ export const alphaPartners: AlphaPartner[] = [
     specialties: ['Curated Selection', 'Premium Accessories', 'Events Space'],
     atmosphere: 'Upscale lounge experience for cannabis connoisseurs',
     images: {
-      hero: 'https://images.unsplash.com/photo-1584553421349-3557997c58c3?w=800'
+      hero: '/images/partners/mookush-logo.png'
     },
+    logoUrl: '/images/partners/mookush-logo.png',
     alphaPerks: {
       memberDiscount: '20% off for Elite members',
       exclusiveAccess: 'Private lounge access',
@@ -209,8 +213,9 @@ export const alphaPartners: AlphaPartner[] = [
     specialties: ['Premium Papers', 'Grinders', 'Storage Solutions'],
     atmosphere: 'No-nonsense smoke shop with quality products',
     images: {
-      hero: 'https://images.unsplash.com/photo-1601628828688-632f38a5a7d0?w=800'
+      hero: '/images/partners/jays-blunts-logo.png'
     },
+    logoUrl: '/images/partners/jays-blunts-logo.png',
     alphaPerks: {
       memberDiscount: '10% off accessories',
       exclusiveAccess: 'First access to limited drops',
@@ -253,8 +258,9 @@ export const alphaPartners: AlphaPartner[] = [
     specialties: ['Designer Strains', 'Wellness Line', 'Gift Boxes'],
     atmosphere: 'Sophisticated boutique experience in premium mall setting',
     images: {
-      hero: 'https://images.unsplash.com/photo-1566305977571-5666677c6e98?w=800'
+      hero: '/images/partners/el-blanco-logo.png'
     },
+    logoUrl: '/images/partners/el-blanco-logo.png',
     alphaPerks: {
       memberDiscount: 'Elite members: Complimentary delivery',
       exclusiveAccess: 'Private shopping appointments',
@@ -297,8 +303,9 @@ export const alphaPartners: AlphaPartner[] = [
     specialties: ['Local Favorites', 'Flower', 'Edibles'],
     atmosphere: 'Friendly neighborhood spot with consistent quality',
     images: {
-      hero: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=800'
+      hero: '/images/partners/bud-tender-logo.png'
     },
+    logoUrl: '/images/partners/bud-tender-logo.png',
     alphaPerks: {
       memberDiscount: 'First-time: 15% off',
       exclusiveAccess: 'Member rewards program',

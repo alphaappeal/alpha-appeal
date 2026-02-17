@@ -140,6 +140,7 @@ export type Database = {
           hours_weekdays: string | null
           id: string
           latitude: number | null
+          logo_url: string | null
           longitude: number | null
           member_discount: string | null
           name: string
@@ -174,6 +175,7 @@ export type Database = {
           hours_weekdays?: string | null
           id?: string
           latitude?: number | null
+          logo_url?: string | null
           longitude?: number | null
           member_discount?: string | null
           name: string
@@ -208,6 +210,7 @@ export type Database = {
           hours_weekdays?: string | null
           id?: string
           latitude?: number | null
+          logo_url?: string | null
           longitude?: number | null
           member_discount?: string | null
           name?: string
