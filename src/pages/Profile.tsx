@@ -7,10 +7,14 @@ import BottomNav from "@/components/BottomNav";
 import MemberPortal from "@/components/MemberPortal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useProfileData } from "@/hooks/useProfileData";
+import ProfileHeader from "@/components/profile/ProfileHeader";
+import StarredContent from "@/components/profile/StarredContent";
+import ReferralSection from "@/components/profile/ReferralSection";
+import DiaryProgress from "@/components/profile/DiaryProgress";
+import DeliveriesPreview from "@/components/profile/DeliveriesPreview";
 import {
-  User,
   BookOpen,
-  Package,
   CreditCard,
   Settings,
   LogOut,
@@ -20,92 +24,37 @@ import {
   HelpCircle,
   Loader2,
   Crown,
-  Star,
-  Leaf,
 } from "lucide-react";
 import logoLight from "@/assets/alpha-logo-light.png";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [subscription, setSubscription] = useState<any>(null);
-  const [preferences, setPreferences] = useState<any>(null);
+  const {
+    user, profile, subscription, preferences, wallet,
+    referralCode, referralCount,
+    starredStrains, starredArt, starredCulture,
+    deliveries, loading, refreshWallet,
+  } = useProfileData();
   const [showMemberPortal, setShowMemberPortal] = useState(false);
-  const [starredStrains, setStarredStrains] = useState<any[]>([]);
+  const [localPrefs, setLocalPrefs] = useState<any>(null);
 
   useEffect(() => {
-    const loadProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/signup");
-        return;
-      }
-      setUser(session.user);
+    if (preferences) setLocalPrefs(preferences);
+  }, [preferences]);
 
-      const { data: profileData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", session.user.id)
-        .maybeSingle();
-      setProfile(profileData);
-
-      const { data: subData } = await supabase
-        .from("subscriptions")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .eq("status", "active")
-        .maybeSingle();
-      setSubscription(subData);
-
-      const { data: prefData } = await supabase
-        .from("user_preferences")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-      setPreferences(prefData);
-
-      // Fetch starred strains
-      const { data: starInteractions } = await supabase
-        .from("post_interactions")
-        .select("strain_id")
-        .eq("user_id", session.user.id)
-        .eq("interaction_type", "star")
-        .not("strain_id", "is", null);
-
-      if (starInteractions && starInteractions.length > 0) {
-        const strainIds = starInteractions.map(i => i.strain_id).filter(Boolean) as string[];
-        const { data: strains } = await supabase
-          .from("strains")
-          .select("id, name, slug, type")
-          .in("id", strainIds);
-        setStarredStrains(strains || []);
-      }
-
-      setLoading(false);
-    };
-    loadProfile();
-  }, [navigate]);
+  const handleTogglePreference = async (key: string, value: boolean) => {
+    if (!user) return;
+    const updates = { [key]: value };
+    await supabase.from("user_preferences").update(updates).eq("user_id", user.id);
+    setLocalPrefs((prev: any) => ({ ...prev, ...updates }));
+    toast({ title: "Preferences updated" });
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast({ title: "Logged out", description: "See you soon!" });
     navigate("/");
-  };
-
-  const handleTogglePreference = async (key: string, value: boolean) => {
-    if (!user) return;
-    
-    const updates = { [key]: value };
-    await supabase
-      .from("user_preferences")
-      .update(updates)
-      .eq("user_id", user.id);
-    
-    setPreferences((prev: any) => ({ ...prev, ...updates }));
-    toast({ title: "Preferences updated" });
   };
 
   if (loading) {
@@ -116,27 +65,14 @@ const Profile = () => {
     );
   }
 
-  // Updated menu items with My Diary first
+  const currentTier = subscription?.tier || profile?.tier || "private";
+
   const menuItems = [
     { icon: BookOpen, label: "My Diary", path: "/my-diary" },
-    { icon: Package, label: "My Deliveries", path: "/deliveries" },
     { icon: CreditCard, label: "Billing & Subscription", path: "/billing" },
     { icon: Settings, label: "Account Settings", path: "/settings" },
     { icon: HelpCircle, label: "Help & Support", path: "/support" },
   ];
-
-  // Determine tier display
-  const getTierDisplay = () => {
-    if (subscription?.tier) {
-      return subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1);
-    }
-    if (profile?.subscription_tier) {
-      return profile.subscription_tier.charAt(0).toUpperCase() + profile.subscription_tier.slice(1);
-    }
-    return "Private";
-  };
-
-  const currentTier = subscription?.tier || profile?.subscription_tier || "private";
 
   return (
     <>
@@ -157,20 +93,14 @@ const Profile = () => {
         </header>
 
         <main className="container mx-auto px-4 py-8">
-          {/* Profile Header with User Info */}
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 rounded-full bg-secondary/10 border-2 border-secondary/30 flex items-center justify-center mx-auto mb-4">
-              <User className="w-10 h-10 text-secondary" />
-            </div>
-            <h2 className="font-display text-xl font-bold text-foreground mb-1">
-              {profile?.name || user?.email?.split("@")[0] || "Member"}
-            </h2>
-            <p className="text-muted-foreground text-sm mb-2">{profile?.email || user?.email}</p>
-            {/* Tier Badge */}
-            <span className="inline-block px-4 py-1.5 rounded-full bg-secondary/10 text-secondary text-sm font-medium">
-              {getTierDisplay()} Member
-            </span>
-          </div>
+          {/* Profile Header with Stats */}
+          <ProfileHeader
+            profile={profile}
+            user={user}
+            subscription={subscription}
+            wallet={wallet}
+            referralCount={referralCount}
+          />
 
           {/* Member Portal Button */}
           <Button
@@ -180,13 +110,21 @@ const Profile = () => {
             <Crown className="w-5 h-5 mr-2" />
             Enter Member Portal
           </Button>
+
+          {/* Diary Progress */}
+          <DiaryProgress
+            streakCount={profile?.streak_count ?? 0}
+            longestStreak={profile?.longest_streak ?? 0}
+            diaryPoints={profile?.diary_points ?? 0}
+            entryCount={profile?.diary_entry_count ?? 0}
+          />
+
+          {/* Subscription Info */}
           {subscription && (
             <div className="mb-8 p-6 rounded-2xl bg-gradient-to-br from-secondary/10 to-card/50 border border-secondary/30">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-display font-semibold text-foreground">Your Subscription</h3>
-                <span className="px-2 py-1 rounded-full bg-secondary/20 text-secondary text-xs font-medium">
-                  Active
-                </span>
+                <span className="px-2 py-1 rounded-full bg-secondary/20 text-secondary text-xs font-medium">Active</span>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -200,7 +138,7 @@ const Profile = () => {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Next billing</span>
                   <span className="text-foreground">
-                    {subscription.next_billing_date 
+                    {subscription.next_billing_date
                       ? new Date(subscription.next_billing_date).toLocaleDateString()
                       : "N/A"}
                   </span>
@@ -209,37 +147,26 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Starred Strains */}
-          {starredStrains.length > 0 && (
-            <div className="mb-8 p-6 rounded-2xl border border-border/50 bg-card/30">
-              <div className="flex items-center gap-2 mb-4">
-                <Star className="w-5 h-5 text-yellow-400" />
-                <h3 className="font-display font-semibold text-foreground">My Starred Strains</h3>
-                <span className="text-xs text-muted-foreground">({starredStrains.length})</span>
-              </div>
-              <div className="space-y-2">
-                {starredStrains.map((strain) => (
-                  <button
-                    key={strain.id}
-                    onClick={() => navigate(`/strain/${strain.slug || strain.id}`)}
-                    className="w-full flex items-center justify-between p-3 rounded-lg border border-border/30 bg-card/20 hover:border-secondary/50 transition-all"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Leaf className="w-4 h-4 text-secondary" />
-                      <span className="text-foreground font-medium text-sm">{strain.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground capitalize">{strain.type}</span>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Starred Content (3 separate blocks) */}
+          <StarredContent
+            starredStrains={starredStrains}
+            starredArt={starredArt}
+            starredCulture={starredCulture}
+          />
 
-          {/* Menu Items */}
+          {/* Referral Section */}
+          <ReferralSection
+            referralCode={referralCode}
+            referralCount={referralCount}
+            diaryPoints={profile?.diary_points ?? 0}
+          />
+
+          {/* Menu Items with Deliveries inline */}
           <div className="space-y-2 mb-8">
+            <DeliveriesPreview
+              deliveries={deliveries}
+              conciergeEligible={profile?.concierge_eligible ?? false}
+            />
             {menuItems.map((item) => (
               <button
                 key={item.path}
@@ -268,7 +195,7 @@ const Profile = () => {
                   <p className="text-muted-foreground text-sm">Drops, events, and offers</p>
                 </div>
                 <Switch
-                  checked={preferences?.marketing_emails ?? true}
+                  checked={localPrefs?.marketing_emails ?? true}
                   onCheckedChange={(checked) => handleTogglePreference("marketing_emails", checked)}
                 />
               </div>
@@ -278,7 +205,7 @@ const Profile = () => {
                   <p className="text-muted-foreground text-sm">Replies and mentions</p>
                 </div>
                 <Switch
-                  checked={preferences?.community_notifications ?? true}
+                  checked={localPrefs?.community_notifications ?? true}
                   onCheckedChange={(checked) => handleTogglePreference("community_notifications", checked)}
                 />
               </div>
@@ -297,7 +224,7 @@ const Profile = () => {
                 <p className="text-muted-foreground text-sm">Help us improve your experience</p>
               </div>
               <Switch
-                checked={preferences?.data_optimization_consent ?? false}
+                checked={localPrefs?.data_optimization_consent ?? false}
                 onCheckedChange={(checked) => handleTogglePreference("data_optimization_consent", checked)}
               />
             </div>
@@ -305,8 +232,8 @@ const Profile = () => {
 
           {/* Logout */}
           <Button
-            variant="glass"
-            className="w-full text-destructive hover:bg-destructive/10"
+            variant="outline"
+            className="w-full text-destructive hover:bg-destructive/10 border-destructive/30"
             onClick={handleLogout}
           >
             <LogOut className="w-4 h-4 mr-2" />
@@ -317,10 +244,12 @@ const Profile = () => {
         <BottomNav />
       </div>
 
-      <MemberPortal 
-        isOpen={showMemberPortal} 
-        onClose={() => setShowMemberPortal(false)} 
+      <MemberPortal
+        isOpen={showMemberPortal}
+        onClose={() => setShowMemberPortal(false)}
         tier={currentTier}
+        userId={user?.id}
+        onWalletUpdate={() => user?.id && refreshWallet(user.id)}
       />
     </>
   );
