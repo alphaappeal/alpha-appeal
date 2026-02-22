@@ -31,6 +31,7 @@ import {
 import StrainsTab from "@/components/admin/StrainsTab";
 import PartnersTab from "@/components/admin/PartnersTab";
 import SystemActivityTab from "@/components/admin/SystemActivityTab";
+import ProductsTab from "@/components/admin/ProductsTab";
 import logoLight from "@/assets/alpha-logo-light.png";
 
 const Admin = () => {
@@ -294,6 +295,9 @@ const Admin = () => {
               <TabsTrigger value="partners" className="gap-2">
                 <Store className="w-4 h-4" /> Partners
               </TabsTrigger>
+              <TabsTrigger value="products" className="gap-2">
+                <ShoppingBag className="w-4 h-4" /> Products
+              </TabsTrigger>
               <TabsTrigger value="content" className="gap-2">
                 <BookOpen className="w-4 h-4" /> Content
               </TabsTrigger>
@@ -513,6 +517,11 @@ const Admin = () => {
             {/* System Activity Tab */}
             <TabsContent value="activity">
               <SystemActivityTab />
+            </TabsContent>
+
+            {/* Products Tab */}
+            <TabsContent value="products" className="space-y-4">
+              <ProductsTab products={products} onRefresh={loadProducts} />
             </TabsContent>
 
             {/* Content Tab */}

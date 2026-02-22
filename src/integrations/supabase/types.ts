@@ -1582,6 +1582,7 @@ export type Database = {
           name: string
           price: number
           search_vector: unknown
+          stock_quantity: number
           trending: boolean | null
         }
         Insert: {
@@ -1597,6 +1598,7 @@ export type Database = {
           name: string
           price: number
           search_vector?: unknown
+          stock_quantity?: number
           trending?: boolean | null
         }
         Update: {
@@ -1612,6 +1614,7 @@ export type Database = {
           name?: string
           price?: number
           search_vector?: unknown
+          stock_quantity?: number
           trending?: boolean | null
         }
         Relationships: []
