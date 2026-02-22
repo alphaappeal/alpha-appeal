@@ -2,3 +2,6 @@ project_id = "xlyxtbcqirspcfxdznyu"
 
 [functions.mailerlite-sync]
 verify_jwt = false
+
+[functions.create-payfast-checkout]
+verify_jwt = false
