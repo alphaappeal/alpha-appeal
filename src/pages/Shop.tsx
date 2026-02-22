@@ -533,8 +533,9 @@ const Shop = () => {
                         !pickupStore && "opacity-50 cursor-not-allowed"
                       )}
                       disabled={!pickupStore}
+                      onClick={() => navigate("/checkout", { state: { cart } })}
                     >
-                      {pickupStore ? 'Reserve for Pickup' : 'Select Pickup Location'}
+                      {pickupStore ? 'Proceed to Checkout' : 'Select Pickup Location'}
                     </Button>
                     <p className="text-center text-xs text-muted-foreground mt-3">
                       Secure checkout powered by PayFast

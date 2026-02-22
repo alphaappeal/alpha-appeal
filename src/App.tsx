@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Checkout from "./pages/Checkout";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Welcome from "./pages/Welcome";
 import Shop from "./pages/Shop";
 import Music from "./pages/Music";
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/checkout/success" element={<CheckoutSuccess />} />
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/music" element={<Music />} />
