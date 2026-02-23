@@ -591,6 +591,69 @@ export type Database = {
           },
         ]
       }
+      culture_items: {
+        Row: {
+          category: string
+          created_at: string | null
+          creator: string | null
+          description: string | null
+          downvotes: number | null
+          feelings: Json | null
+          id: string
+          img_url: string | null
+          medium: string | null
+          name: string
+          published: boolean | null
+          search_vector: unknown
+          slug: string | null
+          stars: number | null
+          type: string | null
+          updated_at: string | null
+          upvotes: number | null
+          year: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          creator?: string | null
+          description?: string | null
+          downvotes?: number | null
+          feelings?: Json | null
+          id?: string
+          img_url?: string | null
+          medium?: string | null
+          name: string
+          published?: boolean | null
+          search_vector?: unknown
+          slug?: string | null
+          stars?: number | null
+          type?: string | null
+          updated_at?: string | null
+          upvotes?: number | null
+          year?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          creator?: string | null
+          description?: string | null
+          downvotes?: number | null
+          feelings?: Json | null
+          id?: string
+          img_url?: string | null
+          medium?: string | null
+          name?: string
+          published?: boolean | null
+          search_vector?: unknown
+          slug?: string | null
+          stars?: number | null
+          type?: string | null
+          updated_at?: string | null
+          upvotes?: number | null
+          year?: string | null
+        }
+        Relationships: []
+      }
       culture_posts: {
         Row: {
           category: string | null
@@ -1343,6 +1406,7 @@ export type Database = {
         Row: {
           comment_text: string
           created_at: string | null
+          culture_item_id: string | null
           downvotes: number | null
           id: string
           parent_comment_id: string | null
@@ -1355,6 +1419,7 @@ export type Database = {
         Insert: {
           comment_text: string
           created_at?: string | null
+          culture_item_id?: string | null
           downvotes?: number | null
           id?: string
           parent_comment_id?: string | null
@@ -1367,6 +1432,7 @@ export type Database = {
         Update: {
           comment_text?: string
           created_at?: string | null
+          culture_item_id?: string | null
           downvotes?: number | null
           id?: string
           parent_comment_id?: string | null
@@ -1377,6 +1443,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "post_comments_culture_item_id_fkey"
+            columns: ["culture_item_id"]
+            isOneToOne: false
+            referencedRelation: "culture_items"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "post_comments_parent_comment_id_fkey"
             columns: ["parent_comment_id"]
@@ -1410,6 +1483,7 @@ export type Database = {
       post_interactions: {
         Row: {
           created_at: string | null
+          culture_item_id: string | null
           id: string
           interaction_type: string | null
           post_id: string | null
@@ -1418,6 +1492,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          culture_item_id?: string | null
           id?: string
           interaction_type?: string | null
           post_id?: string | null
@@ -1426,6 +1501,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          culture_item_id?: string | null
           id?: string
           interaction_type?: string | null
           post_id?: string | null
@@ -1433,6 +1509,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "post_interactions_culture_item_id_fkey"
+            columns: ["culture_item_id"]
+            isOneToOne: false
+            referencedRelation: "culture_items"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "post_interactions_strain_id_fkey"
             columns: ["strain_id"]
