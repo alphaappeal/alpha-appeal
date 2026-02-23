@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
         order_number: orderNumber,
         amount,
         currency: "ZAR",
-        order_type: "shop",
+        order_type: "one_time",
         payment_status: "pending",
         payment_method: "payfast",
         product_name: itemName,
