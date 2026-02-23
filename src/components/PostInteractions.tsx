@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 interface PostInteractionsProps {
   postId?: string;
   strainId?: string;
+  cultureItemId?: string;
   upvotes: number;
   downvotes: number;
   stars: number;
@@ -25,6 +26,7 @@ interface UserInteractions {
 export const PostInteractions = ({
   postId,
   strainId,
+  cultureItemId,
   upvotes: initialUpvotes,
   downvotes: initialDownvotes,
   stars: initialStars,
@@ -47,7 +49,7 @@ export const PostInteractions = ({
 
   useEffect(() => {
     fetchUserInteractions();
-  }, [postId, strainId]);
+  }, [postId, strainId, cultureItemId]);
 
   const fetchUserInteractions = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -62,6 +64,8 @@ export const PostInteractions = ({
       query = query.eq("post_id", postId);
     } else if (strainId) {
       query = query.eq("strain_id", strainId);
+    } else if (cultureItemId) {
+      query = query.eq("culture_item_id", cultureItemId);
     }
 
     const { data } = await query;
@@ -108,6 +112,8 @@ export const PostInteractions = ({
           query = query.eq("post_id", postId);
         } else if (strainId) {
           query = query.eq("strain_id", strainId);
+        } else if (cultureItemId) {
+          query = query.eq("culture_item_id", cultureItemId);
         }
 
         await query;
@@ -124,6 +130,7 @@ export const PostInteractions = ({
           interaction_type: type,
           post_id: postId || null,
           strain_id: strainId || null,
+          culture_item_id: cultureItemId || null,
         });
 
         if (!insertError) {

@@ -22,9 +22,10 @@ interface Comment {
 interface ThreadedCommentsProps {
   postId?: string;
   strainId?: string;
+  cultureItemId?: string;
 }
 
-export const ThreadedComments = ({ postId, strainId }: ThreadedCommentsProps) => {
+export const ThreadedComments = ({ postId, strainId, cultureItemId }: ThreadedCommentsProps) => {
   const { toast } = useToast();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -42,7 +43,7 @@ export const ThreadedComments = ({ postId, strainId }: ThreadedCommentsProps) =>
   useEffect(() => {
     getCurrentUser();
     fetchComments();
-  }, [postId, strainId]);
+  }, [postId, strainId, cultureItemId]);
 
   const getCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -56,8 +57,8 @@ export const ThreadedComments = ({ postId, strainId }: ThreadedCommentsProps) =>
   const fetchComments = async () => {
     setLoading(true);
 
-    const targetCol = postId ? "post_id" : "strain_id";
-    const targetVal = postId || strainId;
+    const targetCol = postId ? "post_id" : strainId ? "strain_id" : "culture_item_id";
+    const targetVal = postId || strainId || cultureItemId;
     if (!targetVal) { setLoading(false); return; }
 
     const { data, error } = await (supabase
@@ -143,6 +144,7 @@ export const ThreadedComments = ({ postId, strainId }: ThreadedCommentsProps) =>
       parent_comment_id: parentId || null,
     };
     if (strainId && !postId) insertData.strain_id = strainId;
+    if (cultureItemId && !postId && !strainId) insertData.culture_item_id = cultureItemId;
 
     const { error } = await supabase.from("post_comments").insert(insertData);
 

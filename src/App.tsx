@@ -27,6 +27,8 @@ import Legal from "./pages/Legal";
 import PartnerDetail from "./pages/PartnerDetail";
 import StrainDetail from "./pages/StrainDetail";
 import CommunityPostDetail from "./pages/CommunityPostDetail";
+import CultureItemDetail from "./pages/CultureItemDetail";
+import ImportCultureData from "./pages/ImportCultureData";
 import AgeGate from "./components/AgeGate";
 
 const queryClient = new QueryClient();
@@ -53,6 +55,8 @@ const App = () => (
             <Route path="/partner/:partnerId" element={<PartnerDetail />} />
             <Route path="/strain/:strainSlug" element={<StrainDetail />} />
             <Route path="/community/:postId" element={<CommunityPostDetail />} />
+            <Route path="/culture/:slug" element={<CultureItemDetail />} />
+            <Route path="/admin/import-culture" element={<ImportCultureData />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/my-diary" element={<MyDiary />} />
             <Route path="/deliveries" element={<Deliveries />} />
