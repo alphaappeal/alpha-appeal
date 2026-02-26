@@ -124,6 +124,7 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
         options: {
           emailRedirectTo: redirectUrl,
           data: {
+            full_name: formData.name,
             name: formData.name,
           },
         },
@@ -142,22 +143,30 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
       }
 
       if (authData.user) {
-        // Create user profile
-        const { error: userError } = await supabase.from("users").insert({
+        // Update user profile (trigger already created the row via sync_public_users_from_auth)
+        // Use upsert to handle both cases: trigger created it, or we need to create it
+        const { error: userError } = await supabase.from("users").upsert({
           id: authData.user.id,
           email: formData.email,
-          name: formData.name,
-          date_of_birth: formData.dateOfBirth,
-          subscription_tier: finalTier === "private" ? "pending" : finalTier,
-        });
+          full_name: formData.name,
+          dob: formData.dateOfBirth,
+          tier: finalTier === "private" ? "pending" : finalTier,
+        }, { onConflict: "id" });
 
-        if (userError) throw userError;
+        if (userError) {
+          console.error("User profile upsert error:", userError.code, userError.message, userError.details);
+          throw userError;
+        }
 
-        // Save preferences
-        await supabase.from("user_preferences").insert({
+        // Update preferences (trigger already created the row via initialize_user_ecosystem)
+        const { error: prefError } = await supabase.from("user_preferences").upsert({
           user_id: authData.user.id,
           interests: formData.interests,
-        });
+        }, { onConflict: "user_id" });
+
+        if (prefError) {
+          console.error("Preferences upsert error:", prefError.code, prefError.message);
+        }
 
         // If using promo code, record redemption
         if (validPromoCode) {

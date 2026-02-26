@@ -53,9 +53,12 @@ export const useProfileData = () => {
 
   useEffect(() => {
     const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        console.error("Session error:", sessionError.message);
+      }
       if (!session) {
-        navigate("/signup");
+        navigate("/login");
         return;
       }
       const uid = session.user.id;
@@ -80,17 +83,20 @@ export const useProfileData = () => {
         supabase.from("user_wallet").select("credit_balance, token_balance").eq("user_id", uid).maybeSingle(),
         supabase.from("referral_codes").select("code").eq("user_id", uid).eq("active", true).maybeSingle(),
         supabase.from("referrals").select("id").eq("referrer_id", uid),
-        // Starred strains
         supabase.from("post_interactions").select("strain_id").eq("user_id", uid).eq("interaction_type", "star").not("strain_id", "is", null),
-        // Starred art
         supabase.from("art_interactions").select("post_id").eq("user_id", uid).eq("interaction_type", "star"),
-        // Starred culture
         supabase.from("culture_interactions").select("post_id").eq("user_id", uid).eq("interaction_type", "star"),
-        // Deliveries
         supabase.from("user_deliveries").select("*, orders(order_number, amount, product_name)").eq("user_id", uid).order("created_at", { ascending: false }).limit(10),
-        // Support tickets
         supabase.from("support_tickets").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(10),
       ]);
+
+      // Log any RLS or query errors
+      const queries = { profileRes, subRes, prefRes, walletRes, refCodeRes, referralsRes, strainStarsRes, artStarsRes, cultureStarsRes, deliveriesRes, ticketsRes };
+      Object.entries(queries).forEach(([name, res]) => {
+        if (res.error) {
+          console.error(`Profile query [${name}] failed:`, res.error.code, res.error.message, res.error.hint);
+        }
+      });
 
       // Fetch starred strain details
       let starredStrains: any[] = [];
