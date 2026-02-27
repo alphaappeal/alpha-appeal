@@ -2664,13 +2664,15 @@ export type Database = {
       }
       current_user_id: { Args: never; Returns: string }
       generate_order_number: { Args: never; Returns: string }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      has_role:
+        | {
+            Args: {
+              _role: Database["public"]["Enums"]["app_role"]
+              _user_id: string
+            }
+            Returns: boolean
+          }
+        | { Args: { required_role: string }; Returns: boolean }
       is_user_age_verified: {
         Args: { user_date_of_birth: string }
         Returns: boolean
