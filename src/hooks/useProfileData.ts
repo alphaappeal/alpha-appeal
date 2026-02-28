@@ -13,6 +13,7 @@ export interface ProfileData {
   starredStrains: any[];
   starredArt: any[];
   starredCulture: any[];
+  starredCultureItems: { fashion: any[]; wellness: any[]; cars: any[]; artwork: any[] };
   deliveries: any[];
   supportTickets: any[];
   loading: boolean;
@@ -31,6 +32,7 @@ export const useProfileData = () => {
     starredStrains: [],
     starredArt: [],
     starredCulture: [],
+    starredCultureItems: { fashion: [], wellness: [], cars: [], artwork: [] },
     deliveries: [],
     supportTickets: [],
     loading: true,
@@ -76,6 +78,7 @@ export const useProfileData = () => {
         cultureStarsRes,
         deliveriesRes,
         ticketsRes,
+        cultureItemStarsRes,
       ] = await Promise.all([
         supabase.from("users").select("*").eq("id", uid).maybeSingle(),
         supabase.from("subscriptions").select("*").eq("user_id", uid).eq("status", "active").maybeSingle(),
@@ -88,6 +91,7 @@ export const useProfileData = () => {
         supabase.from("culture_interactions").select("post_id").eq("user_id", uid).eq("interaction_type", "star"),
         supabase.from("user_deliveries").select("*, orders(order_number, amount, product_name)").eq("user_id", uid).order("created_at", { ascending: false }).limit(10),
         supabase.from("support_tickets").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(10),
+        supabase.from("post_interactions").select("culture_item_id").eq("user_id", uid).eq("interaction_type", "star").not("culture_item_id", "is", null),
       ]);
 
       // Log any RLS or query errors
@@ -128,6 +132,23 @@ export const useProfileData = () => {
         }
       }
 
+      // Fetch starred culture items (fashion, wellness, cars, artwork)
+      const starredCultureItems = { fashion: [] as any[], wellness: [] as any[], cars: [] as any[], artwork: [] as any[] };
+      if (cultureItemStarsRes?.data && cultureItemStarsRes.data.length > 0) {
+        const ids = cultureItemStarsRes.data.map((i: any) => i.culture_item_id).filter(Boolean) as string[];
+        if (ids.length > 0) {
+          const { data: items } = await supabase.from("culture_items").select("id, name, slug, category, img_url, creator, type").in("id", ids);
+          if (items) {
+            items.forEach((item: any) => {
+              const cat = (item.category || "").toLowerCase();
+              if (cat in starredCultureItems) {
+                (starredCultureItems as any)[cat].push(item);
+              }
+            });
+          }
+        }
+      }
+
       setData({
         user: session.user,
         profile: profileRes.data,
@@ -142,6 +163,7 @@ export const useProfileData = () => {
         starredStrains,
         starredArt,
         starredCulture,
+        starredCultureItems,
         deliveries: deliveriesRes.data || [],
         supportTickets: ticketsRes.data || [],
         loading: false,
