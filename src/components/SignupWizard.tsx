@@ -56,9 +56,34 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
     dateOfBirth: "",
     interests: [] as string[],
     motivation: "",
+    referralCode: "",
   });
+  const [referralStatus, setReferralStatus] = useState<"idle" | "checking" | "valid" | "invalid">("idle");
+  const [referralMessage, setReferralMessage] = useState("");
 
   const totalSteps = isApplication ? 3 : 2;
+
+  const checkReferralCode = async () => {
+    if (!formData.referralCode.trim()) return;
+    setReferralStatus("checking");
+    try {
+      const { data, error } = await supabase.rpc("validate_referral_code", {
+        code_input: formData.referralCode.trim(),
+      });
+      if (error) throw error;
+      const result = data as any;
+      if (result?.valid) {
+        setReferralStatus("valid");
+        setReferralMessage(result.referrer_name ? `Referred by ${result.referrer_name}` : "Code applied!");
+      } else {
+        setReferralStatus("invalid");
+        setReferralMessage(result?.message || "Invalid code");
+      }
+    } catch {
+      setReferralStatus("invalid");
+      setReferralMessage("Could not validate code");
+    }
+  };
   const progress = (step / totalSteps) * 100;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -143,14 +168,21 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
       }
 
       if (authData.user) {
-        // Update user profile (trigger already created the row via sync_public_users_from_auth)
-        // Use upsert to handle both cases: trigger created it, or we need to create it
+        // Determine subscription_tier and application_status for profiles
+        let subscriptionTier = finalTier;
+        let applicationStatus = "none";
+        if (isApplication) {
+          subscriptionTier = "pending_private";
+          applicationStatus = "submitted";
+        }
+
+        // Update user profile
         const { error: userError } = await supabase.from("users").upsert({
           id: authData.user.id,
           email: formData.email,
           full_name: formData.name,
           dob: formData.dateOfBirth,
-          tier: finalTier === "private" ? "pending" : finalTier,
+          tier: isApplication ? "pending" : finalTier,
         }, { onConflict: "id" });
 
         if (userError) {
@@ -158,7 +190,18 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
           throw userError;
         }
 
-        // Update preferences (trigger already created the row via initialize_user_ecosystem)
+        // Sync profiles table with new columns
+        await supabase.from("profiles").upsert({
+          id: authData.user.id,
+          email: formData.email,
+          full_name: formData.name,
+          subscription_tier: subscriptionTier,
+          payment_status: validPromoCode ? "paid" : "pending",
+          referral_code_used: referralStatus === "valid" ? formData.referralCode.trim().toUpperCase() : null,
+          application_status: applicationStatus,
+        }, { onConflict: "id" });
+
+        // Update preferences
         const { error: prefError } = await supabase.from("user_preferences").upsert({
           user_id: authData.user.id,
           interests: formData.interests,
@@ -174,6 +217,24 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
             user_id: authData.user.id,
             promo_code: validPromoCode,
           });
+        }
+
+        // If referral code was valid, record it
+        if (referralStatus === "valid" && formData.referralCode.trim()) {
+          const { data: refCode } = await supabase
+            .from("referral_codes")
+            .select("user_id")
+            .eq("code", formData.referralCode.trim().toUpperCase())
+            .eq("active", true)
+            .maybeSingle();
+          
+          if (refCode) {
+            await supabase.from("referrals").insert({
+              referrer_id: refCode.user_id,
+              referred_id: authData.user.id,
+              code_used: formData.referralCode.trim().toUpperCase(),
+            });
+          }
         }
 
         // If private application, save application
@@ -347,6 +408,51 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
               {errors.dateOfBirth && <p className="text-destructive text-sm">{errors.dateOfBirth}</p>}
               <p className="text-xs text-muted-foreground">You must be 18+ to join Alpha</p>
             </div>
+
+            {/* Referral Code (Optional) */}
+            {!isApplication && !usePromoCode && (
+              <div className="space-y-2">
+                <Label htmlFor="referralCode">Referral Code (Optional)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="referralCode"
+                    name="referralCode"
+                    placeholder="e.g. ALPHA-XXXX"
+                    value={formData.referralCode}
+                    onChange={(e) => {
+                      handleInputChange(e);
+                      setReferralStatus("idle");
+                      setReferralMessage("");
+                    }}
+                    className={`uppercase flex-1 ${
+                      referralStatus === "valid" ? "border-secondary" :
+                      referralStatus === "invalid" ? "border-destructive" : ""
+                    }`}
+                    disabled={referralStatus === "valid" || referralStatus === "checking"}
+                  />
+                  <Button
+                    type="button"
+                    variant="sage"
+                    size="sm"
+                    onClick={checkReferralCode}
+                    disabled={!formData.referralCode.trim() || referralStatus === "valid" || referralStatus === "checking"}
+                  >
+                    {referralStatus === "checking" ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : referralStatus === "valid" ? (
+                      "✓"
+                    ) : (
+                      "Check"
+                    )}
+                  </Button>
+                </div>
+                {referralMessage && (
+                  <p className={`text-xs ${referralStatus === "valid" ? "text-secondary" : "text-destructive"}`}>
+                    {referralMessage}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
