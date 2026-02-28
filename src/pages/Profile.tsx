@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useProfileData } from "@/hooks/useProfileData";
 import ProfileHeader from "@/components/profile/ProfileHeader";
-import StarredContent from "@/components/profile/StarredContent";
+import GalaxyDashboard from "@/components/profile/GalaxyDashboard";
 import ReferralSection from "@/components/profile/ReferralSection";
 import DiaryProgress from "@/components/profile/DiaryProgress";
 import DeliveriesPreview from "@/components/profile/DeliveriesPreview";
@@ -33,7 +33,7 @@ const Profile = () => {
   const {
     user, profile, subscription, preferences, wallet,
     referralCode, referralCount,
-    starredStrains, starredArt, starredCulture,
+    starredStrains, starredArt, starredCulture, starredCultureItems,
     deliveries, loading, refreshWallet,
   } = useProfileData();
   const [showMemberPortal, setShowMemberPortal] = useState(false);
@@ -147,11 +147,13 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Starred Content (3 separate blocks) */}
-          <StarredContent
+          {/* Galaxy Dashboard */}
+          <GalaxyDashboard
             starredStrains={starredStrains}
             starredArt={starredArt}
             starredCulture={starredCulture}
+            starredCultureItems={starredCultureItems}
+            userId={user?.id}
           />
 
           {/* Referral Section */}
