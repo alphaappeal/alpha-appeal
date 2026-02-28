@@ -62,6 +62,16 @@ export default {
           gold: "hsl(var(--alpha-gold))",
           smoke: "hsl(var(--alpha-smoke))",
         },
+        admin: {
+          bg: "hsl(var(--admin-bg))",
+          surface: "hsl(var(--admin-surface))",
+          "surface-hover": "hsl(var(--admin-surface-hover))",
+          border: "hsl(var(--admin-border))",
+          emerald: "hsl(var(--admin-emerald))",
+          amber: "hsl(var(--admin-amber))",
+          indigo: "hsl(var(--admin-indigo))",
+          rose: "hsl(var(--admin-rose))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
