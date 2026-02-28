@@ -235,11 +235,9 @@ const MemberPortal = ({ isOpen, onClose, tier = "private", userId, onWalletUpdat
               {activeTab === "overview" && (
                 <div className="space-y-3">
                   {[
+                    { label: "Current Coins", value: rewardCoins.toLocaleString(), icon: Crown },
+                    { label: "Membership Level", value: tier.charAt(0).toUpperCase() + tier.slice(1), icon: Star },
                     { label: "Total Orders", value: overviewData.totalOrders, icon: BookOpen },
-                    { label: "Active Deliveries", value: overviewData.activeDeliveries, icon: Gift },
-                    { label: "Diary Entries", value: overviewData.diaryEntries, icon: Star },
-                    { label: "Starred Items", value: overviewData.starredItems, icon: Sparkles },
-                    { label: "Wallet Balance", value: `R${overviewData.walletBalance}`, icon: Crown },
                     { label: "Referrals", value: overviewData.referralCount, icon: Gift },
                   ].map((item) => (
                     <div key={item.label} className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-muted/20">
@@ -308,6 +306,15 @@ const MemberPortal = ({ isOpen, onClose, tier = "private", userId, onWalletUpdat
               {/* === REWARDS === */}
               {activeTab === "rewards" && (
                 <div className="space-y-3">
+                  {/* Refer a Friend button */}
+                  <Button
+                    variant="outline"
+                    className="w-full border-gold/30 text-gold hover:bg-gold/10"
+                    onClick={() => toast({ title: "Coming Soon ✨", description: "Referral rewards are launching soon!" })}
+                  >
+                    <Gift className="w-4 h-4 mr-2" /> Refer a Friend
+                  </Button>
+
                   {rewards.length === 0 ? (
                     <p className="text-center text-muted-foreground py-6">No rewards available</p>
                   ) : (
