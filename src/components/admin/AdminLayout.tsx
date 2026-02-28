@@ -80,12 +80,7 @@ const AdminLayout = () => {
   const [locations, setLocations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!adminLoading && !isAdmin) {
-      toast({ title: "Access Denied", description: "Admin privileges required.", variant: "destructive" });
-      navigate("/");
-    }
-  }, [isAdmin, adminLoading, navigate, toast]);
+  // Admin access is enforced by ProtectedAdminRoute wrapper
 
   const profileMap = new Map<string, { name: string; email: string }>();
   profiles.forEach((p) => {
@@ -234,7 +229,17 @@ const AdminLayout = () => {
           </nav>
 
           {/* Sidebar footer */}
-          <div className="p-3 border-t border-admin-border">
+          <div className="p-3 border-t border-admin-border space-y-1">
+            <button
+              onClick={() => {
+                sessionStorage.setItem("admin_view_as_user", "true");
+                navigate("/profile");
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-admin-surface-hover transition-colors"
+            >
+              <Users className="w-4 h-4" />
+              <span>View as User</span>
+            </button>
             <Link
               to="/profile"
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-admin-surface-hover transition-colors"

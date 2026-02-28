@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
 import { useAdminAlerts } from "@/hooks/useAdminAlerts";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 import logoLight from "@/assets/alpha-logo-light.png";
 
 const Profile = () => {
@@ -39,6 +40,7 @@ const Profile = () => {
   } = useProfileData();
   const [showMemberPortal, setShowMemberPortal] = useState(false);
   const [localPrefs, setLocalPrefs] = useState<any>(null);
+  const { isAdmin } = useAdminCheck();
 
   const currentTier = subscription?.tier || profile?.tier || "private";
 
@@ -109,6 +111,20 @@ const Profile = () => {
         </header>
 
         <main className="container mx-auto px-4 py-8">
+          {/* Admin Dashboard Button */}
+          {isAdmin && (
+            <button
+              onClick={() => navigate("/admin")}
+              className="w-full mb-6 flex items-center justify-between p-4 rounded-xl border border-admin-emerald/30 bg-admin-emerald/5 hover:bg-admin-emerald/10 transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <Shield className="w-5 h-5 text-admin-emerald" />
+                <span className="text-foreground font-semibold">Admin Dashboard</span>
+              </div>
+              <ChevronRight className="w-5 h-5 text-admin-emerald" />
+            </button>
+          )}
+
           {/* Profile Header with Stats */}
           <ProfileHeader
             profile={profile}

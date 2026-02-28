@@ -30,6 +30,7 @@ import CommunityPostDetail from "./pages/CommunityPostDetail";
 import CultureItemDetail from "./pages/CultureItemDetail";
 import ImportCultureData from "./pages/ImportCultureData";
 import AgeGate from "./components/AgeGate";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
 const queryClient = new QueryClient();
 
@@ -56,14 +57,14 @@ const App = () => (
             <Route path="/strain/:strainSlug" element={<StrainDetail />} />
             <Route path="/community/:postId" element={<CommunityPostDetail />} />
             <Route path="/culture/:slug" element={<CultureItemDetail />} />
-            <Route path="/admin/import-culture" element={<ImportCultureData />} />
+            <Route path="/admin/import-culture" element={<ProtectedAdminRoute><ImportCultureData /></ProtectedAdminRoute>} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/my-diary" element={<MyDiary />} />
             <Route path="/deliveries" element={<Deliveries />} />
             <Route path="/billing" element={<Billing />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/support" element={<Support />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin" element={<ProtectedAdminRoute><Admin /></ProtectedAdminRoute>} />
             <Route path="/vendor" element={<VendorPortal />} />
             <Route path="/legal" element={<Legal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
