@@ -67,6 +67,7 @@ export const useProfileData = () => {
 
       // Parallel fetches
       const [
+        profilesRes,
         profileRes,
         subRes,
         prefRes,
@@ -80,6 +81,7 @@ export const useProfileData = () => {
         ticketsRes,
         cultureItemStarsRes,
       ] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
         supabase.from("users").select("*").eq("id", uid).maybeSingle(),
         supabase.from("subscriptions").select("*").eq("user_id", uid).eq("status", "active").maybeSingle(),
         supabase.from("user_preferences").select("*").eq("user_id", uid).maybeSingle(),
@@ -149,9 +151,15 @@ export const useProfileData = () => {
         }
       }
 
+      // Merge profiles table data into the user profile
+      const mergedProfile = {
+        ...(profileRes.data || {}),
+        ...(profilesRes.data || {}),
+      };
+
       setData({
         user: session.user,
-        profile: profileRes.data,
+        profile: mergedProfile,
         subscription: subRes.data,
         preferences: prefRes.data,
         wallet: walletRes.data ? {

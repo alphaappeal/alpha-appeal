@@ -1772,45 +1772,57 @@ export type Database = {
       }
       profiles: {
         Row: {
+          application_status: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string | null
           email: string | null
           full_name: string | null
           id: string
+          payment_status: string | null
           phone: string | null
           preferences: Json | null
+          referral_code_used: string | null
           role: string | null
+          subscription_tier: string | null
           tier: string | null
           updated_at: string | null
           username: string | null
           website: string | null
         }
         Insert: {
+          application_status?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
           id: string
+          payment_status?: string | null
           phone?: string | null
           preferences?: Json | null
+          referral_code_used?: string | null
           role?: string | null
+          subscription_tier?: string | null
           tier?: string | null
           updated_at?: string | null
           username?: string | null
           website?: string | null
         }
         Update: {
+          application_status?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
+          payment_status?: string | null
           phone?: string | null
           preferences?: Json | null
+          referral_code_used?: string | null
           role?: string | null
+          subscription_tier?: string | null
           tier?: string | null
           updated_at?: string | null
           username?: string | null
@@ -2922,6 +2934,7 @@ export type Database = {
         Args: { make_admin: boolean; target_email: string }
         Returns: undefined
       }
+      validate_referral_code: { Args: { code_input: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

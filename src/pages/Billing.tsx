@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, CreditCard, Coins, XCircle, Loader2, Sparkles, Crown, Shield } from "lucide-react";
+import { ArrowLeft, CreditCard, Coins, XCircle, Loader2, Sparkles, Crown, Shield, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
@@ -63,6 +63,7 @@ const Billing = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [coinModalOpen, setCoinModalOpen] = useState(false);
   const [requestingTier, setRequestingTier] = useState<string | null>(null);
+  const [profileData, setProfileData] = useState<any>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -71,22 +72,15 @@ const Billing = () => {
 
       setUserId(session.user.id);
 
-      const { data: subData } = await supabase
-        .from("subscriptions")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .eq("status", "active")
-        .maybeSingle();
-      setSubscription(subData);
+      const [subResult, orderResult, profileResult] = await Promise.all([
+        supabase.from("subscriptions").select("*").eq("user_id", session.user.id).eq("status", "active").maybeSingle(),
+        supabase.from("orders").select("*").eq("user_id", session.user.id).order("created_at", { ascending: false }).limit(10),
+        supabase.from("profiles").select("subscription_tier, application_status, payment_status").eq("id", session.user.id).maybeSingle(),
+      ]);
 
-      const { data: orderData } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .order("created_at", { ascending: false })
-        .limit(10);
-      setOrders(orderData || []);
-
+      setSubscription(subResult.data);
+      setOrders(orderResult.data || []);
+      setProfileData(profileResult.data);
       setLoading(false);
     };
     loadData();
@@ -156,6 +150,17 @@ const Billing = () => {
         </header>
 
         <main className="container mx-auto px-4 py-6 space-y-8">
+          {/* Pending Private Application Badge */}
+          {profileData?.subscription_tier === "pending_private" && (
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-500/10 to-card/50 border border-amber-500/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="w-5 h-5 text-amber-400" />
+                <h2 className="font-display font-semibold text-foreground">Application Under Review</h2>
+              </div>
+              <p className="text-muted-foreground text-sm">Your Private tier application is being reviewed. You'll be notified once approved.</p>
+            </div>
+          )}
+
           {/* Current Subscription Summary */}
           {subscription && (
             <div className="p-5 rounded-2xl bg-card/50 border border-border/50">

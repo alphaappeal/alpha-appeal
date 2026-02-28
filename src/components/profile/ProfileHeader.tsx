@@ -10,6 +10,9 @@ interface ProfileHeaderProps {
 
 const ProfileHeader = ({ profile, user, subscription, wallet, referralCount }: ProfileHeaderProps) => {
   const getTierDisplay = () => {
+    const subTier = profile?.subscription_tier;
+    if (subTier === "pending_private") return "Pending Private";
+    if (subTier && subTier !== "none") return subTier.charAt(0).toUpperCase() + subTier.slice(1);
     if (subscription?.tier) return subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1);
     if (profile?.tier) return profile.tier.charAt(0).toUpperCase() + profile.tier.slice(1);
     return "Private";

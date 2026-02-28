@@ -144,7 +144,7 @@ const Profile = () => {
           )}
 
           {/* Subscription Info */}
-          {subscription && (
+          {subscription ? (
             <div className="mb-8 p-6 rounded-2xl bg-gradient-to-br from-secondary/10 to-card/50 border border-secondary/30">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-display font-semibold text-foreground">Your Subscription</h3>
@@ -169,7 +169,15 @@ const Profile = () => {
                 </div>
               </div>
             </div>
-          )}
+          ) : currentTier === "pending_private" || profile?.application_status === "submitted" ? (
+            <div className="mb-8 p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 to-card/50 border border-amber-500/30">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-display font-semibold text-foreground">Private Application</h3>
+                <span className="px-2 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs font-medium">Under Review</span>
+              </div>
+              <p className="text-muted-foreground text-sm">Your Private tier application is being reviewed by our team. You'll be notified once a decision is made.</p>
+            </div>
+          ) : null}
 
           {/* Galaxy Dashboard */}
           <GalaxyDashboard
