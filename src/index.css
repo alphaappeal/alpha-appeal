@@ -72,6 +72,16 @@
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 0 0% 18%;
     --sidebar-ring: 103 22% 56%;
+
+    /* Admin-specific tokens */
+    --admin-bg: 0 0% 4%;
+    --admin-surface: 0 0% 7%;
+    --admin-surface-hover: 0 0% 10%;
+    --admin-border: 0 0% 14%;
+    --admin-emerald: 160 84% 39%;
+    --admin-amber: 38 92% 50%;
+    --admin-indigo: 239 84% 67%;
+    --admin-rose: 346 77% 50%;
   }
 
   .dark {
