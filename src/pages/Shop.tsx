@@ -8,6 +8,9 @@ import BottomNav from "@/components/BottomNav";
 import logoLight from "@/assets/alpha-logo-light.png";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+const DEFAULT_CATEGORIES = ["Art", "Fashion", "Flowers & Edibles", "Supplements", "Accessories"];
 
 interface Product {
   id: string;
@@ -26,56 +29,79 @@ interface CartItem extends Product {
 
 const Shop = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
 
+  const fetchProducts = async () => {
+    const { data, error } = await supabase
+      .from("products")
+      .select("id, name, price, category, image_url, description, in_stock, stock_quantity")
+      .eq("active", true)
+      .order("created_at", { ascending: false });
+    if (!error && data) setProducts(data as Product[]);
+    setLoadingProducts(false);
+  };
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, name, price, category, image_url, description, in_stock, stock_quantity")
-        .eq("active", true)
-        .order("created_at", { ascending: false });
-      if (!error && data) setProducts(data as Product[]);
-      setLoadingProducts(false);
-    };
     fetchProducts();
+
+    // Realtime listener for instant stock updates
+    const channel = supabase
+      .channel("products-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "products" }, (payload) => {
+        if (payload.eventType === "UPDATE") {
+          setProducts((prev) =>
+            prev.map((p) => (p.id === (payload.new as Product).id ? { ...p, ...(payload.new as Product) } : p))
+          );
+        } else if (payload.eventType === "DELETE") {
+          setProducts((prev) => prev.filter((p) => p.id !== (payload.old as any).id));
+        } else if (payload.eventType === "INSERT" && (payload.new as any).active) {
+          setProducts((prev) => [(payload.new as Product), ...prev]);
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
-  const categories = ["all", ...Array.from(new Set(products.map(p => p.category).filter(Boolean))) as string[]];
+  // Build unique categories from defaults + any DB values
+  const dbCategories = products.map((p) => p.category).filter(Boolean) as string[];
+  const allCats = Array.from(new Set([...DEFAULT_CATEGORIES, ...dbCategories]));
+  const categories = ["all", ...allCats];
 
-  const filteredProducts = products.filter(p =>
-    selectedCategory === "all" || p.category === selectedCategory
+  const filteredProducts = products.filter(
+    (p) => selectedCategory === "all" || p.category === selectedCategory
   );
 
   const addToCart = (product: Product) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
+    setCart((prev) => {
+      const existing = prev.find((item) => item.id === product.id);
       if (existing) {
-        return prev.map(item =>
+        toast({ title: "Quantity Updated", description: `${product.name} × ${existing.quantity + 1}` });
+        return prev.map((item) =>
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
+      toast({ title: "Added to Cart ✓", description: product.name });
       return [...prev, { ...product, quantity: 1 }];
     });
   };
 
   const removeFromCart = (productId: string) => {
-    setCart(prev => prev.filter(item => item.id !== productId));
+    setCart((prev) => prev.filter((item) => item.id !== productId));
   };
 
   const updateQuantity = (productId: string, delta: number) => {
-    setCart(prev =>
+    setCart((prev) =>
       prev
-        .map(item =>
-          item.id === productId
-            ? { ...item, quantity: Math.max(0, item.quantity + delta) }
-            : item
+        .map((item) =>
+          item.id === productId ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item
         )
-        .filter(item => item.quantity > 0)
+        .filter((item) => item.quantity > 0)
     );
   };
 
@@ -83,12 +109,12 @@ const Shop = () => {
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const getCategoryColor = (cat: string) => {
-    switch (cat) {
+    switch (cat.toLowerCase()) {
       case "fashion": return "bg-secondary/20 text-secondary";
-      case "wellness": return "bg-green-500/20 text-green-400";
+      case "art": return "bg-purple-500/20 text-purple-400";
+      case "flowers & edibles": return "bg-green-500/20 text-green-400";
+      case "supplements": return "bg-blue-500/20 text-blue-400";
       case "accessories": return "bg-primary/20 text-primary";
-      case "culture": return "bg-purple-500/20 text-purple-400";
-      case "curated": return "bg-pink-500/20 text-pink-400";
       default: return "bg-muted text-muted-foreground";
     }
   };
@@ -122,7 +148,7 @@ const Shop = () => {
         <main className="container mx-auto px-4 py-6">
           {/* Category Filters */}
           <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide">
-            {categories.map(cat => (
+            {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
@@ -133,7 +159,7 @@ const Shop = () => {
                     : "bg-card border border-border text-muted-foreground hover:border-secondary/50"
                 )}
               >
-                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                {cat === "all" ? "All" : cat}
               </button>
             ))}
           </div>
@@ -148,7 +174,7 @@ const Shop = () => {
           {/* Products Grid */}
           {!loadingProducts && (
             <div className="grid grid-cols-2 gap-4">
-              {filteredProducts.map(product => (
+              {filteredProducts.map((product) => (
                 <div
                   key={product.id}
                   className="group bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl overflow-hidden hover:border-secondary/30 transition-all"
@@ -179,12 +205,8 @@ const Shop = () => {
                         {product.category}
                       </Badge>
                     )}
-                    <h3 className="font-medium text-foreground text-sm mb-1 line-clamp-2">
-                      {product.name}
-                    </h3>
-                    <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-                      {product.description || ""}
-                    </p>
+                    <h3 className="font-medium text-foreground text-sm mb-1 line-clamp-2">{product.name}</h3>
+                    <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{product.description || ""}</p>
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-secondary font-semibold text-sm">R{product.price}</span>
                       <Button
@@ -235,7 +257,7 @@ const Shop = () => {
               ) : (
                 <>
                   <div className="space-y-4 mb-6">
-                    {cart.map(item => (
+                    {cart.map((item) => (
                       <div key={item.id} className="flex gap-4 bg-muted/30 p-4 rounded-xl">
                         {item.image_url ? (
                           <img src={item.image_url} alt={item.name} className="w-20 h-20 object-cover rounded-lg" />

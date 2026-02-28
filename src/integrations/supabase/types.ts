@@ -978,6 +978,9 @@ export type Database = {
           created_at: string | null
           description: string | null
           event_date: string | null
+          event_type: string | null
+          event_url: string | null
+          icon_svg: string | null
           id: string
           image_url: string | null
           latitude: number
@@ -989,6 +992,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           event_date?: string | null
+          event_type?: string | null
+          event_url?: string | null
+          icon_svg?: string | null
           id?: string
           image_url?: string | null
           latitude: number
@@ -1000,6 +1006,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           event_date?: string | null
+          event_type?: string | null
+          event_url?: string | null
+          icon_svg?: string | null
           id?: string
           image_url?: string | null
           latitude?: number
