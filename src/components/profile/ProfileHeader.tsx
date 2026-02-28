@@ -1,4 +1,4 @@
-import { User, Flame, Trophy, Wallet, Users } from "lucide-react";
+import { User, Flame, Trophy, Users } from "lucide-react";
 
 interface ProfileHeaderProps {
   profile: any;
@@ -18,7 +18,11 @@ const ProfileHeader = ({ profile, user, subscription, wallet, referralCount }: P
   return (
     <div className="text-center mb-6">
       <div className="w-20 h-20 rounded-full bg-secondary/10 border-2 border-secondary/30 flex items-center justify-center mx-auto mb-4">
-        <User className="w-10 h-10 text-secondary" />
+        {profile?.avatar_url ? (
+          <img src={profile.avatar_url} alt="Profile" className="w-full h-full rounded-full object-cover" loading="lazy" />
+        ) : (
+          <User className="w-10 h-10 text-secondary" />
+        )}
       </div>
       <h2 className="font-display text-xl font-bold text-foreground mb-0.5">
         {profile?.full_name || user?.email?.split("@")[0] || "Member"}
@@ -26,13 +30,12 @@ const ProfileHeader = ({ profile, user, subscription, wallet, referralCount }: P
       {profile?.username && (
         <p className="text-muted-foreground text-xs mb-1">@{profile.username}</p>
       )}
-      <p className="text-muted-foreground text-sm mb-2">{profile?.email || user?.email}</p>
       <span className="inline-block px-4 py-1.5 rounded-full bg-secondary/10 text-secondary text-sm font-medium">
         {getTierDisplay()} Member
       </span>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-4 gap-2 mt-5 p-4 rounded-2xl bg-card/50 border border-border/50">
+      {/* Stats Row — Streak, Best, Referrals */}
+      <div className="grid grid-cols-3 gap-2 mt-5 p-4 rounded-2xl bg-card/50 border border-border/50">
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
             <Flame className="w-3.5 h-3.5 text-orange-400" />
@@ -46,13 +49,6 @@ const ProfileHeader = ({ profile, user, subscription, wallet, referralCount }: P
           </div>
           <p className="text-lg font-bold text-foreground">{profile?.longest_streak ?? 0}</p>
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Best</p>
-        </div>
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-1 mb-1">
-            <Wallet className="w-3.5 h-3.5 text-secondary" />
-          </div>
-          <p className="text-lg font-bold text-foreground">R{wallet?.credit_balance ?? 0}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Wallet</p>
         </div>
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
