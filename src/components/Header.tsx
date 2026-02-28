@@ -40,13 +40,13 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <a href="#tiers" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
+            <a href="#pricing-section" onClick={(e) => { e.preventDefault(); document.getElementById('pricing-section')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
               Membership
             </a>
-            <a href="#philosophy" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
+            <a href="#philosophy-section" onClick={(e) => { e.preventDefault(); document.getElementById('philosophy-section')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
               Philosophy
             </a>
-            <a href="#community" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
+            <a href="#member-network-section" onClick={(e) => { e.preventDefault(); document.getElementById('member-network-section')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
               Community
             </a>
             {!adminLoading && isAdmin && (
@@ -95,23 +95,23 @@ const Header = () => {
           <div className="md:hidden py-4 border-t border-border/30 animate-fade-in">
             <nav className="flex flex-col gap-4">
               <a 
-                href="#tiers" 
+                href="#pricing-section" 
                 className="text-foreground py-2 font-medium"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); document.getElementById('pricing-section')?.scrollIntoView({ behavior: 'smooth' }); }}
               >
                 Membership
               </a>
               <a 
-                href="#philosophy" 
+                href="#philosophy-section" 
                 className="text-foreground py-2 font-medium"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); document.getElementById('philosophy-section')?.scrollIntoView({ behavior: 'smooth' }); }}
               >
                 Philosophy
               </a>
               <a 
-                href="#community" 
+                href="#member-network-section" 
                 className="text-foreground py-2 font-medium"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); document.getElementById('member-network-section')?.scrollIntoView({ behavior: 'smooth' }); }}
               >
                 Community
               </a>

@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import HowItWorks from "@/components/HowItWorks";
@@ -10,6 +13,23 @@ import Footer from "@/components/Footer";
 import ConsentModal from "@/components/ConsentModal";
 
 const Index = () => {
+  const [checking, setChecking] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/profile", { replace: true });
+      } else {
+        setChecking(false);
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
+  if (checking) return null;
+
   return (
     <>
       <Helmet>

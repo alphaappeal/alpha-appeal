@@ -69,7 +69,7 @@ const TierSection = () => {
   };
 
   return (
-    <section id="tiers" className="py-20 md:py-32 relative overflow-hidden">
+    <section id="pricing-section" className="py-20 md:py-32 relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-radial from-secondary/5 via-transparent to-transparent" />
       
