@@ -35,11 +35,13 @@ import {
   Palette,
   Store,
   Activity,
+  Truck,
 } from "lucide-react";
 import PartnersTab from "@/components/admin/PartnersTab";
 import SystemActivityTab from "@/components/admin/SystemActivityTab";
 import ProductsTab from "@/components/admin/ProductsTab";
 import CultureTab from "@/components/admin/CultureTab";
+import DeliveriesTab from "@/components/admin/DeliveriesTab";
 import logoLight from "@/assets/alpha-logo-light.png";
 
 // ─── helpers ───────────────────────────────────────────────────────────
@@ -302,6 +304,7 @@ const Admin = () => {
               <TabsTrigger value="partners" className="gap-1.5 text-xs sm:text-sm"><Store className="w-4 h-4" /> Partners</TabsTrigger>
               <TabsTrigger value="products" className="gap-1.5 text-xs sm:text-sm"><ShoppingBag className="w-4 h-4" /> Products</TabsTrigger>
               <TabsTrigger value="content" className="gap-1.5 text-xs sm:text-sm"><BookOpen className="w-4 h-4" /> Content</TabsTrigger>
+              <TabsTrigger value="deliveries" className="gap-1.5 text-xs sm:text-sm"><Truck className="w-4 h-4" /> Deliveries</TabsTrigger>
               <TabsTrigger value="activity" className="gap-1.5 text-xs sm:text-sm"><Activity className="w-4 h-4" /> Activity</TabsTrigger>
             </TabsList>
 
@@ -658,6 +661,11 @@ const Admin = () => {
                   </div>
                 )}
               </section>
+            </TabsContent>
+
+            {/* ═══════════ DELIVERIES ═══════════ */}
+            <TabsContent value="deliveries">
+              <DeliveriesTab profileMap={profileMap} />
             </TabsContent>
 
             {/* ═══════════ ACTIVITY ═══════════ */}

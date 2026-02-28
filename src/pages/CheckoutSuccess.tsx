@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle, ShoppingBag, Home, Loader2 } from "lucide-react";
+import { CheckCircle, ShoppingBag, Home, Loader2, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoLight from "@/assets/alpha-logo-light.png";
 
@@ -112,12 +112,18 @@ const CheckoutSuccess = () => {
 
             <div className="flex flex-col gap-3">
               <Button variant="sage" size="lg" className="w-full" asChild>
+                <Link to="/deliveries">
+                  <Truck className="w-4 h-4 mr-2" />
+                  Track Delivery
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" className="w-full" asChild>
                 <Link to="/shop">
                   <ShoppingBag className="w-4 h-4 mr-2" />
                   Continue Shopping
                 </Link>
               </Button>
-              <Button variant="outline" size="lg" className="w-full" asChild>
+              <Button variant="ghost" size="lg" className="w-full" asChild>
                 <Link to="/">
                   <Home className="w-4 h-4 mr-2" />
                   Back to Home
