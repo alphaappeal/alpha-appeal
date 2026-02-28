@@ -83,6 +83,33 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_alerts: {
+        Row: {
+          alert_type: string | null
+          created_at: string | null
+          id: string
+          message: string | null
+          target_tier: string[] | null
+          title: string
+        }
+        Insert: {
+          alert_type?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          target_tier?: string[] | null
+          title: string
+        }
+        Update: {
+          alert_type?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          target_tier?: string[] | null
+          title?: string
+        }
+        Relationships: []
+      }
       admin_logs: {
         Row: {
           action: string | null
@@ -2237,6 +2264,35 @@ export type Database = {
           },
         ]
       }
+      user_alert_reads: {
+        Row: {
+          alert_id: string
+          id: string
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_id: string
+          id?: string
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_id?: string
+          id?: string
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_alert_reads_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "admin_alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_cart: {
         Row: {
           created_at: string | null
@@ -2641,6 +2697,7 @@ export type Database = {
           last_diary_entry: string | null
           last_entry_date: string | null
           last_login_at: string | null
+          last_visit_at: string | null
           longest_streak: number | null
           notify_events: boolean | null
           notify_orders: boolean | null
@@ -2674,6 +2731,7 @@ export type Database = {
           last_diary_entry?: string | null
           last_entry_date?: string | null
           last_login_at?: string | null
+          last_visit_at?: string | null
           longest_streak?: number | null
           notify_events?: boolean | null
           notify_orders?: boolean | null
@@ -2707,6 +2765,7 @@ export type Database = {
           last_diary_entry?: string | null
           last_entry_date?: string | null
           last_login_at?: string | null
+          last_visit_at?: string | null
           longest_streak?: number | null
           notify_events?: boolean | null
           notify_orders?: boolean | null

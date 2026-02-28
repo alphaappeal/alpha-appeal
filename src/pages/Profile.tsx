@@ -11,7 +11,6 @@ import { useProfileData } from "@/hooks/useProfileData";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import GalaxyDashboard from "@/components/profile/GalaxyDashboard";
 import ReferralSection from "@/components/profile/ReferralSection";
-import DiaryProgress from "@/components/profile/DiaryProgress";
 import DeliveriesPreview from "@/components/profile/DeliveriesPreview";
 import {
   BookOpen,
@@ -25,6 +24,8 @@ import {
   Loader2,
   Crown,
 } from "lucide-react";
+import { useStreakTracker } from "@/hooks/useStreakTracker";
+import { useAdminAlerts } from "@/hooks/useAdminAlerts";
 import logoLight from "@/assets/alpha-logo-light.png";
 
 const Profile = () => {
@@ -38,6 +39,14 @@ const Profile = () => {
   } = useProfileData();
   const [showMemberPortal, setShowMemberPortal] = useState(false);
   const [localPrefs, setLocalPrefs] = useState<any>(null);
+
+  const currentTier = subscription?.tier || profile?.tier || "private";
+
+  // Track visit streak
+  useStreakTracker(user?.id);
+
+  // Admin alerts
+  const { unreadCount: alertUnread, alerts: adminAlerts, markRead: markAlertRead } = useAdminAlerts(user?.id, currentTier);
 
   useEffect(() => {
     if (preferences) setLocalPrefs(preferences);
@@ -65,7 +74,7 @@ const Profile = () => {
     );
   }
 
-  const currentTier = subscription?.tier || profile?.tier || "private";
+  // currentTier already declared above loading check
 
   const menuItems = [
     { icon: BookOpen, label: "My Diary", path: "/my-diary" },
@@ -88,7 +97,14 @@ const Profile = () => {
               <img src={logoLight} alt="Alpha" className="h-7" />
             </Link>
             <h1 className="font-display text-lg font-semibold text-foreground">Profile</h1>
-            <div className="w-14" />
+            <button onClick={() => {}} className="relative p-2">
+              <Bell className="w-5 h-5 text-muted-foreground" />
+              {alertUnread > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                  {alertUnread > 9 ? "9+" : alertUnread}
+                </span>
+              )}
+            </button>
           </div>
         </header>
 
@@ -111,13 +127,21 @@ const Profile = () => {
             Enter Member Portal
           </Button>
 
-          {/* Diary Progress */}
-          <DiaryProgress
-            streakCount={profile?.streak_count ?? 0}
-            longestStreak={profile?.longest_streak ?? 0}
-            diaryPoints={profile?.diary_points ?? 0}
-            entryCount={profile?.diary_entry_count ?? 0}
-          />
+          {/* Admin Alerts */}
+          {adminAlerts.filter(a => !a.seen).length > 0 && (
+            <div className="mb-8 space-y-2">
+              {adminAlerts.filter(a => !a.seen).slice(0, 3).map((alert: any) => (
+                <button
+                  key={alert.id}
+                  onClick={() => markAlertRead(alert.id)}
+                  className="w-full text-left p-4 rounded-xl border border-gold/30 bg-gold/5 hover:bg-gold/10 transition-all"
+                >
+                  <p className="font-medium text-foreground text-sm">{alert.title}</p>
+                  {alert.message && <p className="text-xs text-muted-foreground mt-1">{alert.message}</p>}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Subscription Info */}
           {subscription && (
