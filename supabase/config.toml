@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.create-payfast-checkout]
 verify_jwt = false
+
+[functions.shipday-updates]
+verify_jwt = false
+
+[functions.post-to-shipday]
+verify_jwt = false

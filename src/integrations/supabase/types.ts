@@ -2202,36 +2202,96 @@ export type Database = {
       }
       user_deliveries: {
         Row: {
+          admin_notes: string | null
           concierge: boolean | null
           created_at: string | null
+          delivery_address: string | null
+          delivery_fee: number | null
+          delivery_fee_original: number | null
+          distance_km: number | null
+          driver_latitude: number | null
+          driver_longitude: number | null
+          driver_name: string | null
+          driver_phone: string | null
           estimated_delivery: string | null
+          eta_minutes: number | null
+          geofence_arrived_at: string | null
+          geofence_left_at: string | null
           id: string
           order_id: string | null
+          pickup_address: string | null
+          pod_photo_url: string | null
+          pod_signature_url: string | null
+          priority: string | null
           provider: string | null
+          shipday_order_id: string | null
+          shipday_status: string | null
           status: string | null
           tracking_number: string | null
+          tracking_url: string | null
+          updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          admin_notes?: string | null
           concierge?: boolean | null
           created_at?: string | null
+          delivery_address?: string | null
+          delivery_fee?: number | null
+          delivery_fee_original?: number | null
+          distance_km?: number | null
+          driver_latitude?: number | null
+          driver_longitude?: number | null
+          driver_name?: string | null
+          driver_phone?: string | null
           estimated_delivery?: string | null
+          eta_minutes?: number | null
+          geofence_arrived_at?: string | null
+          geofence_left_at?: string | null
           id?: string
           order_id?: string | null
+          pickup_address?: string | null
+          pod_photo_url?: string | null
+          pod_signature_url?: string | null
+          priority?: string | null
           provider?: string | null
+          shipday_order_id?: string | null
+          shipday_status?: string | null
           status?: string | null
           tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          admin_notes?: string | null
           concierge?: boolean | null
           created_at?: string | null
+          delivery_address?: string | null
+          delivery_fee?: number | null
+          delivery_fee_original?: number | null
+          distance_km?: number | null
+          driver_latitude?: number | null
+          driver_longitude?: number | null
+          driver_name?: string | null
+          driver_phone?: string | null
           estimated_delivery?: string | null
+          eta_minutes?: number | null
+          geofence_arrived_at?: string | null
+          geofence_left_at?: string | null
           id?: string
           order_id?: string | null
+          pickup_address?: string | null
+          pod_photo_url?: string | null
+          pod_signature_url?: string | null
+          priority?: string | null
           provider?: string | null
+          shipday_order_id?: string | null
+          shipday_status?: string | null
           status?: string | null
           tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -2467,6 +2527,8 @@ export type Database = {
           diary_points: number | null
           dob: string | null
           email: string
+          free_deliveries_reset_month: string | null
+          free_deliveries_used: number | null
           full_name: string | null
           id: string
           is_admin: boolean | null
@@ -2498,6 +2560,8 @@ export type Database = {
           diary_points?: number | null
           dob?: string | null
           email: string
+          free_deliveries_reset_month?: string | null
+          free_deliveries_used?: number | null
           full_name?: string | null
           id: string
           is_admin?: boolean | null
@@ -2529,6 +2593,8 @@ export type Database = {
           diary_points?: number | null
           dob?: string | null
           email?: string
+          free_deliveries_reset_month?: string | null
+          free_deliveries_used?: number | null
           full_name?: string | null
           id?: string
           is_admin?: boolean | null
