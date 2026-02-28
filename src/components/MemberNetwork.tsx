@@ -207,7 +207,7 @@ const MemberNetwork: React.FC = () => {
   };
 
   return (
-    <section id="member-network" className="py-20 bg-background">
+    <section id="member-network-section" className="py-20 bg-background">
       <div className="container mx-auto px-4 mb-12">
         <div className="text-center">
           <span className="text-sm uppercase tracking-[0.3em] text-gold mb-4 block font-medium">
