@@ -24,6 +24,7 @@ interface CommunityItem {
   strain_name?: string | null;
   creator?: string | null;
   img_url?: string | null;
+  _weight?: number;
 }
 
 const PAGE_SIZE = 30;
@@ -110,18 +111,17 @@ const Community = () => {
     try {
       const results: CommunityItem[] = [];
 
-      // Strains tab
+      // Strains tab — prioritize name matches, then type, then description
       if (activeCategory === "all" || activeCategory === "strains") {
         let strainQuery = supabase
           .from("strains")
           .select("id, name, slug, type, thc_level, description, effects, created_at, most_common_terpene")
-          .eq("published", true)
-          .order("name", { ascending: true });
+          .eq("published", true);
 
         if (query) {
           strainQuery = strainQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%,type.ilike.%${query}%,most_common_terpene.ilike.%${query}%`);
         }
-        strainQuery = strainQuery.range(from, to);
+        strainQuery = strainQuery.order("name", { ascending: true }).range(from, to);
 
         const { data: strains } = await strainQuery;
         if (strains) {
@@ -130,6 +130,15 @@ const Community = () => {
             const effectTags = effects ? Object.keys(effects).filter(k =>
               !["dry_mouth", "dry_eyes", "dizzy", "paranoid", "anxious"].includes(k)
             ).slice(0, 4) : [];
+
+            // Compute relevance weight: name match > type match > description match
+            let _weight = 0;
+            if (query) {
+              const q = query;
+              if (s.name?.toLowerCase().includes(q)) _weight += 100;
+              if (s.type?.toLowerCase().includes(q)) _weight += 50;
+              if (s.description?.toLowerCase().includes(q)) _weight += 10;
+            }
 
             results.push({
               id: s.id,
@@ -142,27 +151,27 @@ const Community = () => {
               source: "strain",
               slug: s.slug,
               thc_level: s.thc_level,
+              _weight,
             });
           }
         }
       }
 
-      // Culture items (fashion, wellness, artwork, cars)
+      // Culture items (fashion, wellness, artwork, cars) — prioritize name/category matches
       if (activeCategory === "all" || CULTURE_CATEGORIES.includes(activeCategory)) {
         let cultureQuery = supabase
           .from("culture_items")
           .select("id, name, slug, category, type, img_url, description, creator, year, created_at, upvotes, feelings")
-          .eq("published", true)
-          .order("name", { ascending: true });
+          .eq("published", true);
 
         if (CULTURE_CATEGORIES.includes(activeCategory)) {
           cultureQuery = cultureQuery.eq("category", activeCategory);
         }
 
         if (query) {
-          cultureQuery = cultureQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%,type.ilike.%${query}%,creator.ilike.%${query}%`);
+          cultureQuery = cultureQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%,type.ilike.%${query}%,category.ilike.%${query}%,creator.ilike.%${query}%`);
         }
-        cultureQuery = cultureQuery.range(from, to);
+        cultureQuery = cultureQuery.order("name", { ascending: true }).range(from, to);
 
         const { data: cultureItems } = await cultureQuery;
         if (cultureItems) {
@@ -176,6 +185,16 @@ const Community = () => {
                   .map(([k]) => k.replace(/_/g, " "))
               : [];
 
+            let _weight = 0;
+            if (query) {
+              const q = query;
+              if (c.name?.toLowerCase().includes(q)) _weight += 100;
+              if (c.category?.toLowerCase().includes(q)) _weight += 50;
+              if (c.type?.toLowerCase().includes(q)) _weight += 30;
+              if (c.creator?.toLowerCase().includes(q)) _weight += 20;
+              if (c.description?.toLowerCase().includes(q)) _weight += 10;
+            }
+
             results.push({
               id: c.id,
               title: c.name,
@@ -188,6 +207,7 @@ const Community = () => {
               slug: c.slug,
               creator: c.creator,
               img_url: c.img_url,
+              _weight,
             });
           }
         }
@@ -215,6 +235,15 @@ const Community = () => {
         const { data: entries } = await diaryQuery;
         if (entries) {
           for (const e of entries) {
+            let _weight = 0;
+            if (query) {
+              const q = query;
+              if (e.title?.toLowerCase().includes(q)) _weight += 100;
+              if (e.tags?.some((t: string) => t.toLowerCase().includes(q))) _weight += 60;
+              if (e.strain_name?.toLowerCase().includes(q)) _weight += 40;
+              if (e.excerpt?.toLowerCase().includes(q)) _weight += 10;
+            }
+
             results.push({
               id: e.id,
               title: e.title,
@@ -224,13 +253,22 @@ const Community = () => {
               created_at: e.created_at,
               source: "diary",
               strain_name: e.strain_name,
+              _weight,
             });
           }
         }
       }
 
-      if (pageNum === 0) setItems(results);
-      else setItems(prev => [...prev, ...results]);
+      // Sort by relevance weight when searching, otherwise keep default order
+      if (query) {
+        results.sort((a: any, b: any) => (b._weight || 0) - (a._weight || 0));
+      }
+
+      // Strip internal weight before setting state
+      const cleaned = results.map(({ _weight, ...rest }: any) => rest);
+
+      if (pageNum === 0) setItems(cleaned);
+      else setItems(prev => [...prev, ...cleaned]);
       setHasMore(results.length >= PAGE_SIZE);
     } catch (error) {
       console.error("Error fetching community items:", error);
