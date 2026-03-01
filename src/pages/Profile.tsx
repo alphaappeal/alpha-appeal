@@ -111,19 +111,7 @@ const Profile = () => {
         </header>
 
         <main className="container mx-auto px-4 py-8">
-          {/* Admin Dashboard Button */}
-          {isAdmin && (
-            <button
-              onClick={() => navigate("/admin")}
-              className="w-full mb-6 flex items-center justify-between p-4 rounded-xl border border-admin-emerald/30 bg-admin-emerald/5 hover:bg-admin-emerald/10 transition-all"
-            >
-              <div className="flex items-center gap-3">
-                <Shield className="w-5 h-5 text-admin-emerald" />
-                <span className="text-foreground font-semibold">Admin Dashboard</span>
-              </div>
-              <ChevronRight className="w-5 h-5 text-admin-emerald" />
-            </button>
-          )}
+          {/* Admin FAB rendered below via fixed position */}
 
           {/* Profile Header with Stats */}
           <ProfileHeader
@@ -301,6 +289,17 @@ const Profile = () => {
         userId={user?.id}
         onWalletUpdate={() => user?.id && refreshWallet(user.id)}
       />
+
+      {/* Admin FAB — bottom-right, above bottom nav */}
+      {isAdmin && (
+        <button
+          onClick={() => navigate("/admin")}
+          className="fixed bottom-24 right-5 z-50 w-12 h-12 rounded-full bg-secondary text-secondary-foreground shadow-lg flex items-center justify-center hover:bg-secondary/90 transition-all border border-secondary/30"
+          aria-label="Admin Dashboard"
+        >
+          <Shield className="w-5 h-5" />
+        </button>
+      )}
     </>
   );
 };

@@ -68,13 +68,18 @@ const Shop = () => {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  // Build unique categories from defaults + any DB values
+  // Build unique categories from defaults + DB values, normalized to avoid duplicates
   const dbCategories = products.map((p) => p.category).filter(Boolean) as string[];
-  const allCats = Array.from(new Set([...DEFAULT_CATEGORIES, ...dbCategories]));
+  const seen = new Map<string, string>();
+  [...DEFAULT_CATEGORIES, ...dbCategories].forEach((cat) => {
+    const key = cat.toLowerCase().trim();
+    if (!seen.has(key)) seen.set(key, cat);
+  });
+  const allCats = Array.from(seen.values());
   const categories = ["all", ...allCats];
 
   const filteredProducts = products.filter(
-    (p) => selectedCategory === "all" || p.category === selectedCategory
+    (p) => selectedCategory === "all" || p.category?.toLowerCase() === selectedCategory.toLowerCase()
   );
 
   const addToCart = (product: Product) => {
