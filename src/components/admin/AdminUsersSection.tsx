@@ -82,11 +82,20 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
   const handleChangeTier = async () => {
     if (!changeTierUser || !newTier) return;
     setSaving(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ tier: newTier, subscription_tier: newTier })
-      .eq("id", changeTierUser.id);
 
+    // Update both profiles and users tables atomically
+    const [profilesRes, usersRes] = await Promise.all([
+      supabase
+        .from("profiles")
+        .update({ tier: newTier, subscription_tier: newTier })
+        .eq("id", changeTierUser.id),
+      supabase
+        .from("users")
+        .update({ tier: newTier })
+        .eq("id", changeTierUser.id),
+    ]);
+
+    const error = profilesRes.error || usersRes.error;
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {

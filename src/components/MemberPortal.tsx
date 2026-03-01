@@ -138,6 +138,7 @@ const MemberPortal = ({ isOpen, onClose, tier = "private", userId, onWalletUpdat
       user_id: userId,
       reward_id: rewardId,
       message: claimMessage.trim(),
+      status: "pending",
     });
     if (error) {
       toast({ title: "Error", description: "Failed to submit claim", variant: "destructive" });
