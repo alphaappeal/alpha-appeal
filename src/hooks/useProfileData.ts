@@ -151,10 +151,10 @@ export const useProfileData = () => {
         }
       }
 
-      // Merge profiles table data into the user profile
+      // Merge: users table first, then profiles table overrides (profiles = source of truth)
       const mergedProfile = {
-        ...(profileRes.data || {}),
-        ...(profilesRes.data || {}),
+        ...(profileRes.data || {}),   // users table (base)
+        ...(profilesRes.data || {}),  // profiles table (overrides)
       };
 
       setData({
