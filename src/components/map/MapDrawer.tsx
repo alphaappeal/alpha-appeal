@@ -120,8 +120,8 @@ const MapDrawer = ({ partner, onClose }: MapDrawerProps) => {
   // Mobile: pull-up drawer
   if (isMobile) {
     return (
-      <Drawer open={!!partner} onOpenChange={(open) => { if (!open) onClose(); }}>
-        <DrawerContent className="max-h-[85vh]">
+      <Drawer open={!!partner} onOpenChange={(open) => { if (!open) onClose(); }} modal={false}>
+        <DrawerContent className="max-h-[60vh] z-[999] pb-20">
           <DrawerHeader className="sr-only">
             <DrawerTitle>{partner.name}</DrawerTitle>
             <DrawerDescription>{partner.vibe}</DrawerDescription>
@@ -136,7 +136,7 @@ const MapDrawer = ({ partner, onClose }: MapDrawerProps) => {
 
   // Desktop: side panel
   return (
-    <div className="absolute bottom-6 right-4 w-[420px] bg-card/95 backdrop-blur rounded-2xl z-[1000] border-2 border-secondary shadow-2xl max-h-[70vh] overflow-hidden">
+    <div className="absolute bottom-20 right-4 w-[420px] bg-card/95 backdrop-blur rounded-2xl z-[999] border-2 border-secondary shadow-2xl max-h-[60vh] overflow-hidden">
       <div className="relative">
         <div className="relative h-32 bg-muted flex items-center justify-center">
           <img
