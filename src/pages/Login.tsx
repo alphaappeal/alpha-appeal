@@ -211,12 +211,38 @@ const Login = () => {
               </form>
             </div>
 
-            <p className="text-center text-sm text-muted-foreground mt-6">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-secondary hover:underline">
-                Join Alpha
-              </Link>
-            </p>
+            <div className="text-center mt-6 space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Don't have an account?{" "}
+                <Link to="/signup" className="text-secondary hover:underline">
+                  Join Alpha
+                </Link>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Forgot your password?{" "}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!formData.email.trim()) {
+                      toast({ title: "Enter your email", description: "Please enter your email address first.", variant: "destructive" });
+                      return;
+                    }
+                    try {
+                      const { error } = await supabase.auth.resetPasswordForEmail(formData.email.trim(), {
+                        redirectTo: `${window.location.origin}/reset-password`,
+                      });
+                      if (error) throw error;
+                      toast({ title: "Reset link sent", description: "Check your email for a password reset link." });
+                    } catch (err: any) {
+                      toast({ title: "Error", description: err.message || "Failed to send reset link.", variant: "destructive" });
+                    }
+                  }}
+                  className="text-secondary hover:underline"
+                >
+                  Reset it
+                </button>
+              </p>
+            </div>
           </div>
         </main>
       </div>

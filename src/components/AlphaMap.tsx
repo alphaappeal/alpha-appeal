@@ -224,17 +224,18 @@ const AlphaMap = () => {
           <Button variant={filter.reservations ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, reservations: !filter.reservations})}
             className={filter.reservations ? 'bg-secondary text-secondary-foreground' : ''}>Reservations</Button>
 
-          <Button variant={filter.region === 'all' ? 'outline' : 'default'} size="sm" asChild
-            className={filter.region !== 'all' ? 'bg-secondary text-secondary-foreground p-0' : 'p-0'}>
-            <div className="relative">
-              <select value={filter.region} onChange={(e) => setFilter({...filter, region: e.target.value})}
-                className="appearance-none bg-transparent text-inherit px-3 py-1.5 pr-6 text-sm font-medium cursor-pointer focus:outline-none">
-                <option value="all">All Regions</option>
-                {regions.map(region => <option key={region} value={region}>{region}</option>)}
-              </select>
-              <Filter className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none opacity-60" />
-            </div>
-          </Button>
+          <div className={`relative inline-flex items-center rounded-md border text-sm font-medium h-9 ${
+            filter.region !== 'all' 
+              ? 'bg-secondary text-secondary-foreground border-secondary' 
+              : 'bg-background border-input hover:bg-accent hover:text-accent-foreground'
+          }`}>
+            <select value={filter.region} onChange={(e) => setFilter({...filter, region: e.target.value})}
+              className="appearance-none bg-transparent text-inherit px-3 py-1.5 pr-7 text-sm font-medium cursor-pointer focus:outline-none">
+              <option value="all">All Regions</option>
+              {regions.map(region => <option key={region} value={region}>{region}</option>)}
+            </select>
+            <Filter className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none opacity-60" />
+          </div>
         </div>
 
         <div className="flex items-center justify-between">

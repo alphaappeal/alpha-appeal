@@ -32,18 +32,27 @@ const Shop = () => {
   const { toast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   const fetchProducts = async () => {
-    const { data, error } = await supabase
-      .from("products")
-      .select("id, name, price, category, image_url, description, in_stock, stock_quantity")
-      .eq("active", true)
-      .order("created_at", { ascending: false });
-    if (!error && data) setProducts(data as Product[]);
-    setLoadingProducts(false);
+    setFetchError(null);
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, price, category, image_url, description, in_stock, stock_quantity")
+        .eq("active", true)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      setProducts(data as Product[]);
+    } catch (err: any) {
+      console.error("Failed to fetch products:", err);
+      setFetchError("Unable to load products. Please try again.");
+    } finally {
+      setLoadingProducts(false);
+    }
   };
 
   useEffect(() => {
@@ -230,7 +239,16 @@ const Shop = () => {
             </div>
           )}
 
-          {!loadingProducts && filteredProducts.length === 0 && (
+          {!loadingProducts && fetchError && (
+            <div className="text-center py-12">
+              <ShoppingBag className="w-12 h-12 mx-auto mb-4 text-destructive opacity-50" />
+              <p className="text-foreground font-medium mb-2">Something went wrong</p>
+              <p className="text-muted-foreground text-sm mb-4">{fetchError}</p>
+              <Button variant="outline" onClick={fetchProducts}>Try Again</Button>
+            </div>
+          )}
+
+          {!loadingProducts && !fetchError && filteredProducts.length === 0 && (
             <div className="text-center py-12">
               <ShoppingBag className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
               <p className="text-muted-foreground">No products available</p>
