@@ -1,54 +1,33 @@
 
-1) Triage the console warnings into actionable vs external noise
 
-- External (not from current codebase, no local source matches):
-  - `osano.js ... Unrecognized feature: 'vr' | 'ambient-light-sensor' | 'battery'`
-  - `iframe has both allow-scripts and allow-same-origin...`
-  These come from a third-party consent script context, not from `src/` or `index.html`.
-- Environment-only warning:
-  - `cdn.tailwindcss.com should not be used in production` appears via `lovable.js` preview tooling, not from your app HTML.
-- Actionable app warning:
-  - `Function components cannot be given refs` (stack points to `MapDrawer` → `PartnerDetails`, then ancestors).
+## Fix: Map UI Clipping/Overlap and Filter Button Inconsistencies
 
-2) Fix the ref warning at source (`MapDrawer`)
+### Problem 1: Partner Detail Panel Blocked by Filter Bar
 
-Files:
-- `src/components/map/MapDrawer.tsx`
+The filter bar sits at `z-[1001]` and extends vertically from `top-24` downward. The MapDrawer partner detail panel sits at `z-40`. On mobile, the close button (X) at the top of the partner panel is completely hidden behind the filter bar, making it impossible to dismiss the popup.
 
-Plan:
-- Convert `PartnerDetails` from plain function component to `React.forwardRef<HTMLDivElement, ...>`.
-- Attach the forwarded `ref` to the root wrapper `<div className="space-y-4">`.
-- Keep the existing contained card layout (mobile bottom sheet + desktop panel) unchanged.
-Why:
-- If any wrapper (library/dev tooling) passes a ref through composition, the component will safely accept it and stop throwing warnings.
+**Fix approach:**
+- When a partner is selected, **collapse the filter bar** to just the search input (or hide it entirely) to free up vertical space and eliminate the overlap.
+- Alternatively, raise the MapDrawer's z-index to `z-[1002]` so the close button renders above the filters, and add a slight top offset so the close button isn't visually buried.
+- Best approach: **hide the filter bar when a partner is selected** on mobile, and ensure the close button is always accessible. On desktop the side panel is already positioned at `right-4` away from the left-side filters, but verify no overlap there either.
 
-3) Harden top-level components that appear in the same ref-warning chain
+### Problem 2: Filter Buttons Inconsistent Styling
 
-Files:
-- `src/App.tsx`
-- `src/pages/Map.tsx`
-- `src/components/AlphaMap.tsx`
-- `src/components/BottomNav.tsx`
-- `src/components/AgeGate.tsx`
-- `src/components/ui/toaster.tsx`
-- `src/components/ui/sonner.tsx`
+- "Reservations" button (line 224) is missing the active-state class logic — it never gets `bg-secondary text-secondary-foreground` when toggled on, unlike "Open Now" and "Member Perks".
+- The `select` dropdown for regions uses raw HTML styling rather than matching the Button component aesthetic.
 
-Plan:
-- Add `forwardRef` support only where low-risk and straightforward (especially small wrapper components like `Toaster`, `Sonner`, `BottomNav`).
-- Do not change behavior, routing, or props; only make components ref-safe to reduce noisy warnings in composed contexts.
+**Fix approach:**
+- Add the same conditional className pattern to the Reservations button: `className={filter.reservations ? 'bg-secondary text-secondary-foreground' : ''}`.
+- Style the region `<select>` to better match the button pill style with consistent height/padding.
 
-4) Keep the map UI containment fix intact while validating stack order
+### Files to Edit
 
-- Preserve current constraints:
-  - fixed-size partner card (no full-screen takeover)
-  - mobile bottom sheet / desktop side panel behavior
-  - panel above map, below BottomNav
-- Verify close button remains clickable and overlay does not block nav.
+1. **`src/components/AlphaMap.tsx`**
+   - Hide the filter bar (or collapse it) on mobile when `selectedPartner` is set, preventing overlap with the partner panel.
+   - Fix the Reservations button active-state styling.
+   - Unify region select styling with the filter buttons.
 
-5) Verification checklist after patch
+2. **`src/components/map/MapDrawer.tsx`**
+   - Bump mobile panel z-index to `z-[1002]` so it sits above the filter bar when both are visible.
+   - Ensure the close button is always in a tappable, unobstructed position.
 
-- On `/map`, click several markers and confirm:
-  - no `Function components cannot be given refs` warning for `MapDrawer`/`PartnerDetails`
-  - panel remains contained and scrollable
-  - BottomNav tabs (`Shop`, `Profile`) remain clickable while panel is open
-- Confirm osano/iframe feature-policy warnings remain categorized as external (unless you intentionally embed that script in this project later).
