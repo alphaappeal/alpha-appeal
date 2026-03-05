@@ -160,6 +160,5 @@ const MapDrawer = forwardRef<HTMLDivElement, MapDrawerProps>(({ partner, onClose
   );
 });
 MapDrawer.displayName = "MapDrawer";
-MapDrawer.displayName = "MapDrawer";
 
 export default MapDrawer;

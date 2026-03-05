@@ -1,9 +1,7 @@
-import React, { forwardRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ShoppingBag, MapPin, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Updated: Diary changed to Community with Users icon
 const tabs = [
   { id: "shop", icon: ShoppingBag, label: "Shop", path: "/shop" },
   { id: "map", icon: MapPin, label: "Map", path: "/map" },
@@ -11,13 +9,13 @@ const tabs = [
   { id: "profile", icon: User, label: "Profile", path: "/profile" },
 ];
 
-const BottomNav = forwardRef<HTMLElement>((_, ref) => {
+const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
 
   return (
-    <nav ref={ref} className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border z-50 safe-area-padding-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border z-50 safe-area-padding-bottom">
       <div className="max-w-screen-xl mx-auto flex justify-around items-center h-16">
         {tabs.map((tab) => {
           const isActive = currentPath === tab.path || currentPath.startsWith(tab.path + "/");
@@ -53,7 +51,6 @@ const BottomNav = forwardRef<HTMLElement>((_, ref) => {
       </div>
     </nav>
   );
-});
-BottomNav.displayName = "BottomNav";
+};
 
 export default BottomNav;
