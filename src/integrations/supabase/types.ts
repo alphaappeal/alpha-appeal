@@ -972,6 +972,39 @@ export type Database = {
           },
         ]
       }
+      maintenance_logs: {
+        Row: {
+          completed_at: string | null
+          details: Json | null
+          error_message: string | null
+          id: string
+          job_type: string
+          records_affected: number | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          details?: Json | null
+          error_message?: string | null
+          id?: string
+          job_type: string
+          records_affected?: number | null
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          details?: Json | null
+          error_message?: string | null
+          id?: string
+          job_type?: string
+          records_affected?: number | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       map_events: {
         Row: {
           active: boolean | null
@@ -1467,6 +1500,57 @@ export type Database = {
           strain_name?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      platform_metrics: {
+        Row: {
+          active_subscriptions: number
+          created_at: string
+          id: string
+          metadata: Json | null
+          new_signups_today: number
+          pending_applications: number
+          revenue_total: number
+          snapshot_date: string
+          total_culture_items: number
+          total_diary_entries: number
+          total_orders: number
+          total_products: number
+          total_strains: number
+          total_users: number
+        }
+        Insert: {
+          active_subscriptions?: number
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_signups_today?: number
+          pending_applications?: number
+          revenue_total?: number
+          snapshot_date?: string
+          total_culture_items?: number
+          total_diary_entries?: number
+          total_orders?: number
+          total_products?: number
+          total_strains?: number
+          total_users?: number
+        }
+        Update: {
+          active_subscriptions?: number
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_signups_today?: number
+          pending_applications?: number
+          revenue_total?: number
+          snapshot_date?: string
+          total_culture_items?: number
+          total_diary_entries?: number
+          total_orders?: number
+          total_products?: number
+          total_strains?: number
+          total_users?: number
         }
         Relationships: []
       }

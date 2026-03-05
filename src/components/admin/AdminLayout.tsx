@@ -31,6 +31,7 @@ import {
   Bell,
   Menu,
   X,
+  RefreshCw,
 } from "lucide-react";
 import logoLight from "@/assets/alpha-logo-light.png";
 
@@ -40,6 +41,7 @@ import AdminSubscriptions from "./AdminSubscriptions";
 import AdminFinancials from "./AdminFinancials";
 import AdminContentSection from "./AdminContentSection";
 import SystemActivityTab from "./SystemActivityTab";
+import SystemHealthTab from "./SystemHealthTab";
 import AdminSettingsSection from "./AdminSettingsSection";
 
 type AdminSection =
@@ -48,6 +50,7 @@ type AdminSection =
   | "subscriptions"
   | "financials"
   | "content"
+  | "health"
   | "activity"
   | "settings";
 
@@ -57,6 +60,7 @@ const NAV_ITEMS: { id: AdminSection; label: string; icon: any; group: string }[]
   { id: "subscriptions", label: "Subscriptions", icon: CreditCard, group: "Management" },
   { id: "financials", label: "Financials", icon: DollarSign, group: "Management" },
   { id: "content", label: "Content & Products", icon: Package, group: "Platform" },
+  { id: "health", label: "System Health", icon: RefreshCw, group: "System" },
   { id: "activity", label: "System Logs", icon: Activity, group: "System" },
   { id: "settings", label: "Settings", icon: Settings, group: "System" },
 ];
@@ -343,6 +347,7 @@ const AdminLayout = () => {
               />
             )}
             {activeSection === "activity" && <SystemActivityTab />}
+            {activeSection === "health" && <SystemHealthTab />}
             {activeSection === "settings" && <AdminSettingsSection />}
           </main>
         </div>
