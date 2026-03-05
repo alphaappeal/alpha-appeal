@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, forwardRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { 
   MapPin, Phone, Clock, Navigation, X, Send, Loader2, 
@@ -82,7 +82,7 @@ interface MapEvent {
   active: boolean;
 }
 
-const AlphaMap = forwardRef<HTMLDivElement>((_, ref) => {
+const AlphaMap = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -172,7 +172,7 @@ const AlphaMap = forwardRef<HTMLDivElement>((_, ref) => {
   const regions = [...new Set(alphaPartners.map(p => p.region))];
 
   return (
-    <div ref={ref} className="relative w-full h-screen bg-background">
+    <div className="relative w-full h-screen bg-background">
       {/* Header - z-index 1001 to stay above map */}
       <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-background via-background/90 to-transparent p-4 md:p-6 z-[1001] pointer-events-none">
         <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
@@ -356,7 +356,6 @@ const AlphaMap = forwardRef<HTMLDivElement>((_, ref) => {
       <MapDrawer partner={selectedPartner} onClose={() => setSelectedPartner(null)} />
     </div>
   );
-});
-AlphaMap.displayName = "AlphaMap";
+};
 
 export default AlphaMap;
