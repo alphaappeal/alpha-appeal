@@ -1,22 +1,15 @@
-import { AlphaPartner, isPartnerOpen } from "@/data/alphaPartners";
+import { AlphaPartner } from "@/data/alphaPartners";
 import { MapPin, Phone, Clock, Navigation, Star, Gift, Shield, Calendar, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from "@/components/ui/drawer";
 
 interface MapDrawerProps {
   partner: AlphaPartner | null;
   onClose: () => void;
 }
 
-const PartnerDetails = ({ partner, onClose }: { partner: AlphaPartner; onClose: () => void }) => {
+const PartnerDetails = ({ partner }: { partner: AlphaPartner }) => {
   const navigate = useNavigate();
 
   const getDirections = () => {
@@ -117,26 +110,30 @@ const MapDrawer = ({ partner, onClose }: MapDrawerProps) => {
 
   if (!partner) return null;
 
-  // Mobile: pull-up drawer
+  // Mobile: contained bottom sheet, clear of BottomNav
   if (isMobile) {
     return (
-      <Drawer open={!!partner} onOpenChange={(open) => { if (!open) onClose(); }} modal={false}>
-        <DrawerContent className="max-h-[60vh] z-[999] pb-20">
-          <DrawerHeader className="sr-only">
-            <DrawerTitle>{partner.name}</DrawerTitle>
-            <DrawerDescription>{partner.vibe}</DrawerDescription>
-          </DrawerHeader>
-          <div className="px-4 pb-6 overflow-y-auto">
-            <PartnerDetails partner={partner} onClose={onClose} />
+      <>
+        <div className="absolute inset-0 bottom-16 bg-background/35 pointer-events-none z-30" />
+        <div className="absolute inset-x-3 bottom-20 z-40 bg-card/95 backdrop-blur rounded-2xl border-2 border-secondary shadow-2xl max-h-[60vh] overflow-hidden">
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 z-10 bg-background/70 backdrop-blur p-2 rounded-full text-foreground hover:bg-background/90"
+            aria-label="Close partner details"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <div className="p-4 pt-12 overflow-y-auto max-h-[60vh]">
+            <PartnerDetails partner={partner} />
           </div>
-        </DrawerContent>
-      </Drawer>
+        </div>
+      </>
     );
   }
 
-  // Desktop: side panel
+  // Desktop: contained side panel clear of BottomNav + filter bar
   return (
-    <div className="absolute bottom-20 right-4 w-[420px] bg-card/95 backdrop-blur rounded-2xl z-[999] border-2 border-secondary shadow-2xl max-h-[60vh] overflow-hidden">
+    <div className="absolute bottom-20 right-4 w-[420px] max-w-[calc(100vw-2rem)] bg-card/95 backdrop-blur rounded-2xl z-40 border-2 border-secondary shadow-2xl max-h-[60vh] overflow-hidden">
       <div className="relative">
         <div className="relative h-32 bg-muted flex items-center justify-center">
           <img
@@ -147,13 +144,14 @@ const MapDrawer = ({ partner, onClose }: MapDrawerProps) => {
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 bg-background/60 backdrop-blur p-2 rounded-full text-foreground hover:bg-background/80"
+            className="absolute top-3 right-3 z-10 bg-background/70 backdrop-blur p-2 rounded-full text-foreground hover:bg-background/90"
+            aria-label="Close partner details"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-5 overflow-y-auto max-h-[calc(70vh-128px)]">
-          <PartnerDetails partner={partner} onClose={onClose} />
+        <div className="p-5 overflow-y-auto max-h-[calc(60vh-128px)]">
+          <PartnerDetails partner={partner} />
         </div>
       </div>
     </div>
