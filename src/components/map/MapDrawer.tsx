@@ -1,4 +1,3 @@
-import React, { forwardRef } from "react";
 import { AlphaPartner } from "@/data/alphaPartners";
 import { MapPin, Phone, Clock, Navigation, Star, Gift, Shield, Calendar, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ interface MapDrawerProps {
   onClose: () => void;
 }
 
-const PartnerDetails = forwardRef<HTMLDivElement, { partner: AlphaPartner }>(({ partner }, ref) => {
+const PartnerDetails = ({ partner }: { partner: AlphaPartner }) => {
   const navigate = useNavigate();
 
   const getDirections = () => {
@@ -18,7 +17,7 @@ const PartnerDetails = forwardRef<HTMLDivElement, { partner: AlphaPartner }>(({ 
   };
 
   return (
-    <div ref={ref} className="space-y-4">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div>
@@ -104,10 +103,9 @@ const PartnerDetails = forwardRef<HTMLDivElement, { partner: AlphaPartner }>(({ 
       </div>
     </div>
   );
-});
-PartnerDetails.displayName = "PartnerDetails";
+};
 
-const MapDrawer = forwardRef<HTMLDivElement, MapDrawerProps>(({ partner, onClose }, ref) => {
+const MapDrawer = ({ partner, onClose }: MapDrawerProps) => {
   const isMobile = useIsMobile();
 
   if (!partner) return null;
@@ -158,7 +156,6 @@ const MapDrawer = forwardRef<HTMLDivElement, MapDrawerProps>(({ partner, onClose
       </div>
     </div>
   );
-});
-MapDrawer.displayName = "MapDrawer";
+};
 
 export default MapDrawer;
