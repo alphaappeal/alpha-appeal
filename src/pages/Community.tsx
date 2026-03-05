@@ -45,6 +45,7 @@ const Community = () => {
   const navigate = useNavigate();
   const [items, setItems] = useState<CommunityItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -101,7 +102,7 @@ const Community = () => {
   };
 
   const fetchItems = async (pageNum: number) => {
-    if (pageNum === 0) setLoading(true);
+    if (pageNum === 0) { setLoading(true); setFetchError(null); }
     else setLoadingMore(true);
 
     const from = pageNum * PAGE_SIZE;
@@ -272,6 +273,7 @@ const Community = () => {
       setHasMore(results.length >= PAGE_SIZE);
     } catch (error) {
       console.error("Error fetching community items:", error);
+      if (pageNum === 0) setFetchError("Unable to load community content. Please try again.");
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -374,6 +376,13 @@ const Community = () => {
               {[1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="h-28 bg-card/50 rounded-xl animate-pulse" />
               ))}
+            </div>
+          ) : fetchError ? (
+            <div className="text-center py-12">
+              <Users className="w-12 h-12 mx-auto mb-4 text-destructive opacity-50" />
+              <h3 className="text-lg font-medium text-foreground mb-2">Something went wrong</h3>
+              <p className="text-muted-foreground text-sm mb-4">{fetchError}</p>
+              <Button variant="outline" onClick={() => { setPage(0); fetchItems(0); }}>Try Again</Button>
             </div>
           ) : items.length === 0 ? (
             <div className="text-center py-12">
