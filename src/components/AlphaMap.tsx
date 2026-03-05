@@ -187,7 +187,7 @@ const AlphaMap = () => {
       </div>
 
       {/* Filter Bar - z-index 1001 */}
-      <div className="absolute top-24 md:top-28 left-4 right-4 z-[1001] space-y-3">
+      <div className={`absolute top-24 md:top-28 left-4 right-4 z-[1001] space-y-3 ${selectedPartner ? 'hidden md:block' : ''}`}>
         <div className="relative max-w-md">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
@@ -221,13 +221,20 @@ const AlphaMap = () => {
           <Button variant={filter.hasPerks ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, hasPerks: !filter.hasPerks})}
             className={filter.hasPerks ? 'bg-secondary text-secondary-foreground' : ''}>🎁 Member Perks</Button>
 
-          <Button variant={filter.reservations ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, reservations: !filter.reservations})}>Reservations</Button>
+          <Button variant={filter.reservations ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, reservations: !filter.reservations})}
+            className={filter.reservations ? 'bg-secondary text-secondary-foreground' : ''}>Reservations</Button>
 
-          <select value={filter.region} onChange={(e) => setFilter({...filter, region: e.target.value})}
-            className="px-3 py-1.5 bg-card text-foreground rounded-lg text-sm font-medium border border-border focus:border-secondary focus:outline-none">
-            <option value="all">All Regions</option>
-            {regions.map(region => <option key={region} value={region}>{region}</option>)}
-          </select>
+          <Button variant={filter.region === 'all' ? 'outline' : 'default'} size="sm" asChild
+            className={filter.region !== 'all' ? 'bg-secondary text-secondary-foreground p-0' : 'p-0'}>
+            <div className="relative">
+              <select value={filter.region} onChange={(e) => setFilter({...filter, region: e.target.value})}
+                className="appearance-none bg-transparent text-inherit px-3 py-1.5 pr-6 text-sm font-medium cursor-pointer focus:outline-none">
+                <option value="all">All Regions</option>
+                {regions.map(region => <option key={region} value={region}>{region}</option>)}
+              </select>
+              <Filter className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none opacity-60" />
+            </div>
+          </Button>
         </div>
 
         <div className="flex items-center justify-between">

@@ -115,7 +115,7 @@ const MapDrawer = ({ partner, onClose }: MapDrawerProps) => {
     return (
       <>
         <div className="absolute inset-0 bottom-16 bg-background/35 pointer-events-none z-30" />
-        <div className="absolute inset-x-3 bottom-20 z-40 bg-card/95 backdrop-blur rounded-2xl border-2 border-secondary shadow-2xl max-h-[60vh] overflow-hidden">
+        <div className="absolute inset-x-3 bottom-20 z-[1002] bg-card/95 backdrop-blur rounded-2xl border-2 border-secondary shadow-2xl max-h-[60vh] overflow-hidden">
           <button
             onClick={onClose}
             className="absolute top-3 right-3 z-10 bg-background/70 backdrop-blur p-2 rounded-full text-foreground hover:bg-background/90"
