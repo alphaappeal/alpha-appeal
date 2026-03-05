@@ -133,7 +133,7 @@ const MapDrawer = ({ partner, onClose }: MapDrawerProps) => {
 
   // Desktop: contained side panel clear of BottomNav + filter bar
   return (
-    <div className="absolute bottom-20 right-4 w-[420px] max-w-[calc(100vw-2rem)] bg-card/95 backdrop-blur rounded-2xl z-40 border-2 border-secondary shadow-2xl max-h-[60vh] overflow-hidden">
+    <div className="absolute bottom-20 right-4 w-[420px] max-w-[calc(100vw-2rem)] bg-card/95 backdrop-blur rounded-2xl z-[1002] border-2 border-secondary shadow-2xl max-h-[60vh] overflow-hidden">
       <div className="relative">
         <div className="relative h-32 bg-muted flex items-center justify-center">
           <img
