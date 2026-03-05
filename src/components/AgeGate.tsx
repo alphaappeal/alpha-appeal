@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const AgeGate = () => {
+const AgeGate = forwardRef<HTMLDivElement>((_, ref) => {
   const [showGate, setShowGate] = useState(false);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ const AgeGate = () => {
   if (!showGate) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-background/98 backdrop-blur-xl flex items-center justify-center p-4">
+    <div ref={ref} className="fixed inset-0 z-[9999] bg-background/98 backdrop-blur-xl flex items-center justify-center p-4">
       <div className="max-w-lg w-full bg-card border border-border rounded-2xl p-8 shadow-2xl animate-fade-in">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
@@ -120,6 +120,7 @@ const AgeGate = () => {
       </div>
     </div>
   );
-};
+});
+AgeGate.displayName = "AgeGate";
 
 export default AgeGate;
