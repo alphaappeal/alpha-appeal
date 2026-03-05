@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.post-to-shipday]
 verify_jwt = false
+
+[functions.routine-maintenance]
+verify_jwt = false
