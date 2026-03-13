@@ -127,7 +127,7 @@ const PromoCodeInput = ({ onValidCode, userId }: PromoCodeInputProps) => {
         </Button>
       </div>
       {status === "valid" && (
-        <p className="text-sm text-secondary">✓ Code applied - you'll get free access!</p>
+        <p className="text-sm text-secondary">✓ Code applied - private access unlocked.</p>
       )}
     </div>
   );
