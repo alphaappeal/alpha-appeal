@@ -72,7 +72,7 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
       (p.full_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (p.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (p.username || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const matchTier = tierFilter === "all" || (p.tier || "free") === tierFilter;
+    const matchTier = tierFilter === "all" || (p.tier || "essential") === tierFilter;
     return matchSearch && matchTier;
   });
 
