@@ -1,39 +1,48 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import Index from "./pages/Index";
-import Signup from "./pages/Signup";
-import Login from "./pages/Login";
-import ResetPassword from "./pages/ResetPassword";
-import Checkout from "./pages/Checkout";
-import CheckoutSuccess from "./pages/CheckoutSuccess";
-import Welcome from "./pages/Welcome";
-import Shop from "./pages/Shop";
-import Music from "./pages/Music";
-import Community from "./pages/Community";
-import Profile from "./pages/Profile";
-import Map from "./pages/Map";
-import Admin from "./pages/Admin";
-import VendorPortal from "./pages/VendorPortal";
-import MyDiary from "./pages/MyDiary";
-import Deliveries from "./pages/Deliveries";
-import Billing from "./pages/Billing";
-import Settings from "./pages/Settings";
-import Support from "./pages/Support";
-import NotFound from "./pages/NotFound";
-import Legal from "./pages/Legal";
-import PartnerDetail from "./pages/PartnerDetail";
-import StrainDetail from "./pages/StrainDetail";
-import CommunityPostDetail from "./pages/CommunityPostDetail";
-import CultureItemDetail from "./pages/CultureItemDetail";
-import ImportCultureData from "./pages/ImportCultureData";
 import AgeGate from "./components/AgeGate";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
+// Lazy-loaded pages for code splitting
+const Index = lazy(() => import("./pages/Index"));
+const Signup = lazy(() => import("./pages/Signup"));
+const Login = lazy(() => import("./pages/Login"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
+const Welcome = lazy(() => import("./pages/Welcome"));
+const Shop = lazy(() => import("./pages/Shop"));
+const Music = lazy(() => import("./pages/Music"));
+const Community = lazy(() => import("./pages/Community"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Map = lazy(() => import("./pages/Map"));
+const Admin = lazy(() => import("./pages/Admin"));
+const VendorPortal = lazy(() => import("./pages/VendorPortal"));
+const MyDiary = lazy(() => import("./pages/MyDiary"));
+const Deliveries = lazy(() => import("./pages/Deliveries"));
+const Billing = lazy(() => import("./pages/Billing"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Support = lazy(() => import("./pages/Support"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Legal = lazy(() => import("./pages/Legal"));
+const PartnerDetail = lazy(() => import("./pages/PartnerDetail"));
+const StrainDetail = lazy(() => import("./pages/StrainDetail"));
+const CommunityPostDetail = lazy(() => import("./pages/CommunityPostDetail"));
+const CultureItemDetail = lazy(() => import("./pages/CultureItemDetail"));
+const ImportCultureData = lazy(() => import("./pages/ImportCultureData"));
+
 const queryClient = new QueryClient();
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="w-8 h-8 border-2 border-secondary border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 const App = () => (
   <HelmetProvider>
@@ -43,35 +52,36 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AgeGate />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/checkout/success" element={<CheckoutSuccess />} />
-            <Route path="/welcome" element={<Welcome />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/music" element={<Music />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/map" element={<Map />} />
-            <Route path="/partner/:partnerId" element={<PartnerDetail />} />
-            <Route path="/strain/:strainSlug" element={<StrainDetail />} />
-            <Route path="/community/:postId" element={<CommunityPostDetail />} />
-            <Route path="/culture/:slug" element={<CultureItemDetail />} />
-            <Route path="/admin/import-culture" element={<ProtectedAdminRoute><ImportCultureData /></ProtectedAdminRoute>} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/my-diary" element={<MyDiary />} />
-            <Route path="/deliveries" element={<Deliveries />} />
-            <Route path="/billing" element={<Billing />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/support" element={<Support />} />
-            <Route path="/admin" element={<ProtectedAdminRoute><Admin /></ProtectedAdminRoute>} />
-            <Route path="/vendor" element={<VendorPortal />} />
-            <Route path="/legal" element={<Legal />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/checkout/success" element={<CheckoutSuccess />} />
+              <Route path="/welcome" element={<Welcome />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/music" element={<Music />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/map" element={<Map />} />
+              <Route path="/partner/:partnerId" element={<PartnerDetail />} />
+              <Route path="/strain/:strainSlug" element={<StrainDetail />} />
+              <Route path="/community/:postId" element={<CommunityPostDetail />} />
+              <Route path="/culture/:slug" element={<CultureItemDetail />} />
+              <Route path="/admin/import-culture" element={<ProtectedAdminRoute><ImportCultureData /></ProtectedAdminRoute>} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/my-diary" element={<MyDiary />} />
+              <Route path="/deliveries" element={<Deliveries />} />
+              <Route path="/billing" element={<Billing />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/admin" element={<ProtectedAdminRoute><Admin /></ProtectedAdminRoute>} />
+              <Route path="/vendor" element={<VendorPortal />} />
+              <Route path="/legal" element={<Legal />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

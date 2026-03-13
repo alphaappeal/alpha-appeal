@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { alphaPartners, AlphaPartner, isPartnerOpen, AlphaStatus } from '@/data/alphaPartners';
+import { alphaPartners as staticPartners, AlphaPartner, isPartnerOpen, AlphaStatus } from '@/data/alphaPartners';
 import MapDrawer from '@/components/map/MapDrawer';
 import L from 'leaflet';
 
@@ -82,21 +82,59 @@ interface MapEvent {
   active: boolean;
 }
 
+// Convert a Supabase alpha_partners row into the AlphaPartner shape used by the UI
+const dbPartnerToAlphaPartner = (row: any): AlphaPartner => ({
+  id: row.id,
+  name: row.name,
+  partnerSince: row.partner_since || '2024',
+  alphaStatus: (row.alpha_status as AlphaStatus) || 'verified',
+  address: row.address,
+  city: row.city,
+  region: row.region,
+  coordinates: [Number(row.latitude), Number(row.longitude)] as [number, number],
+  contact: {
+    phone: row.phone || undefined,
+    email: row.email || undefined,
+    website: row.website || undefined,
+  },
+  hours: {
+    weekdays: row.hours_weekdays || '09:00 - 18:00',
+    saturday: row.hours_saturday || '10:00 - 17:00',
+    sunday: row.hours_sunday || 'Closed',
+  },
+  currentlyOpen: row.currently_open ?? true,
+  vibe: row.vibe || '',
+  specialties: row.specialties || [],
+  atmosphere: row.atmosphere || '',
+  images: { hero: row.hero_image || row.logo_url || '/placeholder.svg' },
+  logoUrl: row.logo_url || undefined,
+  alphaPerks: {
+    memberDiscount: row.member_discount || '',
+    exclusiveAccess: row.exclusive_access || '',
+    specialEvents: row.special_events || '',
+  },
+  amenities: row.amenities || [],
+  paymentOptions: row.payment_methods || [],
+  rating: {
+    overall: Number(row.rating_overall) || 0,
+    reviews: row.review_count || 0,
+    attributes: { quality: 0, service: 0, atmosphere: 0 },
+  },
+  featured: row.featured ?? false,
+  hasDelivery: row.has_delivery ?? false,
+  openForReservations: row.open_for_reservations ?? true,
+});
+
 const AlphaMap = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const navigationState = location.state as { selectedPartnerId?: number } | null;
+  const navigationState = location.state as { selectedPartnerId?: number | string } | null;
   const initialPartnerId = navigationState?.selectedPartnerId;
 
-  const [selectedPartner, setSelectedPartner] = useState<AlphaPartner | null>(() => {
-    if (initialPartnerId) {
-      return alphaPartners.find(p => p.id === initialPartnerId) || null;
-    }
-    return null;
-  });
-  
+  const [partners, setPartners] = useState<AlphaPartner[]>(staticPartners);
+  const [selectedPartner, setSelectedPartner] = useState<AlphaPartner | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterState>({
     status: 'all', openNow: false, hasPerks: false, reservations: false, region: 'all'
@@ -106,6 +144,30 @@ const AlphaMap = () => {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({ vendorName: '', address: '', phone: '', description: '' });
   const [mapEvents, setMapEvents] = useState<MapEvent[]>([]);
+
+  // Load partners from Supabase, fall back to static data
+  useEffect(() => {
+    const loadPartners = async () => {
+      const { data, error } = await supabase
+        .from('alpha_partners')
+        .select('*');
+      if (data && data.length > 0) {
+        const dbPartners = data
+          .filter((r: any) => r.latitude && r.longitude)
+          .map(dbPartnerToAlphaPartner);
+        setPartners(dbPartners.length > 0 ? dbPartners : staticPartners);
+      }
+    };
+    loadPartners();
+  }, []);
+
+  // Set initial selected partner after partners load
+  useEffect(() => {
+    if (initialPartnerId && partners.length > 0) {
+      const found = partners.find(p => String(p.id) === String(initialPartnerId));
+      if (found) setSelectedPartner(found);
+    }
+  }, [initialPartnerId, partners]);
 
   // Load event pins
   useEffect(() => {
@@ -117,7 +179,7 @@ const AlphaMap = () => {
   }, []);
 
   const filteredPartners = useMemo(() => {
-    return alphaPartners.filter(partner => {
+    return partners.filter(partner => {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const matchesSearch = 
@@ -134,11 +196,9 @@ const AlphaMap = () => {
       if (filter.region !== 'all' && partner.region !== filter.region) return false;
       return true;
     });
-  }, [searchQuery, filter]);
+  }, [searchQuery, filter, partners]);
 
-  const mapCenter: [number, number] = initialPartnerId
-    ? alphaPartners.find(p => p.id === initialPartnerId)?.coordinates || [-26.1, 28.0]
-    : [-26.1, 28.0];
+  const mapCenter: [number, number] = [-26.1, 28.0];
   const mapZoom = initialPartnerId ? 13 : 10;
 
   const handleSubmitVendor = async (e: React.FormEvent) => {
@@ -169,11 +229,11 @@ const AlphaMap = () => {
     }
   };
 
-  const regions = [...new Set(alphaPartners.map(p => p.region))];
+  const regions = [...new Set(partners.map(p => p.region))];
 
   return (
     <div className="relative w-full h-screen bg-background">
-      {/* Header - z-index 1001 to stay above map */}
+      {/* Header */}
       <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-background via-background/90 to-transparent p-4 md:p-6 z-[1001] pointer-events-none">
         <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
           Alpha Partner Network
@@ -186,7 +246,7 @@ const AlphaMap = () => {
         </p>
       </div>
 
-      {/* Filter Bar - z-index 1001 */}
+      {/* Filter Bar - hidden on mobile when partner selected */}
       <div className={`absolute top-24 md:top-28 left-4 right-4 z-[1001] space-y-3 ${selectedPartner ? 'hidden md:block' : ''}`}>
         <div className="relative max-w-md">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -255,7 +315,7 @@ const AlphaMap = () => {
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
         {filteredPartners.map(partner => (
-          <Marker key={partner.id} position={partner.coordinates} icon={createMarkerIcon(partner.alphaStatus)}
+          <Marker key={String(partner.id)} position={partner.coordinates} icon={createMarkerIcon(partner.alphaStatus)}
             eventHandlers={{ click: () => setSelectedPartner(partner) }}>
             <Popup>
               <div className="text-center">
@@ -265,7 +325,6 @@ const AlphaMap = () => {
             </Popup>
           </Marker>
         ))}
-        {/* Event Pins */}
         {mapEvents.map(ev => (
           <Marker key={`event-${ev.id}`} position={[ev.latitude, ev.longitude]} icon={createEventIcon()}>
             <Popup>
@@ -323,7 +382,7 @@ const AlphaMap = () => {
             const isOpen = isPartnerOpen(partner);
             return (
               <button
-                key={partner.id}
+                key={String(partner.id)}
                 onClick={() => setSelectedPartner(partner)}
                 className={`w-full text-left p-4 rounded-xl transition-all border ${
                   selectedPartner?.id === partner.id ? 'bg-secondary/20 border-secondary' : 'bg-muted/30 border-border hover:border-secondary/50'

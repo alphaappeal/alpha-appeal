@@ -1,63 +1,33 @@
 
 
-## Fix Plan: Admin Saves, Map, Build Error, and Security
+## Fix: Map UI Clipping/Overlap and Filter Button Inconsistencies
 
-### Critical Build Error (Immediate)
+### Problem 1: Partner Detail Panel Blocked by Filter Bar
 
-**`src/pages/Community.tsx` line 57** — `NodeJS.Timeout` type doesn't exist in browser/Vite context. Replace with `ReturnType<typeof setTimeout>`.
+The filter bar sits at `z-[1001]` and extends vertically from `top-24` downward. The MapDrawer partner detail panel sits at `z-40`. On mobile, the close button (X) at the top of the partner panel is completely hidden behind the filter bar, making it impossible to dismiss the popup.
 
----
+**Fix approach:**
+- When a partner is selected, **collapse the filter bar** to just the search input (or hide it entirely) to free up vertical space and eliminate the overlap.
+- Alternatively, raise the MapDrawer's z-index to `z-[1002]` so the close button renders above the filters, and add a slight top offset so the close button isn't visually buried.
+- Best approach: **hide the filter bar when a partner is selected** on mobile, and ensure the close button is always accessible. On desktop the side panel is already positioned at `right-4` away from the left-side filters, but verify no overlap there either.
 
-### 1. Admin Changes Not Saving — RLS Policy Gaps
+### Problem 2: Filter Buttons Inconsistent Styling
 
-Root cause identified via database audit. Several tables have missing RLS policies that silently block admin writes:
+- "Reservations" button (line 224) is missing the active-state class logic — it never gets `bg-secondary text-secondary-foreground` when toggled on, unlike "Open Now" and "Member Perks".
+- The `select` dropdown for regions uses raw HTML styling rather than matching the Button component aesthetic.
 
-| Table | Missing Policy | Impact |
-|---|---|---|
-| `alpha_partners` | No admin UPDATE policy | Partner edits from PartnersTab fail silently |
-| `store_suggestions` | No admin SELECT or UPDATE | StoreApprovalsTab can't load or reject suggestions |
-| `users` | No admin UPDATE policy | Tier changes fail on the `users` table (only `profiles` succeeds) |
-
-**Fix**: Single migration adding:
-- `ALTER POLICY` or new policy for admin UPDATE on `alpha_partners`
-- Admin SELECT + UPDATE policies on `store_suggestions`
-- Admin UPDATE policy on `users` table
-
----
-
-### 2. Map Page — Dual Data Source Problem
-
-The map renders partners from a **hardcoded TypeScript file** (`src/data/alphaPartners.ts`) while admins manage partners in the **`alpha_partners` database table**. Changes made in the admin dashboard never appear on the map.
-
-**Fix approach**: Update `AlphaMap.tsx` to fetch from the `alpha_partners` Supabase table as the primary source, falling back to the static data for any partners not yet migrated. This aligns admin CRUD operations with what users see on the map.
-
-Files: `src/components/AlphaMap.tsx`, `src/components/map/MapDrawer.tsx` (update interface to handle DB shape)
-
----
-
-### 3. Security — RLS Disabled Tables
-
-Two public tables have RLS disabled:
-- `navigation_permissions` — enable RLS + add read policy
-- `product_views` — enable RLS + add insert/select policies
-
-**Fix**: Migration to enable RLS and add appropriate policies.
-
----
-
-### 4. Performance — Route Lazy Loading
-
-Currently all 20+ page components are eagerly imported in `App.tsx`. This increases initial bundle size unnecessarily.
-
-**Fix**: Convert page imports to `React.lazy()` with a `Suspense` wrapper for code splitting. Heavy pages like Map (Leaflet), Shop, Community, and Admin benefit most.
-
----
+**Fix approach:**
+- Add the same conditional className pattern to the Reservations button: `className={filter.reservations ? 'bg-secondary text-secondary-foreground' : ''}`.
+- Style the region `<select>` to better match the button pill style with consistent height/padding.
 
 ### Files to Edit
 
-1. **`src/pages/Community.tsx`** — Fix `NodeJS.Timeout` type error
-2. **New migration** — Add missing admin RLS policies for `alpha_partners`, `store_suggestions`, `users`; enable RLS on `navigation_permissions` and `product_views`
-3. **`src/components/AlphaMap.tsx`** — Fetch partners from Supabase `alpha_partners` table
-4. **`src/components/map/MapDrawer.tsx`** — Update interface to accept DB-shaped partner data
-5. **`src/App.tsx`** — Add `React.lazy` + `Suspense` for route-level code splitting
+1. **`src/components/AlphaMap.tsx`**
+   - Hide the filter bar (or collapse it) on mobile when `selectedPartner` is set, preventing overlap with the partner panel.
+   - Fix the Reservations button active-state styling.
+   - Unify region select styling with the filter buttons.
+
+2. **`src/components/map/MapDrawer.tsx`**
+   - Bump mobile panel z-index to `z-[1002]` so it sits above the filter bar when both are visible.
+   - Ensure the close button is always in a tappable, unobstructed position.
 
