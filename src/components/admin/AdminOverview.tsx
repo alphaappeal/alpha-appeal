@@ -25,7 +25,7 @@ const AdminOverview = ({ profiles, subscriptions, orders, applications, loading 
 
   // Tier breakdown
   const tierCounts = profiles.reduce((acc: Record<string, number>, p) => {
-    const tier = p.tier || p.subscription_tier || "free";
+    const tier = p.tier || p.subscription_tier || "unknown";
     acc[tier] = (acc[tier] || 0) + 1;
     return acc;
   }, {});
