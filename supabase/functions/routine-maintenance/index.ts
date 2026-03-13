@@ -132,11 +132,11 @@ Deno.serve(async (req) => {
         for (const userId of userIds) {
           await supabase
             .from("profiles")
-            .update({ subscription_tier: "free", payment_status: "expired" })
+            .update({ subscription_tier: "private", payment_status: "expired" })
             .eq("id", userId);
           await supabase
             .from("users")
-            .update({ tier: "free" })
+            .update({ tier: "private" })
             .eq("id", userId);
         }
 

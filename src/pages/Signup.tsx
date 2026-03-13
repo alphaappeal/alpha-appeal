@@ -7,7 +7,7 @@ import logoLight from "@/assets/alpha-logo-light.png";
 
 const Signup = () => {
   const [searchParams] = useSearchParams();
-  const tier = searchParams.get("tier") || "free";
+  const tier = searchParams.get("tier") || "essential";
   const isApplication = searchParams.get("apply") === "true";
 
   const tierNames: Record<string, string> = {

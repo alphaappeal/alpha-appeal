@@ -181,7 +181,7 @@ const AdminOverview = ({ profiles, subscriptions, orders, applications, loading 
                     "border-admin-border text-muted-foreground"
                   }`}
                 >
-                  {p.tier || "free"}
+                  {p.tier || "—"}
                 </Badge>
                 <span className="text-[11px] text-muted-foreground/60 shrink-0">
                   {new Date(p.created_at).toLocaleDateString("en-ZA", { day: "numeric", month: "short" })}

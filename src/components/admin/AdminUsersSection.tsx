@@ -344,7 +344,6 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="free">Free</SelectItem>
                     <SelectItem value="essential">Essential</SelectItem>
                     <SelectItem value="elite">Elite</SelectItem>
                     <SelectItem value="private">Private</SelectItem>
