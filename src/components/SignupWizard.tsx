@@ -328,7 +328,7 @@ const SignupWizard = ({ tier, isApplication = false }: SignupWizardProps) => {
                 <div className="p-4 rounded-xl bg-secondary/5 border border-secondary/20">
                   <p className="text-sm text-foreground mb-3 flex items-center gap-2">
                     <Gift className="w-4 h-4 text-secondary" />
-                    Enter your promo code for free access
+                    Enter your promo code for private access
                   </p>
                   <PromoCodeInput onValidCode={setValidPromoCode} />
                   {!validPromoCode && (

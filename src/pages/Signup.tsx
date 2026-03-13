@@ -11,10 +11,11 @@ const Signup = () => {
   const isApplication = searchParams.get("apply") === "true";
 
   const tierNames: Record<string, string> = {
-    free: "Free",
     essential: "Essential",
     elite: "Elite",
     private: "Private",
+    promo: "Private",
+    free: "Private",
   };
 
   return (

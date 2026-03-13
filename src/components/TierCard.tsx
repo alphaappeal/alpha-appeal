@@ -82,7 +82,7 @@ const TierCard = ({
             <span className={cn(
               "font-display font-bold text-4xl md:text-5xl text-foreground"
             )}>
-              Free
+              Promo
             </span>
           </div>
         ) : (

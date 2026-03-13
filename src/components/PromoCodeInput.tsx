@@ -77,7 +77,7 @@ const PromoCodeInput = ({ onValidCode, userId }: PromoCodeInputProps) => {
       setStatus("valid");
       toast({
         title: "Promo code accepted!",
-        description: "You've unlocked free access to Alpha."
+        description: "You've unlocked private access to Alpha."
       });
       onValidCode(code.trim().toUpperCase());
 

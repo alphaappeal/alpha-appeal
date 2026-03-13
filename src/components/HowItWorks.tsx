@@ -11,7 +11,7 @@ const steps = [
     icon: Layers,
     title: "Choose Your Tier",
     number: "02",
-    description: "Select the experience that fits your lifestyle. Free, Essential, Elite, or Private.",
+    description: "Select the experience that fits your lifestyle: Essential, Elite, or Private.",
   },
   {
     icon: Package,
