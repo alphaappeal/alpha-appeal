@@ -243,8 +243,22 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
                       </td>
                       <td className="p-3 hidden md:table-cell">
                         <div className="flex items-center gap-1.5">
-                          <span className={`w-1.5 h-1.5 rounded-full ${p.payment_status === "paid" ? "bg-admin-emerald" : p.payment_status === "pending" ? "bg-admin-amber" : "bg-muted-foreground/30"}`} />
-                          <span className="text-xs text-muted-foreground capitalize">{p.payment_status || "—"}</span>
+                          {(p.tier === "essential" || p.tier === "elite") ? (
+                            <>
+                              <span className="w-1.5 h-1.5 rounded-full bg-admin-emerald" />
+                              <span className="text-xs text-admin-emerald font-medium">Subscriber</span>
+                            </>
+                          ) : p.tier === "private" ? (
+                            <>
+                              <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40" />
+                              <span className="text-xs text-muted-foreground">Non-subscriber</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20" />
+                              <span className="text-xs text-muted-foreground">Unknown</span>
+                            </>
+                          )}
                         </div>
                       </td>
                       <td className="p-3 hidden lg:table-cell">
