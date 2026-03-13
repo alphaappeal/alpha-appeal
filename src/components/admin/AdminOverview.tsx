@@ -25,7 +25,7 @@ const AdminOverview = ({ profiles, subscriptions, orders, applications, loading 
 
   // Tier breakdown
   const tierCounts = profiles.reduce((acc: Record<string, number>, p) => {
-    const tier = p.tier || p.subscription_tier || "free";
+    const tier = p.tier || p.subscription_tier || "unknown";
     acc[tier] = (acc[tier] || 0) + 1;
     return acc;
   }, {});
@@ -97,8 +97,8 @@ const AdminOverview = ({ profiles, subscriptions, orders, applications, loading 
                     essential: "bg-admin-indigo",
                     elite: "bg-admin-amber",
                     private: "bg-admin-emerald",
-                    free: "bg-muted-foreground/30",
-                    promo: "bg-muted-foreground/30",
+                    promo: "bg-admin-rose/50",
+                    unknown: "bg-muted-foreground/30",
                   };
                   return (
                     <div key={tier} className="space-y-1">
@@ -181,7 +181,7 @@ const AdminOverview = ({ profiles, subscriptions, orders, applications, loading 
                     "border-admin-border text-muted-foreground"
                   }`}
                 >
-                  {p.tier || "free"}
+                  {p.tier || "—"}
                 </Badge>
                 <span className="text-[11px] text-muted-foreground/60 shrink-0">
                   {new Date(p.created_at).toLocaleDateString("en-ZA", { day: "numeric", month: "short" })}

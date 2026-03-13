@@ -383,7 +383,7 @@ const AdminLayout = () => {
                       <p className="text-sm font-medium text-foreground truncate">{p.full_name || p.username || "Unknown"}</p>
                       <p className="text-xs text-muted-foreground truncate">{p.email}</p>
                     </div>
-                    <Badge variant="outline" className="text-[10px] capitalize shrink-0">{p.tier || "free"}</Badge>
+                    <Badge variant="outline" className="text-[10px] capitalize shrink-0">{p.tier || "—"}</Badge>
                   </button>
                 ))}
               </div>

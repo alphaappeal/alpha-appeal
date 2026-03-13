@@ -72,7 +72,7 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
       (p.full_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (p.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (p.username || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const matchTier = tierFilter === "all" || (p.tier || "free") === tierFilter;
+    const matchTier = tierFilter === "all" || (p.tier || "essential") === tierFilter;
     return matchSearch && matchTier;
   });
 
@@ -185,7 +185,6 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
             <SelectItem value="essential">Essential</SelectItem>
             <SelectItem value="elite">Elite</SelectItem>
             <SelectItem value="private">Private</SelectItem>
-            <SelectItem value="free">Free</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -239,13 +238,27 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
                       </td>
                       <td className="p-3">
                         <Badge variant="outline" className={`text-[11px] capitalize ${tierBadgeClass(p.tier)}`}>
-                          {p.tier || "free"}
+                          {p.tier || "—"}
                         </Badge>
                       </td>
                       <td className="p-3 hidden md:table-cell">
                         <div className="flex items-center gap-1.5">
-                          <span className={`w-1.5 h-1.5 rounded-full ${p.payment_status === "paid" ? "bg-admin-emerald" : p.payment_status === "pending" ? "bg-admin-amber" : "bg-muted-foreground/30"}`} />
-                          <span className="text-xs text-muted-foreground capitalize">{p.payment_status || "—"}</span>
+                          {(p.tier === "essential" || p.tier === "elite") ? (
+                            <>
+                              <span className="w-1.5 h-1.5 rounded-full bg-admin-emerald" />
+                              <span className="text-xs text-admin-emerald font-medium">Subscriber</span>
+                            </>
+                          ) : p.tier === "private" ? (
+                            <>
+                              <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40" />
+                              <span className="text-xs text-muted-foreground">Non-subscriber</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20" />
+                              <span className="text-xs text-muted-foreground">Unknown</span>
+                            </>
+                          )}
                         </div>
                       </td>
                       <td className="p-3 hidden lg:table-cell">
@@ -259,7 +272,7 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="bg-admin-surface border-admin-border">
-                            <DropdownMenuItem onClick={() => { setChangeTierUser(p); setNewTier(p.tier || "free"); }}>
+                            <DropdownMenuItem onClick={() => { setChangeTierUser(p); setNewTier(p.tier || "essential"); }}>
                               <ArrowUpDown className="w-3.5 h-3.5 mr-2" /> Change Tier
                             </DropdownMenuItem>
                             <DropdownMenuSeparator className="bg-admin-border" />
@@ -331,7 +344,6 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="free">Free</SelectItem>
                     <SelectItem value="essential">Essential</SelectItem>
                     <SelectItem value="elite">Elite</SelectItem>
                     <SelectItem value="private">Private</SelectItem>
