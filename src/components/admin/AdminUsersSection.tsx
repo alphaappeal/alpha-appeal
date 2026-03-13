@@ -238,7 +238,7 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
                       </td>
                       <td className="p-3">
                         <Badge variant="outline" className={`text-[11px] capitalize ${tierBadgeClass(p.tier)}`}>
-                          {p.tier || "free"}
+                          {p.tier || "—"}
                         </Badge>
                       </td>
                       <td className="p-3 hidden md:table-cell">
