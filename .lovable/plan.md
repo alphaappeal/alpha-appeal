@@ -1,33 +1,44 @@
 
 
-## Fix: Map UI Clipping/Overlap and Filter Button Inconsistencies
+## Plan: Correct User Tier Labels and Subscription Statuses
 
-### Problem 1: Partner Detail Panel Blocked by Filter Bar
+### Business Rules (Confirmed)
+- **Essential** = Subscriber (paid R99)
+- **Elite** = Subscriber (paid R499)
+- **Private** = Non-subscriber (promo code users)
+- **No "free" tier exists** — all fallbacks must change
 
-The filter bar sits at `z-[1001]` and extends vertically from `top-24` downward. The MapDrawer partner detail panel sits at `z-40`. On mobile, the close button (X) at the top of the partner panel is completely hidden behind the filter bar, making it impossible to dismiss the popup.
+### Changes
 
-**Fix approach:**
-- When a partner is selected, **collapse the filter bar** to just the search input (or hide it entirely) to free up vertical space and eliminate the overlap.
-- Alternatively, raise the MapDrawer's z-index to `z-[1002]` so the close button renders above the filters, and add a slight top offset so the close button isn't visually buried.
-- Best approach: **hide the filter bar when a partner is selected** on mobile, and ensure the close button is always accessible. On desktop the side panel is already positioned at `right-4` away from the left-side filters, but verify no overlap there either.
+#### 1. `src/components/admin/AdminUsersSection.tsx`
+- **Line 75**: Change fallback `(p.tier || "free")` → `(p.tier || "essential")`
+- **Line 188**: Remove `<SelectItem value="free">Free</SelectItem>` from tier filter
+- **Line 242**: Change `{p.tier || "free"}` → `{p.tier || "—"}`
+- **Lines 245-249**: Replace raw `payment_status` display with subscription logic:
+  - If tier is `essential` or `elite` → green dot + "Subscriber"
+  - If tier is `private` → neutral dot + "Non-subscriber"
+  - Fallback → grey dot + "Unknown"
+- **Line 262**: Change `p.tier || "free"` → `p.tier || "essential"`
+- **Lines 333-338**: Remove `<SelectItem value="free">Free</SelectItem>` from Change Tier modal
 
-### Problem 2: Filter Buttons Inconsistent Styling
+#### 2. `src/components/admin/AdminOverview.tsx`
+- **Line 28**: Change fallback `"free"` → `"unknown"` in tier breakdown
+- **Line 100**: Remove `free` from `tierColors`, keep `promo` entry
+- **Line 184**: Change `{p.tier || "free"}` → `{p.tier || "—"}`
 
-- "Reservations" button (line 224) is missing the active-state class logic — it never gets `bg-secondary text-secondary-foreground` when toggled on, unlike "Open Now" and "Member Perks".
-- The `select` dropdown for regions uses raw HTML styling rather than matching the Button component aesthetic.
+#### 3. `src/components/admin/AdminLayout.tsx`
+- **Line 386**: Change `{p.tier || "free"}` → `{p.tier || "—"}`
 
-**Fix approach:**
-- Add the same conditional className pattern to the Reservations button: `className={filter.reservations ? 'bg-secondary text-secondary-foreground' : ''}`.
-- Style the region `<select>` to better match the button pill style with consistent height/padding.
+#### 4. `supabase/functions/routine-maintenance/index.ts`
+- **Lines 135-140**: Change expired subscription downgrade from `"free"` to `"private"` (since there's no free tier, expired users become non-subscriber/private)
+
+#### 5. `src/pages/Signup.tsx`
+- **Line 10**: Change default tier from `"free"` to `"essential"`
 
 ### Files to Edit
-
-1. **`src/components/AlphaMap.tsx`**
-   - Hide the filter bar (or collapse it) on mobile when `selectedPartner` is set, preventing overlap with the partner panel.
-   - Fix the Reservations button active-state styling.
-   - Unify region select styling with the filter buttons.
-
-2. **`src/components/map/MapDrawer.tsx`**
-   - Bump mobile panel z-index to `z-[1002]` so it sits above the filter bar when both are visible.
-   - Ensure the close button is always in a tappable, unobstructed position.
+1. `src/components/admin/AdminUsersSection.tsx` — Remove free refs, add subscriber/non-subscriber status
+2. `src/components/admin/AdminOverview.tsx` — Remove free fallback
+3. `src/components/admin/AdminLayout.tsx` — Remove free badge fallback
+4. `supabase/functions/routine-maintenance/index.ts` — Downgrade to "private" not "free"
+5. `src/pages/Signup.tsx` — Default tier to "essential"
 
