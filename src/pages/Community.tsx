@@ -54,7 +54,7 @@ const Community = () => {
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState<Record<string, number>>({});
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Debounced search
   useEffect(() => {
