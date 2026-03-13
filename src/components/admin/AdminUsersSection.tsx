@@ -185,7 +185,6 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
             <SelectItem value="essential">Essential</SelectItem>
             <SelectItem value="elite">Elite</SelectItem>
             <SelectItem value="private">Private</SelectItem>
-            <SelectItem value="free">Free</SelectItem>
           </SelectContent>
         </Select>
       </div>
