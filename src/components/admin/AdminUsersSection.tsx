@@ -272,7 +272,7 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="bg-admin-surface border-admin-border">
-                            <DropdownMenuItem onClick={() => { setChangeTierUser(p); setNewTier(p.tier || "free"); }}>
+                            <DropdownMenuItem onClick={() => { setChangeTierUser(p); setNewTier(p.tier || "essential"); }}>
                               <ArrowUpDown className="w-3.5 h-3.5 mr-2" /> Change Tier
                             </DropdownMenuItem>
                             <DropdownMenuSeparator className="bg-admin-border" />
