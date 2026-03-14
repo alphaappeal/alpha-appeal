@@ -43,6 +43,7 @@ import AdminContentSection from "./AdminContentSection";
 import SystemActivityTab from "./SystemActivityTab";
 import SystemHealthTab from "./SystemHealthTab";
 import AdminSettingsSection from "./AdminSettingsSection";
+import VendorsTab from "./VendorsTab";
 
 type AdminSection =
   | "overview"
