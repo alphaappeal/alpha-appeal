@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
     const userId = claimsData.claims.sub as string;
     const userEmail = claimsData.claims.email as string;
 
-    const { items, return_url, cancel_url } = await req.json();
+    const { items, return_url, cancel_url, subscription_tier } = await req.json();
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return new Response(JSON.stringify({ error: "Cart is empty" }), {
@@ -151,6 +151,10 @@ Deno.serve(async (req) => {
         ? items[0].name
         : `Alpha Order (${items.length} items)`;
 
+    // Determine if this is a subscription payment
+    const isSubscription = subscription_tier && ["essential", "elite", "private"].includes(subscription_tier);
+    const orderType = isSubscription ? "subscription" : "one_time";
+
     // Create order in DB with pending status
     const { data: order, error: orderError } = await supabase
       .from("orders")
@@ -159,11 +163,11 @@ Deno.serve(async (req) => {
         order_number: orderNumber,
         amount,
         currency: "ZAR",
-        order_type: "one_time",
+        order_type: orderType,
         payment_status: "pending",
         payment_method: "payfast",
         product_name: itemName,
-        payment_metadata: { items },
+        payment_metadata: { items, subscription_tier: subscription_tier || null },
       })
       .select("id, order_number")
       .single();
@@ -183,19 +187,34 @@ Deno.serve(async (req) => {
     const merchantKey = Deno.env.get("PAYFAST_MERCHANT_KEY")!;
     const passPhrase = Deno.env.get("PAYFAST_PASSPHRASE") || "";
 
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const notifyUrl = `${supabaseUrl}/functions/v1/payfast-itn`;
+
     // Build PayFast data object — keys must match the PAYFAST_FIELD_ORDER
     const pfData: Record<string, string> = {
       merchant_id: merchantId,
       merchant_key: merchantKey,
       return_url: return_url || "",
       cancel_url: cancel_url || "",
-      notify_url: "",
+      notify_url: notifyUrl,
       email_address: userEmail,
       m_payment_id: order.id,
       amount: amount.toFixed(2),
       item_name: itemName.substring(0, 100),
       custom_str1: order.order_number,
+      custom_str2: userId,
     };
+
+    // Add subscription parameters for recurring billing
+    if (isSubscription) {
+      const billingDate = now.toISOString().slice(0, 10); // YYYY-MM-DD
+      pfData.subscription_type = "1";
+      pfData.billing_date = billingDate;
+      pfData.recurring_amount = amount.toFixed(2);
+      pfData.frequency = "3"; // monthly
+      pfData.cycles = "0"; // infinite
+      pfData.custom_str3 = subscription_tier;
+    }
 
     const signature = await generateSignature(pfData, passPhrase || undefined);
 
