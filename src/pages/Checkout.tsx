@@ -133,6 +133,7 @@ const Checkout = () => {
             price: item.price,
             quantity: item.quantity,
           })),
+          subscription_tier: subscriptionTier,
           coin_deduction: coinDeduction,
           credit_deduction: creditDeduction,
           final_amount: finalAmount,
