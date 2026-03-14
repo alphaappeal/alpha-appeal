@@ -79,6 +79,7 @@ const App = () => (
               <Route path="/support" element={<Support />} />
               <Route path="/admin" element={<ProtectedAdminRoute><Admin /></ProtectedAdminRoute>} />
               <Route path="/vendor" element={<VendorPortal />} />
+              <Route path="/vendor/signup" element={<VendorSignup />} />
               <Route path="/legal" element={<Legal />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

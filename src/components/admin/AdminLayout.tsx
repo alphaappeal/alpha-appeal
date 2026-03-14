@@ -350,6 +350,7 @@ const AdminLayout = () => {
               />
             )}
             {activeSection === "activity" && <SystemActivityTab />}
+            {activeSection === "vendors" && <VendorsTab />}
             {activeSection === "health" && <SystemHealthTab />}
             {activeSection === "settings" && <AdminSettingsSection />}
           </main>
