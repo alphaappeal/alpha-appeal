@@ -1,0 +1,1 @@
+ALTER TABLE public.alpha_partners ADD COLUMN country text NOT NULL DEFAULT 'South Africa';

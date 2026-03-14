@@ -7,7 +7,7 @@ const Map = () => {
     <>
       <Helmet>
         <title>Map | Alpha</title>
-        <meta name="description" content="Find Alpha Appeal locations across South Africa." />
+        <meta name="description" content="Find Alpha Appeal partner locations worldwide." />
       </Helmet>
 
       <div className="h-screen w-full bg-background">

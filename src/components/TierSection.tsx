@@ -118,7 +118,7 @@ const TierSection = () => {
         {/* Additional Info */}
         <div className="mt-8 text-center space-y-2">
           <p className="text-muted-foreground text-sm">
-            All memberships include free shipping within South Africa. Cancel anytime.
+            All memberships include free shipping within South Africa. International rates may apply. Cancel anytime.
           </p>
           <p className="text-muted-foreground text-xs">
             By joining, you confirm you are 18+ and agree to our{" "}

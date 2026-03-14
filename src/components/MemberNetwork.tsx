@@ -217,7 +217,7 @@ const MemberNetwork: React.FC = () => {
             Member Network
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Discover our curated network of authorized venders and private member lounges across South Africa.
+            Discover our curated network of authorized venders and private member lounges worldwide.
           </p>
         </div>
       </div>

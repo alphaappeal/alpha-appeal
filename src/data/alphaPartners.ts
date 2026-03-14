@@ -8,6 +8,7 @@ export interface AlphaPartner {
   address: string;
   city: string;
   region: string;
+  country: string;
   coordinates: [number, number];
   contact: {
     phone?: string;
@@ -59,6 +60,7 @@ export const alphaPartners: AlphaPartner[] = [
     address: '10 Bank St, Boksburg, 1459',
     city: 'Boksburg',
     region: 'Gauteng',
+    country: 'South Africa',
     coordinates: [-26.2167, 28.2500],
     contact: {
       phone: '+27 11 894 XXXX',
@@ -106,6 +108,7 @@ export const alphaPartners: AlphaPartner[] = [
     address: 'Stoneridge Centre, Greenstone Park',
     city: 'Greenstone',
     region: 'Gauteng',
+    country: 'South Africa',
     coordinates: [-26.1189, 28.1360],
     contact: {
       phone: '+27 11 XXX XXXX',
@@ -152,6 +155,7 @@ export const alphaPartners: AlphaPartner[] = [
     address: '27 Gleneagles Rd, Greenside, Johannesburg',
     city: 'Johannesburg',
     region: 'Gauteng',
+    country: 'South Africa',
     coordinates: [-26.1628, 28.0146],
     contact: {
       phone: '+27 11 XXX XXXX',
@@ -199,6 +203,7 @@ export const alphaPartners: AlphaPartner[] = [
     address: 'Skyline Smoke Shop, Johannesburg',
     city: 'Johannesburg',
     region: 'Gauteng',
+    country: 'South Africa',
     coordinates: [-26.1850, 28.0294],
     contact: {
       phone: '+27 11 XXX XXXX'
@@ -243,6 +248,7 @@ export const alphaPartners: AlphaPartner[] = [
     address: 'The Gantry Lifestyle Center, Fourways',
     city: 'Fourways',
     region: 'Gauteng',
+    country: 'South Africa',
     coordinates: [-26.0262, 28.0047],
     contact: {
       phone: '+27 11 XXX XXXX',
@@ -289,6 +295,7 @@ export const alphaPartners: AlphaPartner[] = [
     address: 'Lyndhurst, Johannesburg, 2192',
     city: 'Johannesburg',
     region: 'Gauteng',
+    country: 'South Africa',
     coordinates: [-26.1074, 28.1184],
     contact: {
       phone: '+27 11 XXX XXXX'
