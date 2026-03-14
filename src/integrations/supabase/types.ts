@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          active: boolean
+          description: string | null
+          icon: string | null
+          id: string
+          points: number
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          description?: string | null
+          icon?: string | null
+          id?: string
+          points?: number
+          title: string
+        }
+        Update: {
+          active?: boolean
+          description?: string | null
+          icon?: string | null
+          id?: string
+          points?: number
+          title?: string
+        }
+        Relationships: []
+      }
       activity_logs: {
         Row: {
           activity_type: string
@@ -910,6 +937,75 @@ export type Database = {
           },
         ]
       }
+      event_tickets: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          id: string
+          price: number
+          status: string
+          ticket_type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          price?: number
+          status?: string
+          ticket_type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          price?: number
+          status?: string
+          ticket_type?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "map_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_tickets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feature_flags: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          feature_name: string
+          id: string
+          tier_required: string | null
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          feature_name: string
+          id?: string
+          tier_required?: string | null
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          feature_name?: string
+          id?: string
+          tier_required?: string | null
+        }
+        Relationships: []
+      }
       kit_deliveries: {
         Row: {
           carrier: string | null
@@ -1161,6 +1257,44 @@ export type Database = {
         }
         Relationships: []
       }
+      moderation_queue: {
+        Row: {
+          content_id: string | null
+          content_type: string | null
+          created_at: string | null
+          id: string
+          reason: string | null
+          reported_by: string | null
+          status: string | null
+        }
+        Insert: {
+          content_id?: string | null
+          content_type?: string | null
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+          reported_by?: string | null
+          status?: string | null
+        }
+        Update: {
+          content_id?: string | null
+          content_type?: string | null
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+          reported_by?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_queue_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       navigation_permissions: {
         Row: {
           allow_community: boolean | null
@@ -1187,6 +1321,65 @@ export type Database = {
           tier?: string | null
         }
         Relationships: []
+      }
+      notification_types: {
+        Row: {
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          link: string | null
+          message: string | null
+          title: string | null
+          type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          link?: string | null
+          message?: string | null
+          title?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          link?: string | null
+          message?: string | null
+          title?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -1307,6 +1500,83 @@ export type Database = {
           },
         ]
       }
+      partner_hours: {
+        Row: {
+          close_time: string | null
+          day_of_week: number
+          id: string
+          is_closed: boolean
+          open_time: string | null
+          partner_id: string
+        }
+        Insert: {
+          close_time?: string | null
+          day_of_week: number
+          id?: string
+          is_closed?: boolean
+          open_time?: string | null
+          partner_id: string
+        }
+        Update: {
+          close_time?: string | null
+          day_of_week?: number
+          id?: string
+          is_closed?: boolean
+          open_time?: string | null
+          partner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_hours_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "alpha_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_inventory: {
+        Row: {
+          id: string
+          low_stock_threshold: number | null
+          partner_id: string | null
+          product_id: string | null
+          stock_quantity: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          low_stock_threshold?: number | null
+          partner_id?: string | null
+          product_id?: string | null
+          stock_quantity?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          low_stock_threshold?: number | null
+          partner_id?: string | null
+          product_id?: string | null
+          stock_quantity?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_inventory_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "alpha_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "partner_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_locations: {
         Row: {
           active: boolean | null
@@ -1360,6 +1630,38 @@ export type Database = {
           verified?: boolean | null
         }
         Relationships: []
+      }
+      partner_metrics: {
+        Row: {
+          orders: number | null
+          partner_id: string
+          product_clicks: number | null
+          profile_views: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          orders?: number | null
+          partner_id: string
+          product_clicks?: number | null
+          profile_views?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          orders?: number | null
+          partner_id?: string
+          product_clicks?: number | null
+          profile_views?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_metrics_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: true
+            referencedRelation: "alpha_partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       partner_products: {
         Row: {
@@ -1766,6 +2068,48 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      product_reviews: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_id: string | null
+          rating: number | null
+          review_text: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_id?: string | null
+          rating?: number | null
+          review_text?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_id?: string | null
+          rating?: number | null
+          review_text?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "partner_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_views: {
         Row: {
@@ -2396,6 +2740,42 @@ export type Database = {
           },
         ]
       }
+      user_achievements: {
+        Row: {
+          achievement_id: string | null
+          earned_at: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          achievement_id?: string | null
+          earned_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          achievement_id?: string | null
+          earned_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_achievements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_alert_reads: {
         Row: {
           alert_id: string
@@ -2469,6 +2849,7 @@ export type Database = {
           admin_notes: string | null
           concierge: boolean | null
           created_at: string | null
+          delivered_at: string | null
           delivery_address: string | null
           delivery_fee: number | null
           delivery_fee_original: number | null
@@ -2488,6 +2869,8 @@ export type Database = {
           pod_signature_url: string | null
           priority: string | null
           provider: string | null
+          raw_shipday_payload: Json | null
+          shipday_last_sync: string | null
           shipday_order_id: string | null
           shipday_status: string | null
           status: string | null
@@ -2500,6 +2883,7 @@ export type Database = {
           admin_notes?: string | null
           concierge?: boolean | null
           created_at?: string | null
+          delivered_at?: string | null
           delivery_address?: string | null
           delivery_fee?: number | null
           delivery_fee_original?: number | null
@@ -2519,6 +2903,8 @@ export type Database = {
           pod_signature_url?: string | null
           priority?: string | null
           provider?: string | null
+          raw_shipday_payload?: Json | null
+          shipday_last_sync?: string | null
           shipday_order_id?: string | null
           shipday_status?: string | null
           status?: string | null
@@ -2531,6 +2917,7 @@ export type Database = {
           admin_notes?: string | null
           concierge?: boolean | null
           created_at?: string | null
+          delivered_at?: string | null
           delivery_address?: string | null
           delivery_fee?: number | null
           delivery_fee_original?: number | null
@@ -2550,6 +2937,8 @@ export type Database = {
           pod_signature_url?: string | null
           priority?: string | null
           provider?: string | null
+          raw_shipday_payload?: Json | null
+          shipday_last_sync?: string | null
           shipday_order_id?: string | null
           shipday_status?: string | null
           status?: string | null
@@ -2603,6 +2992,81 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "user_diary_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_notification_preferences: {
+        Row: {
+          channel: string
+          created_at: string
+          enabled: boolean
+          id: string
+          notification_type_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          notification_type_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          notification_type_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notification_preferences_notification_type_id_fkey"
+            columns: ["notification_type_id"]
+            isOneToOne: false
+            referencedRelation: "notification_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_notification_settings: {
+        Row: {
+          enabled: boolean
+          notification_type_id: string
+          user_id: string
+        }
+        Insert: {
+          enabled?: boolean
+          notification_type_id: string
+          user_id: string
+        }
+        Update: {
+          enabled?: boolean
+          notification_type_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notification_settings_notification_type_id_fkey"
+            columns: ["notification_type_id"]
+            isOneToOne: false
+            referencedRelation: "notification_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_notification_settings_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -2681,6 +3145,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_recommendations: {
+        Row: {
+          created_at: string
+          id: string
+          recommendation_type: string
+          score: number
+          target_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          recommendation_type: string
+          score?: number
+          target_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          recommendation_type?: string
+          score?: number
+          target_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_recommendations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_rewards: {
         Row: {
@@ -2918,27 +3417,119 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          invited_by: string | null
+          is_active: boolean | null
           partner_id: string
+          permissions: Json | null
           role: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
           id?: string
+          invited_by?: string | null
+          is_active?: boolean | null
           partner_id: string
+          permissions?: Json | null
           role?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
           id?: string
+          invited_by?: string | null
+          is_active?: boolean | null
           partner_id?: string
+          permissions?: Json | null
           role?: string | null
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "vendor_accounts_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "alpha_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_invitations: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          invited_by: string | null
+          partner_id: string | null
+          role: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          invited_by?: string | null
+          partner_id?: string | null
+          role?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          invited_by?: string | null
+          partner_id?: string | null
+          role?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_invitations_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "alpha_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_payouts: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          id: string
+          partner_id: string | null
+          payout_method: string | null
+          reference: string | null
+          status: Database["public"]["Enums"]["payout_status"]
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          id?: string
+          partner_id?: string | null
+          payout_method?: string | null
+          reference?: string | null
+          status?: Database["public"]["Enums"]["payout_status"]
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          id?: string
+          partner_id?: string | null
+          payout_method?: string | null
+          reference?: string | null
+          status?: Database["public"]["Enums"]["payout_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_payouts_partner_id_fkey"
             columns: ["partner_id"]
             isOneToOne: false
             referencedRelation: "alpha_partners"
@@ -2955,6 +3546,7 @@ export type Database = {
           phone: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          role_requested: string
           status: string | null
           user_id: string | null
           vendor_name: string
@@ -2967,6 +3559,7 @@ export type Database = {
           phone?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          role_requested?: string
           status?: string | null
           user_id?: string | null
           vendor_name: string
@@ -2979,6 +3572,7 @@ export type Database = {
           phone?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          role_requested?: string
           status?: string | null
           user_id?: string | null
           vendor_name?: string
@@ -2987,6 +3581,22 @@ export type Database = {
       }
     }
     Views: {
+      product_views_daily: {
+        Row: {
+          day: string | null
+          product_id: string | null
+          views: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_views_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_starred_posts: {
         Row: {
           author_id: string | null
@@ -3041,6 +3651,7 @@ export type Database = {
         Returns: boolean
       }
       parse_percentage: { Args: { value: string }; Returns: number }
+      refresh_product_views_daily: { Args: never; Returns: undefined }
       set_admin_for_email: {
         Args: { make_admin: boolean; target_email: string }
         Returns: undefined
@@ -3049,6 +3660,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      payout_status: "pending" | "processing" | "paid" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3177,6 +3789,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      payout_status: ["pending", "processing", "paid", "failed"],
     },
   },
 } as const
