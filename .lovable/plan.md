@@ -1,46 +1,33 @@
 
 
-## Plan: Refactor Partner Map + Admin Data Flow
+## Fix: Map UI Clipping/Overlap and Filter Button Inconsistencies
 
-### Problem Summary
-The map component still imports and falls back to static data (`alphaPartners.ts`), uses absolute positioning causing layout overlap, and lacks flyTo behavior when clicking sidebar items. Admin form lacks coordinate range validation.
+### Problem 1: Partner Detail Panel Blocked by Filter Bar
 
-### Changes
+The filter bar sits at `z-[1001]` and extends vertically from `top-24` downward. The MapDrawer partner detail panel sits at `z-40`. On mobile, the close button (X) at the top of the partner panel is completely hidden behind the filter bar, making it impossible to dismiss the popup.
 
-#### 1. `src/components/AlphaMap.tsx` — Full refactor
+**Fix approach:**
+- When a partner is selected, **collapse the filter bar** to just the search input (or hide it entirely) to free up vertical space and eliminate the overlap.
+- Alternatively, raise the MapDrawer's z-index to `z-[1002]` so the close button renders above the filters, and add a slight top offset so the close button isn't visually buried.
+- Best approach: **hide the filter bar when a partner is selected** on mobile, and ensure the close button is always accessible. On desktop the side panel is already positioned at `right-4` away from the left-side filters, but verify no overlap there either.
 
-**Remove static fallback:**
-- Remove `import { alphaPartners as staticPartners ... } from '@/data/alphaPartners'`
-- Keep only `AlphaPartner` type and `isPartnerOpen`, `AlphaStatus` imports (or inline them)
-- If Supabase returns 0 partners with coordinates, show empty state — no static fallback
+### Problem 2: Filter Buttons Inconsistent Styling
 
-**Add flyTo on sidebar click:**
-- Create a `MapController` child component using `useMap()` hook
-- When `selectedPartner` changes, call `map.flyTo(partner.coordinates, 14)`
+- "Reservations" button (line 224) is missing the active-state class logic — it never gets `bg-secondary text-secondary-foreground` when toggled on, unlike "Open Now" and "Member Perks".
+- The `select` dropdown for regions uses raw HTML styling rather than matching the Button component aesthetic.
 
-**Fix layout to flex:**
-- Replace the outer `relative` div with a flex container: `flex h-screen`
-- Sidebar: `w-[380px] flex-shrink-0 overflow-y-auto` (always visible on lg+)
-- Map container: `flex-1 relative` containing the MapContainer, header overlay, and filters
-- This prevents sidebar/map overlap
-
-**Filter only valid coordinates:**
-- Already filtering `r.latitude && r.longitude` — keep this, add `typeof` number check
-
-#### 2. `src/components/admin/PartnersTab.tsx` — Add coordinate validation
-
-**In `handleSavePartner`**, after existing required-field check:
-- Validate lat is between -90 and 90
-- Validate lng is between -180 and 180
-- Show toast error if out of range
-
-#### 3. `src/pages/Map.tsx` — No changes needed
-Already just renders `<AlphaMap />`.
-
-#### 4. `src/data/alphaPartners.ts` — Keep for type exports only
-The `AlphaPartner` interface, `AlphaStatus` type, and `isPartnerOpen` function are still used across MapDrawer and other components. The static partner array data will no longer be imported by AlphaMap.
+**Fix approach:**
+- Add the same conditional className pattern to the Reservations button: `className={filter.reservations ? 'bg-secondary text-secondary-foreground' : ''}`.
+- Style the region `<select>` to better match the button pill style with consistent height/padding.
 
 ### Files to Edit
-1. `src/components/AlphaMap.tsx` — Remove static fallback, add flyTo, convert to flex layout
-2. `src/components/admin/PartnersTab.tsx` — Add lat/lng range validation
+
+1. **`src/components/AlphaMap.tsx`**
+   - Hide the filter bar (or collapse it) on mobile when `selectedPartner` is set, preventing overlap with the partner panel.
+   - Fix the Reservations button active-state styling.
+   - Unify region select styling with the filter buttons.
+
+2. **`src/components/map/MapDrawer.tsx`**
+   - Bump mobile panel z-index to `z-[1002]` so it sits above the filter bar when both are visible.
+   - Ensure the close button is always in a tappable, unobstructed position.
 

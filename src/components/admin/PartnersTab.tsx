@@ -193,6 +193,26 @@ const PartnersTab = () => {
       return;
     }
 
+    // Validate coordinate ranges
+    const lat = parseCoord(formData.latitude);
+    const lng = parseCoord(formData.longitude);
+    if (lat !== null && (lat < -90 || lat > 90)) {
+      toast({
+        title: "Invalid latitude",
+        description: "Latitude must be between -90 and 90",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (lng !== null && (lng < -180 || lng > 180)) {
+      toast({
+        title: "Invalid longitude",
+        description: "Longitude must be between -180 and 180",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSaving(true);
     try {
       const payload = buildPayload();
