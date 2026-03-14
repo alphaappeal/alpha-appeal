@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { 
   MapPin, Phone, Clock, Navigation, X, Send, Loader2, 
   Star, Gift, Shield, Filter, Search, Calendar, ChevronRight
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { alphaPartners as staticPartners, AlphaPartner, isPartnerOpen, AlphaStatus } from '@/data/alphaPartners';
+import { AlphaPartner, isPartnerOpen, AlphaStatus } from '@/data/alphaPartners';
 import MapDrawer from '@/components/map/MapDrawer';
 import L from 'leaflet';
 
@@ -82,6 +82,17 @@ interface MapEvent {
   active: boolean;
 }
 
+// MapController: handles flyTo when selectedPartner changes
+const MapController = ({ partner }: { partner: AlphaPartner | null }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (partner) {
+      map.flyTo(partner.coordinates, 14, { duration: 1 });
+    }
+  }, [partner, map]);
+  return null;
+};
+
 // Convert a Supabase alpha_partners row into the AlphaPartner shape used by the UI
 const dbPartnerToAlphaPartner = (row: any): AlphaPartner => ({
   id: row.id,
@@ -146,7 +157,7 @@ const AlphaMap = () => {
   const [formData, setFormData] = useState({ vendorName: '', address: '', phone: '', description: '' });
   const [mapEvents, setMapEvents] = useState<MapEvent[]>([]);
 
-  // Load partners from Supabase, fall back to static data only if DB is empty
+  // Load partners from Supabase only — no static fallback
   useEffect(() => {
     const loadPartners = async () => {
       const { data, error } = await supabase
@@ -154,12 +165,11 @@ const AlphaMap = () => {
         .select('*');
       if (data && data.length > 0) {
         const dbPartners = data
-          .filter((r: any) => r.latitude && r.longitude)
+          .filter((r: any) => typeof Number(r.latitude) === 'number' && typeof Number(r.longitude) === 'number' && r.latitude !== null && r.longitude !== null)
           .map(dbPartnerToAlphaPartner);
-        setPartners(dbPartners.length > 0 ? dbPartners : staticPartners);
+        setPartners(dbPartners);
       } else {
-        // Only use static fallback if Supabase has no partners at all
-        setPartners(staticPartners);
+        setPartners([]);
       }
       setPartnersLoaded(true);
     };
@@ -237,152 +247,33 @@ const AlphaMap = () => {
   const regions = [...new Set(partners.map(p => p.region))];
 
   return (
-    <div className="relative w-full h-screen bg-background">
-      {/* Header */}
-      <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-background via-background/90 to-transparent p-4 md:p-6 z-[1001] pointer-events-none">
-        <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-          Alpha Partner Network
-        </h1>
-        <p className="text-muted-foreground text-sm md:text-base mt-1">
-          Curated locations for the discerning cannabis enthusiast
-        </p>
-        <p className="text-secondary text-xs md:text-sm mt-1">
-          Members receive exclusive perks at all partner locations
-        </p>
-      </div>
-
-      {/* Filter Bar - hidden on mobile when partner selected */}
-      <div className={`absolute top-24 md:top-28 left-4 right-4 z-[1001] space-y-3 ${selectedPartner ? 'hidden md:block' : ''}`}>
-        <div className="relative max-w-md">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search partners, cities, specialties..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-card/95 backdrop-blur text-foreground rounded-xl border-border focus:border-secondary"
-          />
-        </div>
-
-        <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="md:hidden flex items-center gap-2">
-          <Filter className="w-4 h-4" /> Filters
-        </Button>
-
-        <div className={`flex flex-wrap gap-2 ${showFilters ? 'block' : 'hidden md:flex'}`}>
-          <div className="flex gap-1 flex-wrap">
-            <Button variant={filter.status === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, status: 'all'})}
-              className={filter.status === 'all' ? 'bg-secondary text-secondary-foreground' : ''}>All Partners</Button>
-            <Button variant={filter.status === 'exclusive' ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, status: 'exclusive'})}
-              className={filter.status === 'exclusive' ? 'bg-secondary text-secondary-foreground' : ''}>⭐ Exclusive</Button>
-            <Button variant={filter.status === 'featured' ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, status: 'featured'})}
-              className={filter.status === 'featured' ? 'bg-secondary text-secondary-foreground' : ''}>Featured</Button>
+    <div className="flex h-screen bg-background">
+      {/* Sidebar — visible on lg+ */}
+      <div className="hidden lg:flex flex-col w-[380px] flex-shrink-0 border-r border-border bg-card/95 overflow-hidden">
+        <div className="p-4 border-b border-border">
+          <h2 className="text-lg font-display font-bold text-foreground mb-3">Partner Locations</h2>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search partners..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-background"
+            />
           </div>
-
-          <Button variant={filter.openNow ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, openNow: !filter.openNow})}
-            className={filter.openNow ? 'bg-secondary text-secondary-foreground' : ''}>
-            <span className={filter.openNow ? '' : 'text-green-500'}>●</span><span className="ml-1">Open Now</span>
-          </Button>
-
-          <Button variant={filter.hasPerks ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, hasPerks: !filter.hasPerks})}
-            className={filter.hasPerks ? 'bg-secondary text-secondary-foreground' : ''}>🎁 Member Perks</Button>
-
-          <Button variant={filter.reservations ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, reservations: !filter.reservations})}
-            className={filter.reservations ? 'bg-secondary text-secondary-foreground' : ''}>Reservations</Button>
-
-          <div className={`relative inline-flex items-center rounded-md border text-sm font-medium h-9 ${
-            filter.region !== 'all' 
-              ? 'bg-secondary text-secondary-foreground border-secondary' 
-              : 'bg-background border-input hover:bg-accent hover:text-accent-foreground'
-          }`}>
-            <select value={filter.region} onChange={(e) => setFilter({...filter, region: e.target.value})}
-              className="appearance-none bg-transparent text-inherit px-3 py-1.5 pr-7 text-sm font-medium cursor-pointer focus:outline-none">
-              <option value="all">All Regions</option>
-              {regions.map(region => <option key={region} value={region}>{region}</option>)}
-            </select>
-            <Filter className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none opacity-60" />
-          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            {filteredPartners.length} location{filteredPartners.length !== 1 ? 's' : ''} found
+          </p>
         </div>
-
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            {filteredPartners.length} partner location{filteredPartners.length !== 1 ? 's' : ''} found
-          </span>
-          <Button variant="ghost" size="sm" onClick={() => setShowSubmitForm(!showSubmitForm)} className="text-secondary hover:text-secondary/80">
-            <Send className="w-4 h-4 mr-2" /> Suggest a Store
-          </Button>
-        </div>
-      </div>
-
-      {/* Map */}
-      <MapContainer center={mapCenter} zoom={mapZoom} style={{ height: '100%', width: '100%' }} className="z-0" scrollWheelZoom={true}>
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        />
-        {filteredPartners.map(partner => (
-          <Marker key={String(partner.id)} position={partner.coordinates} icon={createMarkerIcon(partner.alphaStatus)}
-            eventHandlers={{ click: () => setSelectedPartner(partner) }}>
-            <Popup>
-              <div className="text-center">
-                <h3 className="font-bold text-lg mb-1">{partner.name}</h3>
-                <p className="text-sm text-gray-600">{partner.vibe}</p>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-        {mapEvents.map(ev => (
-          <Marker key={`event-${ev.id}`} position={[ev.latitude, ev.longitude]} icon={createEventIcon()}>
-            <Popup>
-              <div className="text-center p-1">
-                <h3 className="font-bold text-base mb-1">★ {ev.title}</h3>
-                {ev.description && <p className="text-sm text-gray-600 mb-1">{ev.description}</p>}
-                {ev.event_date && <p className="text-xs text-gray-500">{new Date(ev.event_date).toLocaleDateString()}</p>}
-                {ev.event_url && <a href={ev.event_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 underline">View Event</a>}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-
-      {/* Vendor Submission Form */}
-      {showSubmitForm && (
-        <div className="absolute top-48 left-4 z-[1002] w-80 bg-card/95 backdrop-blur border border-border rounded-2xl p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-display text-lg font-semibold text-foreground">Suggest a Store</h3>
-            <button onClick={() => setShowSubmitForm(false)} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
-          </div>
-          <p className="text-xs text-muted-foreground mb-4">Your suggestion will be reviewed by our team before appearing on the map.</p>
-          <form onSubmit={handleSubmitVendor} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="vendorName">Store Name *</Label>
-              <Input id="vendorName" value={formData.vendorName} onChange={(e) => setFormData({ ...formData, vendorName: e.target.value })} placeholder="Store name" />
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {filteredPartners.length === 0 && partnersLoaded && (
+            <div className="text-center py-12">
+              <MapPin className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground text-sm">No partner locations found</p>
+              <p className="text-xs text-muted-foreground mt-1">Partners added in admin will appear here automatically</p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Address *</Label>
-              <Input id="address" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} placeholder="Full address" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} placeholder="+27..." />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Why should we partner?</Label>
-              <Input id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Tell us about them..." />
-            </div>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={() => setShowSubmitForm(false)} className="flex-1">Cancel</Button>
-              <Button type="submit" disabled={submitting} className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90">
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit"}
-              </Button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Partner Sidebar (Desktop) */}
-      <div className="absolute left-4 top-52 bottom-6 w-80 bg-card/95 backdrop-blur rounded-2xl p-4 overflow-y-auto z-[1000] hidden lg:block border border-border">
-        <h2 className="text-lg font-display font-bold text-foreground mb-4">Partner Locations</h2>
-        <div className="space-y-3">
+          )}
           {filteredPartners.map(partner => {
             const isOpen = isPartnerOpen(partner);
             return (
@@ -424,8 +315,154 @@ const AlphaMap = () => {
         </div>
       </div>
 
-      {/* Partner Detail Panel / Mobile Drawer */}
-      <MapDrawer partner={selectedPartner} onClose={() => setSelectedPartner(null)} />
+      {/* Map area */}
+      <div className="flex-1 relative">
+        {/* Header overlay */}
+        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-background via-background/90 to-transparent p-4 md:p-6 z-[1001] pointer-events-none">
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
+            Alpha Partner Network
+          </h1>
+          <p className="text-muted-foreground text-sm md:text-base mt-1">
+            Curated locations for the discerning cannabis enthusiast
+          </p>
+          <p className="text-secondary text-xs md:text-sm mt-1">
+            Members receive exclusive perks at all partner locations
+          </p>
+        </div>
+
+        {/* Filter Bar — hidden on mobile when partner selected */}
+        <div className={`absolute top-24 md:top-28 left-4 right-4 z-[1001] space-y-3 ${selectedPartner ? 'hidden md:block' : ''}`}>
+          {/* Mobile search (lg+ uses sidebar search) */}
+          <div className="relative max-w-md lg:hidden">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search partners, cities, specialties..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-card/95 backdrop-blur text-foreground rounded-xl border-border focus:border-secondary"
+            />
+          </div>
+
+          <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="md:hidden flex items-center gap-2">
+            <Filter className="w-4 h-4" /> Filters
+          </Button>
+
+          <div className={`flex flex-wrap gap-2 ${showFilters ? 'block' : 'hidden md:flex'}`}>
+            <div className="flex gap-1 flex-wrap">
+              <Button variant={filter.status === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, status: 'all'})}
+                className={filter.status === 'all' ? 'bg-secondary text-secondary-foreground' : ''}>All Partners</Button>
+              <Button variant={filter.status === 'exclusive' ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, status: 'exclusive'})}
+                className={filter.status === 'exclusive' ? 'bg-secondary text-secondary-foreground' : ''}>⭐ Exclusive</Button>
+              <Button variant={filter.status === 'featured' ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, status: 'featured'})}
+                className={filter.status === 'featured' ? 'bg-secondary text-secondary-foreground' : ''}>Featured</Button>
+            </div>
+
+            <Button variant={filter.openNow ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, openNow: !filter.openNow})}
+              className={filter.openNow ? 'bg-secondary text-secondary-foreground' : ''}>
+              <span className={filter.openNow ? '' : 'text-green-500'}>●</span><span className="ml-1">Open Now</span>
+            </Button>
+
+            <Button variant={filter.hasPerks ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, hasPerks: !filter.hasPerks})}
+              className={filter.hasPerks ? 'bg-secondary text-secondary-foreground' : ''}>🎁 Member Perks</Button>
+
+            <Button variant={filter.reservations ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, reservations: !filter.reservations})}
+              className={filter.reservations ? 'bg-secondary text-secondary-foreground' : ''}>Reservations</Button>
+
+            <div className={`relative inline-flex items-center rounded-md border text-sm font-medium h-9 ${
+              filter.region !== 'all' 
+                ? 'bg-secondary text-secondary-foreground border-secondary' 
+                : 'bg-background border-input hover:bg-accent hover:text-accent-foreground'
+            }`}>
+              <select value={filter.region} onChange={(e) => setFilter({...filter, region: e.target.value})}
+                className="appearance-none bg-transparent text-inherit px-3 py-1.5 pr-7 text-sm font-medium cursor-pointer focus:outline-none">
+                <option value="all">All Regions</option>
+                {regions.map(region => <option key={region} value={region}>{region}</option>)}
+              </select>
+              <Filter className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none opacity-60" />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground lg:hidden">
+              {filteredPartners.length} partner location{filteredPartners.length !== 1 ? 's' : ''} found
+            </span>
+            <Button variant="ghost" size="sm" onClick={() => setShowSubmitForm(!showSubmitForm)} className="text-secondary hover:text-secondary/80">
+              <Send className="w-4 h-4 mr-2" /> Suggest a Store
+            </Button>
+          </div>
+        </div>
+
+        {/* Map */}
+        <MapContainer center={mapCenter} zoom={mapZoom} style={{ height: '100%', width: '100%' }} className="z-0" scrollWheelZoom={true}>
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          />
+          <MapController partner={selectedPartner} />
+          {filteredPartners.map(partner => (
+            <Marker key={String(partner.id)} position={partner.coordinates} icon={createMarkerIcon(partner.alphaStatus)}
+              eventHandlers={{ click: () => setSelectedPartner(partner) }}>
+              <Popup>
+                <div className="text-center">
+                  <h3 className="font-bold text-lg mb-1">{partner.name}</h3>
+                  <p className="text-sm text-gray-600">{partner.vibe}</p>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+          {mapEvents.map(ev => (
+            <Marker key={`event-${ev.id}`} position={[ev.latitude, ev.longitude]} icon={createEventIcon()}>
+              <Popup>
+                <div className="text-center p-1">
+                  <h3 className="font-bold text-base mb-1">★ {ev.title}</h3>
+                  {ev.description && <p className="text-sm text-gray-600 mb-1">{ev.description}</p>}
+                  {ev.event_date && <p className="text-xs text-gray-500">{new Date(ev.event_date).toLocaleDateString()}</p>}
+                  {ev.event_url && <a href={ev.event_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 underline">View Event</a>}
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+
+        {/* Vendor Submission Form */}
+        {showSubmitForm && (
+          <div className="absolute top-48 left-4 z-[1002] w-80 bg-card/95 backdrop-blur border border-border rounded-2xl p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-display text-lg font-semibold text-foreground">Suggest a Store</h3>
+              <button onClick={() => setShowSubmitForm(false)} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">Your suggestion will be reviewed by our team before appearing on the map.</p>
+            <form onSubmit={handleSubmitVendor} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="vendorName">Store Name *</Label>
+                <Input id="vendorName" value={formData.vendorName} onChange={(e) => setFormData({ ...formData, vendorName: e.target.value })} placeholder="Store name" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Address *</Label>
+                <Input id="address" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} placeholder="Full address" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone</Label>
+                <Input id="phone" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} placeholder="+27..." />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Why should we partner?</Label>
+                <Input id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Tell us about them..." />
+              </div>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={() => setShowSubmitForm(false)} className="flex-1">Cancel</Button>
+                <Button type="submit" disabled={submitting} className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90">
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Partner Detail Panel / Mobile Drawer */}
+        <MapDrawer partner={selectedPartner} onClose={() => setSelectedPartner(null)} />
+      </div>
     </div>
   );
 };
