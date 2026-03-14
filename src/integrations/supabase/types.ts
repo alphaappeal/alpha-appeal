@@ -182,6 +182,7 @@ export type Database = {
           amenities: string[] | null
           atmosphere: string | null
           city: string
+          country: string
           created_at: string | null
           currently_open: boolean | null
           email: string | null
@@ -217,6 +218,7 @@ export type Database = {
           amenities?: string[] | null
           atmosphere?: string | null
           city: string
+          country?: string
           created_at?: string | null
           currently_open?: boolean | null
           email?: string | null
@@ -252,6 +254,7 @@ export type Database = {
           amenities?: string[] | null
           atmosphere?: string | null
           city?: string
+          country?: string
           created_at?: string | null
           currently_open?: boolean | null
           email?: string | null
