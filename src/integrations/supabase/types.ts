@@ -447,6 +447,30 @@ export type Database = {
           },
         ]
       }
+      categories: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          icon: string
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          icon: string
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          icon?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       comment_interactions: {
         Row: {
           comment_id: string | null
@@ -977,6 +1001,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "event_tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "map_events_with_types"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "event_tickets_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -984,6 +1015,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      event_types: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          icon: string
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          icon: string
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          icon?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
       feature_flags: {
         Row: {
@@ -1109,50 +1164,68 @@ export type Database = {
           active: boolean | null
           created_at: string | null
           description: string | null
+          end_date: string | null
           event_date: string | null
           event_type: string | null
+          event_type_id: string | null
           event_url: string | null
           icon_svg: string | null
           id: string
           image_url: string | null
           latitude: number
           longitude: number
+          start_date: string | null
           title: string
         }
         Insert: {
           active?: boolean | null
           created_at?: string | null
           description?: string | null
+          end_date?: string | null
           event_date?: string | null
           event_type?: string | null
+          event_type_id?: string | null
           event_url?: string | null
           icon_svg?: string | null
           id?: string
           image_url?: string | null
           latitude: number
           longitude: number
+          start_date?: string | null
           title: string
         }
         Update: {
           active?: boolean | null
           created_at?: string | null
           description?: string | null
+          end_date?: string | null
           event_date?: string | null
           event_type?: string | null
+          event_type_id?: string | null
           event_url?: string | null
           icon_svg?: string | null
           id?: string
           image_url?: string | null
           latitude?: number
           longitude?: number
+          start_date?: string | null
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "map_events_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "event_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       map_locations: {
         Row: {
           active: boolean | null
           address: string | null
+          category_id: string | null
           city: string | null
           contact_info: Json | null
           created_at: string | null
@@ -1167,6 +1240,7 @@ export type Database = {
         Insert: {
           active?: boolean | null
           address?: string | null
+          category_id?: string | null
           city?: string | null
           contact_info?: Json | null
           created_at?: string | null
@@ -1181,6 +1255,7 @@ export type Database = {
         Update: {
           active?: boolean | null
           address?: string | null
+          category_id?: string | null
           city?: string | null
           contact_info?: Json | null
           created_at?: string | null
@@ -1192,7 +1267,15 @@ export type Database = {
           province?: string | null
           type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "map_locations_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       member_events: {
         Row: {
@@ -3425,6 +3508,7 @@ export type Database = {
           partner_id: string
           permissions: Json | null
           role: string | null
+          store_id: string | null
           user_id: string
         }
         Insert: {
@@ -3435,6 +3519,7 @@ export type Database = {
           partner_id: string
           permissions?: Json | null
           role?: string | null
+          store_id?: string | null
           user_id: string
         }
         Update: {
@@ -3445,12 +3530,20 @@ export type Database = {
           partner_id?: string
           permissions?: Json | null
           role?: string | null
+          store_id?: string | null
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "vendor_accounts_partner_id_fkey"
             columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "alpha_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_accounts_store_id_fkey"
+            columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "alpha_partners"
             referencedColumns: ["id"]
@@ -3637,6 +3730,66 @@ export type Database = {
       }
     }
     Views: {
+      map_events_with_types: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          event_color: string | null
+          event_date: string | null
+          event_icon: string | null
+          event_type: string | null
+          event_type_id: string | null
+          event_type_name: string | null
+          event_url: string | null
+          icon_svg: string | null
+          id: string | null
+          image_url: string | null
+          latitude: number | null
+          longitude: number | null
+          start_date: string | null
+          title: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "map_events_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "event_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      map_locations_with_categories: {
+        Row: {
+          active: boolean | null
+          address: string | null
+          category_color: string | null
+          category_icon: string | null
+          category_id: string | null
+          category_name: string | null
+          city: string | null
+          contact_info: Json | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          latitude: number | null
+          longitude: number | null
+          name: string | null
+          province: string | null
+          type: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "map_locations_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_views_daily: {
         Row: {
           day: string | null
