@@ -23,6 +23,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const Map = lazy(() => import("./pages/Map"));
 const Admin = lazy(() => import("./pages/Admin"));
 const VendorPortal = lazy(() => import("./pages/VendorPortal"));
+const VendorSignup = lazy(() => import("./pages/VendorSignup"));
 const MyDiary = lazy(() => import("./pages/MyDiary"));
 const Deliveries = lazy(() => import("./pages/Deliveries"));
 const Billing = lazy(() => import("./pages/Billing"));
