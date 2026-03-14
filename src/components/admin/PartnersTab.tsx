@@ -48,6 +48,7 @@ interface AlphaPartner {
   address: string;
   city: string;
   region: string;
+  country: string;
   latitude: number | null;
   longitude: number | null;
   phone: string | null;
