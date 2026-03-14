@@ -1,4 +1,21 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, ComponentType } from "react";
+
+// Retry wrapper for lazy imports — handles stale chunk errors after deploys
+function lazyWithRetry<T extends ComponentType<any>>(
+  factory: () => Promise<{ default: T }>
+) {
+  return lazy(() =>
+    factory().catch((err) => {
+      // If chunk fetch fails, force a full reload once
+      const key = "chunk_reload";
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        window.location.reload();
+      }
+      throw err;
+    })
+  );
+}
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,33 +26,33 @@ import AgeGate from "./components/AgeGate";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
 // Lazy-loaded pages for code splitting
-const Index = lazy(() => import("./pages/Index"));
-const Signup = lazy(() => import("./pages/Signup"));
-const Login = lazy(() => import("./pages/Login"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const Checkout = lazy(() => import("./pages/Checkout"));
-const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
-const Welcome = lazy(() => import("./pages/Welcome"));
-const Shop = lazy(() => import("./pages/Shop"));
-const Music = lazy(() => import("./pages/Music"));
-const Community = lazy(() => import("./pages/Community"));
-const Profile = lazy(() => import("./pages/Profile"));
-const Map = lazy(() => import("./pages/Map"));
-const Admin = lazy(() => import("./pages/Admin"));
-const VendorPortal = lazy(() => import("./pages/VendorPortal"));
-const VendorSignup = lazy(() => import("./pages/VendorSignup"));
-const MyDiary = lazy(() => import("./pages/MyDiary"));
-const Deliveries = lazy(() => import("./pages/Deliveries"));
-const Billing = lazy(() => import("./pages/Billing"));
-const Settings = lazy(() => import("./pages/Settings"));
-const Support = lazy(() => import("./pages/Support"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const Legal = lazy(() => import("./pages/Legal"));
-const PartnerDetail = lazy(() => import("./pages/PartnerDetail"));
-const StrainDetail = lazy(() => import("./pages/StrainDetail"));
-const CommunityPostDetail = lazy(() => import("./pages/CommunityPostDetail"));
-const CultureItemDetail = lazy(() => import("./pages/CultureItemDetail"));
-const ImportCultureData = lazy(() => import("./pages/ImportCultureData"));
+const Index = lazyWithRetry(() => import("./pages/Index"));
+const Signup = lazyWithRetry(() => import("./pages/Signup"));
+const Login = lazyWithRetry(() => import("./pages/Login"));
+const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
+const Checkout = lazyWithRetry(() => import("./pages/Checkout"));
+const CheckoutSuccess = lazyWithRetry(() => import("./pages/CheckoutSuccess"));
+const Welcome = lazyWithRetry(() => import("./pages/Welcome"));
+const Shop = lazyWithRetry(() => import("./pages/Shop"));
+const Music = lazyWithRetry(() => import("./pages/Music"));
+const Community = lazyWithRetry(() => import("./pages/Community"));
+const Profile = lazyWithRetry(() => import("./pages/Profile"));
+const Map = lazyWithRetry(() => import("./pages/Map"));
+const Admin = lazyWithRetry(() => import("./pages/Admin"));
+const VendorPortal = lazyWithRetry(() => import("./pages/VendorPortal"));
+const VendorSignup = lazyWithRetry(() => import("./pages/VendorSignup"));
+const MyDiary = lazyWithRetry(() => import("./pages/MyDiary"));
+const Deliveries = lazyWithRetry(() => import("./pages/Deliveries"));
+const Billing = lazyWithRetry(() => import("./pages/Billing"));
+const Settings = lazyWithRetry(() => import("./pages/Settings"));
+const Support = lazyWithRetry(() => import("./pages/Support"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const Legal = lazyWithRetry(() => import("./pages/Legal"));
+const PartnerDetail = lazyWithRetry(() => import("./pages/PartnerDetail"));
+const StrainDetail = lazyWithRetry(() => import("./pages/StrainDetail"));
+const CommunityPostDetail = lazyWithRetry(() => import("./pages/CommunityPostDetail"));
+const CultureItemDetail = lazyWithRetry(() => import("./pages/CultureItemDetail"));
+const ImportCultureData = lazyWithRetry(() => import("./pages/ImportCultureData"));
 
 const queryClient = new QueryClient();
 
