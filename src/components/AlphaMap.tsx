@@ -67,6 +67,7 @@ interface FilterState {
   openNow: boolean;
   hasPerks: boolean;
   reservations: boolean;
+  country: string;
   region: string;
 }
 
@@ -93,6 +94,25 @@ const MapController = ({ partner }: { partner: AlphaPartner | null }) => {
   return null;
 };
 
+// BoundsController: fits map to all partner locations after load
+const BoundsController = ({ partners, partnersLoaded, skipFit }: { partners: AlphaPartner[]; partnersLoaded: boolean; skipFit: boolean }) => {
+  const map = useMap();
+  const [hasFit, setHasFit] = useState(false);
+
+  useEffect(() => {
+    if (!partnersLoaded || hasFit || skipFit) return;
+    if (partners.length > 0) {
+      const bounds = L.latLngBounds(partners.map(p => p.coordinates));
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+    } else {
+      map.setView([20, 0], 2);
+    }
+    setHasFit(true);
+  }, [partnersLoaded, partners, map, hasFit, skipFit]);
+
+  return null;
+};
+
 // Convert a Supabase alpha_partners row into the AlphaPartner shape used by the UI
 const dbPartnerToAlphaPartner = (row: any): AlphaPartner => ({
   id: row.id,
@@ -102,6 +122,7 @@ const dbPartnerToAlphaPartner = (row: any): AlphaPartner => ({
   address: row.address,
   city: row.city,
   region: row.region,
+  country: row.country || 'South Africa',
   coordinates: [Number(row.latitude), Number(row.longitude)] as [number, number],
   contact: {
     phone: row.phone || undefined,
@@ -149,7 +170,7 @@ const AlphaMap = () => {
   const [selectedPartner, setSelectedPartner] = useState<AlphaPartner | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterState>({
-    status: 'all', openNow: false, hasPerks: false, reservations: false, region: 'all'
+    status: 'all', openNow: false, hasPerks: false, reservations: false, country: 'all', region: 'all'
   });
   const [showFilters, setShowFilters] = useState(false);
   const [showSubmitForm, setShowSubmitForm] = useState(false);
@@ -201,6 +222,8 @@ const AlphaMap = () => {
           partner.name.toLowerCase().includes(query) ||
           partner.city.toLowerCase().includes(query) ||
           partner.address.toLowerCase().includes(query) ||
+          partner.country.toLowerCase().includes(query) ||
+          (partner.region && partner.region.toLowerCase().includes(query)) ||
           partner.specialties.some(s => s.toLowerCase().includes(query));
         if (!matchesSearch) return false;
       }
@@ -208,13 +231,14 @@ const AlphaMap = () => {
       if (filter.openNow && !isPartnerOpen(partner)) return false;
       if (filter.hasPerks && !partner.alphaPerks) return false;
       if (filter.reservations && !partner.openForReservations) return false;
-      if (filter.region !== 'all' && partner.region !== filter.region) return false;
+      if (filter.country !== 'all' && partner.country !== filter.country) return false;
+      if (filter.region !== 'all' && (partner.region || '') !== filter.region) return false;
       return true;
     });
   }, [searchQuery, filter, partners]);
 
   const mapCenter: [number, number] = [-26.1, 28.0];
-  const mapZoom = initialPartnerId ? 13 : 10;
+  const mapZoom = 10;
 
   const handleSubmitVendor = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -244,7 +268,28 @@ const AlphaMap = () => {
     }
   };
 
-  const regions = [...new Set(partners.map(p => p.region))];
+  // Derive dynamic filter options from partner data
+  const countries = [...new Set(partners.map(p => p.country))].sort();
+  const regions = [...new Set(
+    partners
+      .filter(p => filter.country === 'all' || p.country === filter.country)
+      .map(p => p.region)
+      .filter(Boolean)
+  )].sort();
+
+  // Reset region filter when country changes and selected region is no longer valid
+  useEffect(() => {
+    if (filter.region !== 'all' && !regions.includes(filter.region)) {
+      setFilter(prev => ({ ...prev, region: 'all' }));
+    }
+  }, [filter.country, regions, filter.region]);
+
+  const formatLocation = (partner: AlphaPartner) => {
+    if (partner.country === 'South Africa') {
+      return `${partner.city}, ${partner.region}`;
+    }
+    return `${partner.city}, ${partner.country}`;
+  };
 
   return (
     <div className="flex h-screen bg-background">
@@ -292,6 +337,7 @@ const AlphaMap = () => {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-foreground text-sm truncate">{partner.name}</h3>
                     <p className="text-xs text-secondary">{partner.vibe}</p>
+                    <p className="text-xs text-muted-foreground">{formatLocation(partner)}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <Star className="w-3 h-3 text-secondary fill-secondary" />
                       <span className="text-xs text-foreground">{partner.rating.overall}</span>
@@ -337,7 +383,7 @@ const AlphaMap = () => {
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search partners, cities, specialties..."
+              placeholder="Search partners, cities, countries..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 bg-card/95 backdrop-blur text-foreground rounded-xl border-border focus:border-secondary"
@@ -369,6 +415,23 @@ const AlphaMap = () => {
             <Button variant={filter.reservations ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, reservations: !filter.reservations})}
               className={filter.reservations ? 'bg-secondary text-secondary-foreground' : ''}>Reservations</Button>
 
+            {/* Country filter */}
+            {countries.length > 1 && (
+              <div className={`relative inline-flex items-center rounded-md border text-sm font-medium h-9 ${
+                filter.country !== 'all' 
+                  ? 'bg-secondary text-secondary-foreground border-secondary' 
+                  : 'bg-background border-input hover:bg-accent hover:text-accent-foreground'
+              }`}>
+                <select value={filter.country} onChange={(e) => setFilter({...filter, country: e.target.value, region: 'all'})}
+                  className="appearance-none bg-transparent text-inherit px-3 py-1.5 pr-7 text-sm font-medium cursor-pointer focus:outline-none">
+                  <option value="all">All Countries</option>
+                  {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <Filter className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none opacity-60" />
+              </div>
+            )}
+
+            {/* Region filter */}
             <div className={`relative inline-flex items-center rounded-md border text-sm font-medium h-9 ${
               filter.region !== 'all' 
                 ? 'bg-secondary text-secondary-foreground border-secondary' 
@@ -400,6 +463,7 @@ const AlphaMap = () => {
             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
           <MapController partner={selectedPartner} />
+          <BoundsController partners={partners} partnersLoaded={partnersLoaded} skipFit={!!initialPartnerId} />
           {filteredPartners.map(partner => (
             <Marker key={String(partner.id)} position={partner.coordinates} icon={createMarkerIcon(partner.alphaStatus)}
               eventHandlers={{ click: () => setSelectedPartner(partner) }}>
