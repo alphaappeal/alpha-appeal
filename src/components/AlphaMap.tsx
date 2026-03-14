@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AlphaPartner, isPartnerOpen, AlphaStatus } from '@/data/alphaPartners';
 import MapDrawer from '@/components/map/MapDrawer';
+import { createPartnerMarker, createIconMarker } from '@/lib/mapIcons';
 import L from 'leaflet';
 
 // Fix Leaflet default marker icons
@@ -22,46 +23,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-const createMarkerIcon = (status: AlphaStatus) => {
-  const colors = {
-    exclusive: { primary: '#c4a052', secondary: '#8b7355' },
-    featured: { primary: '#7a9a7a', secondary: '#5a7a5a' },
-    verified: { primary: '#6b7280', secondary: '#4b5563' }
-  };
-  const { primary, secondary } = colors[status];
-  return new L.Icon({
-    iconUrl: 'data:image/svg+xml;base64,' + btoa(`
-      <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="20" cy="20" r="18" fill="url(#gradient-${status})" stroke="white" stroke-width="3"/>
-        <text x="20" y="26" font-family="serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">A</text>
-        <defs>
-          <linearGradient id="gradient-${status}" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:${primary};stop-opacity:1" />
-            <stop offset="100%" style="stop-color:${secondary};stop-opacity:1" />
-          </linearGradient>
-        </defs>
-      </svg>
-    `),
-    iconSize: [40, 40],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -40]
-  });
-};
-
-const createEventIcon = () => {
-  return new L.Icon({
-    iconUrl: 'data:image/svg+xml;base64,' + btoa(`
-      <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="20" cy="20" r="18" fill="#c4a052" stroke="white" stroke-width="3"/>
-        <text x="20" y="26" font-family="sans-serif" font-size="18" fill="white" text-anchor="middle">★</text>
-      </svg>
-    `),
-    iconSize: [40, 40],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -40]
-  });
-};
-
 interface FilterState {
   status: 'all' | AlphaStatus;
   openNow: boolean;
@@ -69,9 +30,25 @@ interface FilterState {
   reservations: boolean;
   country: string;
   region: string;
+  category: string;
+  showEvents: boolean;
 }
 
-interface MapEvent {
+interface MapLocation {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  address: string | null;
+  city: string | null;
+  description: string | null;
+  category_name: string | null;
+  category_icon: string | null;
+  category_color: string | null;
+  category_id: string | null;
+}
+
+interface MapEventWithType {
   id: string;
   title: string;
   description: string | null;
@@ -81,6 +58,19 @@ interface MapEvent {
   event_type: string | null;
   event_url: string | null;
   active: boolean;
+  start_date: string | null;
+  end_date: string | null;
+  event_type_name: string | null;
+  event_icon: string | null;
+  event_color: string | null;
+  image_url: string | null;
+}
+
+interface CategoryOption {
+  id: string;
+  name: string;
+  icon: string;
+  color: string | null;
 }
 
 // MapController: handles flyTo when selectedPartner changes
@@ -170,23 +160,24 @@ const AlphaMap = () => {
   const [selectedPartner, setSelectedPartner] = useState<AlphaPartner | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterState>({
-    status: 'all', openNow: false, hasPerks: false, reservations: false, country: 'all', region: 'all'
+    status: 'all', openNow: false, hasPerks: false, reservations: false,
+    country: 'all', region: 'all', category: 'all', showEvents: true,
   });
   const [showFilters, setShowFilters] = useState(false);
   const [showSubmitForm, setShowSubmitForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({ vendorName: '', address: '', phone: '', description: '' });
-  const [mapEvents, setMapEvents] = useState<MapEvent[]>([]);
+  const [mapEvents, setMapEvents] = useState<MapEventWithType[]>([]);
+  const [mapLocations, setMapLocations] = useState<MapLocation[]>([]);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
 
-  // Load partners from Supabase only — no static fallback
+  // Load partners from Supabase
   useEffect(() => {
     const loadPartners = async () => {
-      const { data, error } = await supabase
-        .from('alpha_partners')
-        .select('*');
+      const { data } = await supabase.from('alpha_partners').select('*');
       if (data && data.length > 0) {
         const dbPartners = data
-          .filter((r: any) => typeof Number(r.latitude) === 'number' && typeof Number(r.longitude) === 'number' && r.latitude !== null && r.longitude !== null)
+          .filter((r: any) => r.latitude != null && r.longitude != null)
           .map(dbPartnerToAlphaPartner);
         setPartners(dbPartners);
       } else {
@@ -205,11 +196,49 @@ const AlphaMap = () => {
     }
   }, [initialPartnerId, partners]);
 
-  // Load event pins
+  // Load categories for filter dropdown
+  useEffect(() => {
+    const loadCategories = async () => {
+      const { data } = await supabase.from('categories').select('*').order('name');
+      if (data) setCategories(data as CategoryOption[]);
+    };
+    loadCategories();
+  }, []);
+
+  // Load map locations from view
+  useEffect(() => {
+    const loadLocations = async () => {
+      const { data } = await supabase
+        .from('map_locations_with_categories')
+        .select('*')
+        .eq('active', true);
+      if (data) {
+        setMapLocations(
+          (data as any[]).filter(r => r.latitude != null && r.longitude != null) as MapLocation[]
+        );
+      }
+    };
+    loadLocations();
+  }, []);
+
+  // Load event pins from view with date filtering
   useEffect(() => {
     const loadEvents = async () => {
-      const { data } = await supabase.from('map_events').select('*').eq('active', true);
-      if (data) setMapEvents(data as MapEvent[]);
+      const { data } = await supabase
+        .from('map_events_with_types')
+        .select('*')
+        .eq('active', true);
+      if (data) {
+        const now = new Date();
+        const filtered = (data as any[]).filter(ev => {
+          // If start_date exists, only show if start_date <= now
+          if (ev.start_date && new Date(ev.start_date) > now) return false;
+          // If end_date exists, only show if end_date >= now
+          if (ev.end_date && new Date(ev.end_date) < now) return false;
+          return ev.latitude != null && ev.longitude != null;
+        });
+        setMapEvents(filtered as MapEventWithType[]);
+      }
     };
     loadEvents();
   }, []);
@@ -236,6 +265,12 @@ const AlphaMap = () => {
       return true;
     });
   }, [searchQuery, filter, partners]);
+
+  // Filter map locations by category
+  const filteredLocations = useMemo(() => {
+    if (filter.category === 'all') return mapLocations;
+    return mapLocations.filter(loc => loc.category_id === filter.category);
+  }, [mapLocations, filter.category]);
 
   const mapCenter: [number, number] = [-26.1, 28.0];
   const mapZoom = 10;
@@ -376,9 +411,9 @@ const AlphaMap = () => {
           </p>
         </div>
 
-        {/* Filter Bar — hidden on mobile when partner selected */}
+        {/* Filter Bar */}
         <div className={`absolute top-24 md:top-28 left-4 right-4 z-[1001] space-y-3 ${selectedPartner ? 'hidden md:block' : ''}`}>
-          {/* Mobile search (lg+ uses sidebar search) */}
+          {/* Mobile search */}
           <div className="relative max-w-md lg:hidden">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
@@ -414,6 +449,28 @@ const AlphaMap = () => {
 
             <Button variant={filter.reservations ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, reservations: !filter.reservations})}
               className={filter.reservations ? 'bg-secondary text-secondary-foreground' : ''}>Reservations</Button>
+
+            {/* Events toggle */}
+            <Button variant={filter.showEvents ? 'default' : 'outline'} size="sm" onClick={() => setFilter({...filter, showEvents: !filter.showEvents})}
+              className={filter.showEvents ? 'bg-secondary text-secondary-foreground' : ''}>
+              <Calendar className="w-3 h-3 mr-1" /> Events
+            </Button>
+
+            {/* Category filter */}
+            {categories.length > 0 && (
+              <div className={`relative inline-flex items-center rounded-md border text-sm font-medium h-9 ${
+                filter.category !== 'all'
+                  ? 'bg-secondary text-secondary-foreground border-secondary'
+                  : 'bg-background border-input hover:bg-accent hover:text-accent-foreground'
+              }`}>
+                <select value={filter.category} onChange={(e) => setFilter({...filter, category: e.target.value})}
+                  className="appearance-none bg-transparent text-inherit px-3 py-1.5 pr-7 text-sm font-medium cursor-pointer focus:outline-none">
+                  <option value="all">All Categories</option>
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+                <Filter className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none opacity-60" />
+              </div>
+            )}
 
             {/* Country filter */}
             {countries.length > 1 && (
@@ -464,8 +521,10 @@ const AlphaMap = () => {
           />
           <MapController partner={selectedPartner} />
           <BoundsController partners={partners} partnersLoaded={partnersLoaded} skipFit={!!initialPartnerId} />
+
+          {/* Partner store markers */}
           {filteredPartners.map(partner => (
-            <Marker key={String(partner.id)} position={partner.coordinates} icon={createMarkerIcon(partner.alphaStatus)}
+            <Marker key={String(partner.id)} position={partner.coordinates} icon={createPartnerMarker(partner.alphaStatus)}
               eventHandlers={{ click: () => setSelectedPartner(partner) }}>
               <Popup>
                 <div className="text-center">
@@ -475,11 +534,51 @@ const AlphaMap = () => {
               </Popup>
             </Marker>
           ))}
-          {mapEvents.map(ev => (
-            <Marker key={`event-${ev.id}`} position={[ev.latitude, ev.longitude]} icon={createEventIcon()}>
+
+          {/* Map location markers (category-based) */}
+          {filteredLocations.map(loc => (
+            <Marker
+              key={`loc-${loc.id}`}
+              position={[Number(loc.latitude), Number(loc.longitude)]}
+              icon={createIconMarker(
+                loc.category_icon || 'map-pin',
+                loc.category_color || '#6b7280'
+              )}
+            >
               <Popup>
                 <div className="text-center p-1">
-                  <h3 className="font-bold text-base mb-1">★ {ev.title}</h3>
+                  <h3 className="font-bold text-base mb-1">{loc.name}</h3>
+                  {loc.category_name && (
+                    <span className="inline-block text-xs px-2 py-0.5 rounded-full mb-1" style={{ backgroundColor: loc.category_color || '#6b7280', color: 'white' }}>
+                      {loc.category_name}
+                    </span>
+                  )}
+                  {loc.description && <p className="text-sm text-gray-600 mb-1">{loc.description}</p>}
+                  {loc.address && <p className="text-xs text-gray-500">{loc.address}{loc.city ? `, ${loc.city}` : ''}</p>}
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+
+          {/* Event markers (event-type-based) */}
+          {filter.showEvents && mapEvents.map(ev => (
+            <Marker
+              key={`event-${ev.id}`}
+              position={[Number(ev.latitude), Number(ev.longitude)]}
+              icon={createIconMarker(
+                ev.event_icon || 'calendar',
+                ev.event_color || '#c4a052',
+                { glow: true, size: 44 }
+              )}
+            >
+              <Popup>
+                <div className="text-center p-1">
+                  <h3 className="font-bold text-base mb-1">{ev.title}</h3>
+                  {ev.event_type_name && (
+                    <span className="inline-block text-xs px-2 py-0.5 rounded-full mb-1" style={{ backgroundColor: ev.event_color || '#c4a052', color: 'white' }}>
+                      {ev.event_type_name}
+                    </span>
+                  )}
                   {ev.description && <p className="text-sm text-gray-600 mb-1">{ev.description}</p>}
                   {ev.event_date && <p className="text-xs text-gray-500">{new Date(ev.event_date).toLocaleDateString()}</p>}
                   {ev.event_url && <a href={ev.event_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 underline">View Event</a>}
