@@ -14,7 +14,7 @@ const Footer = () => {
               className="h-8 w-auto mb-6"
             />
             <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-              South Africa's premier cannabis lifestyle subscription. 
+              The premier cannabis lifestyle subscription. 
               Curated products, premium experiences.
             </p>
             <div className="flex items-center gap-4">

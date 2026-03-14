@@ -33,7 +33,7 @@ const Hero = () => {
           {/* Subheadline */}
           <p className="animate-fade-up opacity-0 animation-delay-300 text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
             Art you can wear. Music you can live in. Culture you can feel.
-            Join South Africa's most intentional lifestyle community.
+            Join the world's most intentional lifestyle community.
           </p>
 
           {/* CTAs */}

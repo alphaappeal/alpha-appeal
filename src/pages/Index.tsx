@@ -34,11 +34,11 @@ const Index = () => {
     <>
       <Helmet>
         <title>Alpha Appeal | Live with Intention. Move with Culture.</title>
-        <meta 
-          name="description" 
-          content="Join South Africa's most intentional lifestyle movement. Art you can wear. Music you can live in. Culture you can feel. Premium curated experiences delivered monthly." 
-        />
-        <meta name="keywords" content="lifestyle, subscription, South Africa, premium, luxury, music, fashion, wellness, culture" />
+          <meta 
+            name="description" 
+            content="Join the world's most intentional lifestyle movement. Art you can wear. Music you can live in. Culture you can feel. Premium curated experiences delivered monthly." 
+          />
+          <meta name="keywords" content="lifestyle, subscription, premium, luxury, music, fashion, wellness, culture, cannabis" />
         <meta property="og:title" content="Alpha Appeal | Premium Lifestyle Movement" />
         <meta property="og:description" content="Art you can wear. Music you can live in. Culture you can feel. Join the movement." />
         <meta property="og:type" content="website" />

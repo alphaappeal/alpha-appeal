@@ -62,7 +62,7 @@ const PartnerDetails = ({ partner }: { partner: AlphaPartner }) => {
       <div className="space-y-2">
         <div className="flex items-start gap-2 text-sm text-muted-foreground">
           <MapPin className="w-4 h-4 text-secondary flex-shrink-0 mt-0.5" />
-          <span>{partner.address}</span>
+          <span>{partner.address}{partner.country && partner.country !== 'South Africa' ? `, ${partner.country}` : ''}</span>
         </div>
         {partner.contact.phone && (
           <div className="flex items-center gap-2 text-sm">

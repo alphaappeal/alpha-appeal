@@ -537,26 +537,44 @@ const PartnersTab = () => {
             </div>
 
             <div>
-              <label className="text-sm text-muted-foreground mb-1 block">Region *</label>
+              <label className="text-sm text-muted-foreground mb-1 block">Country *</label>
               <Select
-                value={formData.region || "Gauteng"}
-                onValueChange={(value) => setFormData({ ...formData, region: value })}
+                value={formData.country || "South Africa"}
+                onValueChange={(value) => setFormData({ ...formData, country: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Gauteng">Gauteng</SelectItem>
-                  <SelectItem value="Western Cape">Western Cape</SelectItem>
-                  <SelectItem value="KwaZulu-Natal">KwaZulu-Natal</SelectItem>
-                  <SelectItem value="Eastern Cape">Eastern Cape</SelectItem>
-                  <SelectItem value="Free State">Free State</SelectItem>
-                  <SelectItem value="Mpumalanga">Mpumalanga</SelectItem>
-                  <SelectItem value="Limpopo">Limpopo</SelectItem>
-                  <SelectItem value="North West">North West</SelectItem>
-                  <SelectItem value="Northern Cape">Northern Cape</SelectItem>
+                  <SelectItem value="South Africa">🇿🇦 South Africa</SelectItem>
+                  <SelectItem value="United Arab Emirates">🇦🇪 United Arab Emirates</SelectItem>
+                  <SelectItem value="Jamaica">🇯🇲 Jamaica</SelectItem>
+                  <SelectItem value="United States">🇺🇸 United States</SelectItem>
+                  <SelectItem value="United Kingdom">🇬🇧 United Kingdom</SelectItem>
+                  <SelectItem value="Netherlands">🇳🇱 Netherlands</SelectItem>
+                  <SelectItem value="Thailand">🇹🇭 Thailand</SelectItem>
+                  <SelectItem value="Canada">🇨🇦 Canada</SelectItem>
+                  <SelectItem value="Germany">🇩🇪 Germany</SelectItem>
+                  <SelectItem value="Spain">🇪🇸 Spain</SelectItem>
+                  <SelectItem value="Portugal">🇵🇹 Portugal</SelectItem>
+                  <SelectItem value="Ghana">🇬🇭 Ghana</SelectItem>
+                  <SelectItem value="Nigeria">🇳🇬 Nigeria</SelectItem>
+                  <SelectItem value="Australia">🇦🇺 Australia</SelectItem>
+                  <SelectItem value="Morocco">🇲🇦 Morocco</SelectItem>
+                  <SelectItem value="Kenya">🇰🇪 Kenya</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">
+                {formData.country === 'South Africa' ? 'Province *' : 'State / Region *'}
+              </label>
+              <Input
+                value={formData.region || ""}
+                onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+                placeholder={formData.country === 'South Africa' ? 'e.g., Gauteng' : 'e.g., Dubai, California'}
+              />
             </div>
 
             {/* Coordinates — critical for map visibility */}
