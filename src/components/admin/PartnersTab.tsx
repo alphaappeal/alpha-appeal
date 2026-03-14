@@ -37,7 +37,6 @@ import {
   MapPin,
   Loader2,
   Save,
-  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -54,6 +53,7 @@ interface AlphaPartner {
   phone: string | null;
   email: string | null;
   website: string | null;
+  logo_url: string | null;
   hours_weekdays: string | null;
   hours_saturday: string | null;
   hours_sunday: string | null;
@@ -75,6 +75,8 @@ interface AlphaPartner {
   created_at: string;
 }
 
+type PartnerFormData = Partial<AlphaPartner> & { specialties_text?: string };
+
 const PartnersTab = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -85,15 +87,19 @@ const PartnersTab = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const emptyPartner: Partial<AlphaPartner> = {
+  const emptyPartner: PartnerFormData = {
     name: "",
     partner_since: new Date().getFullYear().toString(),
     alpha_status: "verified",
     address: "",
     city: "",
     region: "Gauteng",
+    latitude: null,
+    longitude: null,
     phone: "",
     email: "",
+    website: "",
+    logo_url: "",
     vibe: "",
     atmosphere: "",
     member_discount: "",
@@ -107,9 +113,10 @@ const PartnersTab = () => {
     hours_weekdays: "09:00 - 18:00",
     hours_saturday: "10:00 - 17:00",
     hours_sunday: "Closed",
+    specialties_text: "",
   };
 
-  const [formData, setFormData] = useState<Partial<AlphaPartner>>(emptyPartner);
+  const [formData, setFormData] = useState<PartnerFormData>(emptyPartner);
 
   useEffect(() => {
     loadPartners();
@@ -136,6 +143,46 @@ const PartnersTab = () => {
     }
   };
 
+  const parseCoord = (val: any): number | null => {
+    if (val === null || val === undefined || val === "") return null;
+    const num = parseFloat(String(val));
+    return isNaN(num) ? null : num;
+  };
+
+  const parseSpecialties = (text: string | undefined): string[] | null => {
+    if (!text || !text.trim()) return null;
+    return text.split(",").map((s) => s.trim()).filter(Boolean);
+  };
+
+  const buildPayload = () => ({
+    name: formData.name!,
+    partner_since: formData.partner_since || new Date().getFullYear().toString(),
+    alpha_status: formData.alpha_status,
+    address: formData.address!,
+    city: formData.city!,
+    region: formData.region!,
+    latitude: parseCoord(formData.latitude),
+    longitude: parseCoord(formData.longitude),
+    phone: formData.phone || null,
+    email: formData.email || null,
+    website: formData.website || null,
+    logo_url: formData.logo_url || null,
+    vibe: formData.vibe || null,
+    atmosphere: formData.atmosphere || null,
+    member_discount: formData.member_discount || null,
+    exclusive_access: formData.exclusive_access || null,
+    special_events: formData.special_events || null,
+    hero_image: formData.hero_image || null,
+    specialties: parseSpecialties(formData.specialties_text),
+    currently_open: formData.currently_open ?? true,
+    featured: formData.featured ?? false,
+    has_delivery: formData.has_delivery ?? false,
+    open_for_reservations: formData.open_for_reservations ?? true,
+    hours_weekdays: formData.hours_weekdays || null,
+    hours_saturday: formData.hours_saturday || null,
+    hours_sunday: formData.hours_sunday || null,
+  });
+
   const handleSavePartner = async () => {
     if (!formData.name || !formData.address || !formData.city || !formData.region) {
       toast({
@@ -148,59 +195,18 @@ const PartnersTab = () => {
 
     setSaving(true);
     try {
+      const payload = buildPayload();
+
       if (editingPartner) {
         const { error } = await supabase
           .from("alpha_partners")
-          .update({
-            name: formData.name,
-            alpha_status: formData.alpha_status,
-            address: formData.address,
-            city: formData.city,
-            region: formData.region,
-            phone: formData.phone,
-            email: formData.email,
-            vibe: formData.vibe,
-            atmosphere: formData.atmosphere,
-            member_discount: formData.member_discount,
-            exclusive_access: formData.exclusive_access,
-            special_events: formData.special_events,
-            hero_image: formData.hero_image,
-            currently_open: formData.currently_open,
-            featured: formData.featured,
-            has_delivery: formData.has_delivery,
-            open_for_reservations: formData.open_for_reservations,
-            hours_weekdays: formData.hours_weekdays,
-            hours_saturday: formData.hours_saturday,
-            hours_sunday: formData.hours_sunday,
-            updated_at: new Date().toISOString(),
-          })
+          .update({ ...payload, updated_at: new Date().toISOString() })
           .eq("id", editingPartner.id);
 
         if (error) throw error;
         toast({ title: "Success", description: "Partner updated successfully" });
       } else {
-        const { error } = await supabase.from("alpha_partners").insert([{
-          name: formData.name!,
-          alpha_status: formData.alpha_status,
-          address: formData.address!,
-          city: formData.city!,
-          region: formData.region!,
-          phone: formData.phone,
-          email: formData.email,
-          vibe: formData.vibe,
-          atmosphere: formData.atmosphere,
-          member_discount: formData.member_discount,
-          exclusive_access: formData.exclusive_access,
-          special_events: formData.special_events,
-          hero_image: formData.hero_image,
-          currently_open: formData.currently_open,
-          featured: formData.featured,
-          has_delivery: formData.has_delivery,
-          open_for_reservations: formData.open_for_reservations,
-          hours_weekdays: formData.hours_weekdays,
-          hours_saturday: formData.hours_saturday,
-          hours_sunday: formData.hours_sunday,
-        }]);
+        const { error } = await supabase.from("alpha_partners").insert([payload]);
 
         if (error) throw error;
         toast({ title: "Success", description: "Partner created successfully" });
@@ -243,7 +249,10 @@ const PartnersTab = () => {
 
   const openEditDialog = (partner: AlphaPartner) => {
     setEditingPartner(partner);
-    setFormData(partner);
+    setFormData({
+      ...partner,
+      specialties_text: partner.specialties?.join(", ") || "",
+    });
   };
 
   const openAddDialog = () => {
@@ -343,6 +352,7 @@ const PartnersTab = () => {
               <TableHead>Status</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Rating</TableHead>
+              <TableHead>Map</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -370,6 +380,13 @@ const PartnersTab = () => {
                       ({partner.review_count || 0})
                     </span>
                   </div>
+                </TableCell>
+                <TableCell>
+                  {partner.latitude && partner.longitude ? (
+                    <Badge variant="outline" className="text-xs text-green-600 border-green-600/30">📍 On map</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-xs text-destructive border-destructive/30">⚠ No coords</Badge>
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
@@ -403,7 +420,7 @@ const PartnersTab = () => {
             ))}
             {filteredPartners.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   No partners found
                 </TableCell>
               </TableRow>
@@ -451,11 +468,29 @@ const PartnersTab = () => {
             </div>
 
             <div>
+              <label className="text-sm text-muted-foreground mb-1 block">Partner Since</label>
+              <Input
+                value={formData.partner_since || ""}
+                onChange={(e) => setFormData({ ...formData, partner_since: e.target.value })}
+                placeholder="e.g., 2024"
+              />
+            </div>
+
+            <div>
               <label className="text-sm text-muted-foreground mb-1 block">Vibe</label>
               <Input
                 value={formData.vibe || ""}
                 onChange={(e) => setFormData({ ...formData, vibe: e.target.value })}
                 placeholder="e.g., Cafe & Lounge"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">Website</label>
+              <Input
+                value={formData.website || ""}
+                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                placeholder="https://..."
               />
             </div>
 
@@ -498,6 +533,31 @@ const PartnersTab = () => {
                   <SelectItem value="Northern Cape">Northern Cape</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Coordinates — critical for map visibility */}
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">Latitude 📍</label>
+              <Input
+                type="number"
+                step="any"
+                value={formData.latitude ?? ""}
+                onChange={(e) => setFormData({ ...formData, latitude: e.target.value === "" ? null : parseFloat(e.target.value) as any })}
+                placeholder="e.g., -26.2041"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Required for map display</p>
+            </div>
+
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">Longitude 📍</label>
+              <Input
+                type="number"
+                step="any"
+                value={formData.longitude ?? ""}
+                onChange={(e) => setFormData({ ...formData, longitude: e.target.value === "" ? null : parseFloat(e.target.value) as any })}
+                placeholder="e.g., 28.0473"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Required for map display</p>
             </div>
 
             <div>
@@ -547,11 +607,38 @@ const PartnersTab = () => {
               />
             </div>
 
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">Special Events</label>
+              <Input
+                value={formData.special_events || ""}
+                onChange={(e) => setFormData({ ...formData, special_events: e.target.value })}
+                placeholder="e.g., Monthly tasting sessions"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">Specialties</label>
+              <Input
+                value={formData.specialties_text || ""}
+                onChange={(e) => setFormData({ ...formData, specialties_text: e.target.value })}
+                placeholder="Comma-separated, e.g., Edibles, CBD, Sativa"
+              />
+            </div>
+
             <div className="md:col-span-2">
               <label className="text-sm text-muted-foreground mb-1 block">Hero Image URL</label>
               <Input
                 value={formData.hero_image || ""}
                 onChange={(e) => setFormData({ ...formData, hero_image: e.target.value })}
+                placeholder="https://..."
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="text-sm text-muted-foreground mb-1 block">Logo URL</label>
+              <Input
+                value={formData.logo_url || ""}
+                onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
                 placeholder="https://..."
               />
             </div>
