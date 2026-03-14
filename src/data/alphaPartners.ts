@@ -108,6 +108,7 @@ export const alphaPartners: AlphaPartner[] = [
     address: 'Stoneridge Centre, Greenstone Park',
     city: 'Greenstone',
     region: 'Gauteng',
+    country: 'South Africa',
     coordinates: [-26.1189, 28.1360],
     contact: {
       phone: '+27 11 XXX XXXX',
