@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.routine-maintenance]
 verify_jwt = false
+
+[functions.payfast-itn]
+verify_jwt = false
