@@ -294,7 +294,8 @@ const PartnersTab = () => {
     (p) =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.region.toLowerCase().includes(searchQuery.toLowerCase())
+      p.region.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.country || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const getStatusBadge = (status: string) => {
