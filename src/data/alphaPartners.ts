@@ -248,6 +248,7 @@ export const alphaPartners: AlphaPartner[] = [
     address: 'The Gantry Lifestyle Center, Fourways',
     city: 'Fourways',
     region: 'Gauteng',
+    country: 'South Africa',
     coordinates: [-26.0262, 28.0047],
     contact: {
       phone: '+27 11 XXX XXXX',
