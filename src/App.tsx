@@ -1,4 +1,21 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, ComponentType } from "react";
+
+// Retry wrapper for lazy imports — handles stale chunk errors after deploys
+function lazyWithRetry<T extends ComponentType<any>>(
+  factory: () => Promise<{ default: T }>
+) {
+  return lazy(() =>
+    factory().catch((err) => {
+      // If chunk fetch fails, force a full reload once
+      const key = "chunk_reload";
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        window.location.reload();
+      }
+      throw err;
+    })
+  );
+}
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
