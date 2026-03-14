@@ -35,6 +35,7 @@ const Checkout = () => {
   const [useCredits, setUseCredits] = useState(false);
 
   const cart: CartItem[] = (location.state as any)?.cart || [];
+  const subscriptionTier: string | null = (location.state as any)?.subscription_tier || new URLSearchParams(location.search).get("tier") || null;
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   // Compute deductions
