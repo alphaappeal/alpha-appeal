@@ -163,6 +163,7 @@ const PartnersTab = () => {
     address: formData.address!,
     city: formData.city!,
     region: formData.region!,
+    country: formData.country || 'South Africa',
     latitude: parseCoord(formData.latitude),
     longitude: parseCoord(formData.longitude),
     phone: formData.phone || null,
