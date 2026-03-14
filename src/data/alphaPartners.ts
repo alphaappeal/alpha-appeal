@@ -8,6 +8,7 @@ export interface AlphaPartner {
   address: string;
   city: string;
   region: string;
+  country: string;
   coordinates: [number, number];
   contact: {
     phone?: string;
