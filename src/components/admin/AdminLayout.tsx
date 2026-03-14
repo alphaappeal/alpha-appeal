@@ -51,6 +51,7 @@ type AdminSection =
   | "subscriptions"
   | "financials"
   | "content"
+  | "vendors"
   | "health"
   | "activity"
   | "settings";
@@ -61,6 +62,7 @@ const NAV_ITEMS: { id: AdminSection; label: string; icon: any; group: string }[]
   { id: "subscriptions", label: "Subscriptions", icon: CreditCard, group: "Management" },
   { id: "financials", label: "Financials", icon: DollarSign, group: "Management" },
   { id: "content", label: "Content & Products", icon: Package, group: "Platform" },
+  { id: "vendors", label: "Vendors", icon: Store, group: "Platform" },
   { id: "health", label: "System Health", icon: RefreshCw, group: "System" },
   { id: "activity", label: "System Logs", icon: Activity, group: "System" },
   { id: "settings", label: "Settings", icon: Settings, group: "System" },
