@@ -203,6 +203,7 @@ export const alphaPartners: AlphaPartner[] = [
     address: 'Skyline Smoke Shop, Johannesburg',
     city: 'Johannesburg',
     region: 'Gauteng',
+    country: 'South Africa',
     coordinates: [-26.1850, 28.0294],
     contact: {
       phone: '+27 11 XXX XXXX'
