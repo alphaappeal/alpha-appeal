@@ -393,7 +393,7 @@ const PartnersTab = () => {
                 <TableCell>
                   <div className="flex items-center gap-1 text-muted-foreground text-sm">
                     <MapPin className="w-3 h-3" />
-                    {partner.city}, {partner.region}
+                    {partner.city}, {partner.region}{partner.country && partner.country !== 'South Africa' ? `, ${partner.country}` : ''}
                   </div>
                 </TableCell>
                 <TableCell>
