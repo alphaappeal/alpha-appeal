@@ -133,7 +133,8 @@ const AlphaMap = () => {
   const navigationState = location.state as { selectedPartnerId?: number | string } | null;
   const initialPartnerId = navigationState?.selectedPartnerId;
 
-  const [partners, setPartners] = useState<AlphaPartner[]>(staticPartners);
+  const [partners, setPartners] = useState<AlphaPartner[]>([]);
+  const [partnersLoaded, setPartnersLoaded] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<AlphaPartner | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterState>({
@@ -145,7 +146,7 @@ const AlphaMap = () => {
   const [formData, setFormData] = useState({ vendorName: '', address: '', phone: '', description: '' });
   const [mapEvents, setMapEvents] = useState<MapEvent[]>([]);
 
-  // Load partners from Supabase, fall back to static data
+  // Load partners from Supabase, fall back to static data only if DB is empty
   useEffect(() => {
     const loadPartners = async () => {
       const { data, error } = await supabase
@@ -156,7 +157,11 @@ const AlphaMap = () => {
           .filter((r: any) => r.latitude && r.longitude)
           .map(dbPartnerToAlphaPartner);
         setPartners(dbPartners.length > 0 ? dbPartners : staticPartners);
+      } else {
+        // Only use static fallback if Supabase has no partners at all
+        setPartners(staticPartners);
       }
+      setPartnersLoaded(true);
     };
     loadPartners();
   }, []);
