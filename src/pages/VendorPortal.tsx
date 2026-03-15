@@ -99,28 +99,44 @@ const VendorPortal = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/login"); return; }
 
-      const { data: vendorData, error } = await supabase
+      const { data: accounts, error } = await supabase
         .from("vendor_accounts")
         .select(`id, partner_id, role, alpha_partners (id, name, alpha_status, city, region, country, hero_image, logo_url)`)
         .eq("user_id", user.id)
-        .eq("is_active", true)
-        .single();
+        .eq("is_active", true);
 
-      if (error || !vendorData) {
-        toast({ title: "Access Denied", description: "You don't have vendor access. Contact an admin to get set up.", variant: "destructive" });
-        navigate("/profile");
+      if (error) {
+        console.error("Vendor access query error:", error);
+        setAccessError("Failed to load vendor accounts. Please try again.");
+        setLoading(false);
         return;
       }
 
-      setVendorAccount(vendorData as unknown as VendorAccount);
-      await loadProducts(vendorData.partner_id);
-      await loadStoreData(vendorData.partner_id);
+      const validAccounts = (accounts || []) as unknown as VendorAccount[];
+      setVendorAccounts(validAccounts);
+
+      if (validAccounts.length === 0) {
+        setAccessError("You don't have vendor access. Contact an admin to get set up.");
+        setLoading(false);
+        return;
+      }
+
+      if (validAccounts.length === 1) {
+        await selectStore(validAccounts[0]);
+      }
+      // If multiple, user picks from selector (loading stays true until they pick or we finish)
     } catch (err: any) {
       console.error("Vendor check error:", err);
-      navigate("/profile");
+      setAccessError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const selectStore = async (account: VendorAccount) => {
+    setVendorAccount(account);
+    setAccessError(null);
+    await Promise.all([loadProducts(account.partner_id), loadStoreData(account.partner_id)]);
   };
 
   const loadStoreData = async (partnerId: string) => {
