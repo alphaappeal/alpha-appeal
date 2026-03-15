@@ -214,6 +214,73 @@ const VendorPortal = () => {
     );
   }
 
+  if (accessError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-6 text-center space-y-4">
+            <AlertCircle className="w-12 h-12 text-destructive mx-auto" />
+            <p className="text-foreground font-medium">{accessError}</p>
+            <div className="flex gap-3 justify-center">
+              <Button variant="outline" onClick={() => navigate("/profile")}>
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Profile
+              </Button>
+              <Button variant="sage" onClick={() => navigate("/vendor/signup")}>
+                Apply for Access
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Multi-store selector
+  if (!vendorAccount && vendorAccounts.length > 1) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-lg w-full">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Store className="w-5 h-5 text-secondary" />
+              Select a Store
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {vendorAccounts.map((account) => {
+              const s = account.alpha_partners;
+              return (
+                <button
+                  key={account.id}
+                  onClick={async () => {
+                    setLoading(true);
+                    await selectStore(account);
+                    setLoading(false);
+                  }}
+                  className="w-full flex items-center gap-4 p-4 rounded-lg border border-border hover:border-secondary hover:bg-muted/50 transition-all text-left"
+                >
+                  {s.logo_url ? (
+                    <img src={s.logo_url} alt={s.name} className="w-12 h-12 rounded-lg object-contain bg-muted p-1" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+                      <Store className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground truncate">{s.name}</p>
+                    <p className="text-sm text-muted-foreground">{s.city}, {s.country !== "South Africa" ? s.country : s.region}</p>
+                  </div>
+                  <Badge variant="secondary" className="shrink-0 capitalize">{account.role}</Badge>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                </button>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!vendorAccount) return null;
 
   const store = vendorAccount.alpha_partners;
