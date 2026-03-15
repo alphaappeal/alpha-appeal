@@ -221,22 +221,14 @@ const AlphaMap = () => {
     loadLocations();
   }, []);
 
-  // Load event pins from view with date filtering
+  // Load event pins from pre-filtered view (active + future events)
   useEffect(() => {
     const loadEvents = async () => {
       const { data } = await supabase
-        .from('map_events_with_types')
-        .select('*')
-        .eq('active', true);
+        .from('active_upcoming_map_events')
+        .select('*');
       if (data) {
-        const now = new Date();
-        const filtered = (data as any[]).filter(ev => {
-          // If start_date exists, only show if start_date <= now
-          if (ev.start_date && new Date(ev.start_date) > now) return false;
-          // If end_date exists, only show if end_date >= now
-          if (ev.end_date && new Date(ev.end_date) < now) return false;
-          return ev.latitude != null && ev.longitude != null;
-        });
+        const filtered = (data as any[]).filter(ev => ev.latitude != null && ev.longitude != null);
         setMapEvents(filtered as MapEventWithType[]);
       }
     };
