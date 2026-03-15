@@ -73,7 +73,9 @@ const VendorPortal = () => {
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
+  const [vendorAccounts, setVendorAccounts] = useState<VendorAccount[]>([]);
   const [vendorAccount, setVendorAccount] = useState<VendorAccount | null>(null);
+  const [accessError, setAccessError] = useState<string | null>(null);
   const [storeData, setStoreData] = useState<any>(null);
   const [products, setProducts] = useState<PartnerProduct[]>([]);
   const [editingProduct, setEditingProduct] = useState<PartnerProduct | null>(null);
