@@ -73,7 +73,9 @@ const VendorPortal = () => {
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
+  const [vendorAccounts, setVendorAccounts] = useState<VendorAccount[]>([]);
   const [vendorAccount, setVendorAccount] = useState<VendorAccount | null>(null);
+  const [accessError, setAccessError] = useState<string | null>(null);
   const [storeData, setStoreData] = useState<any>(null);
   const [products, setProducts] = useState<PartnerProduct[]>([]);
   const [editingProduct, setEditingProduct] = useState<PartnerProduct | null>(null);
@@ -97,28 +99,44 @@ const VendorPortal = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/login"); return; }
 
-      const { data: vendorData, error } = await supabase
+      const { data: accounts, error } = await supabase
         .from("vendor_accounts")
         .select(`id, partner_id, role, alpha_partners (id, name, alpha_status, city, region, country, hero_image, logo_url)`)
         .eq("user_id", user.id)
-        .eq("is_active", true)
-        .single();
+        .eq("is_active", true);
 
-      if (error || !vendorData) {
-        toast({ title: "Access Denied", description: "You don't have vendor access. Contact an admin to get set up.", variant: "destructive" });
-        navigate("/profile");
+      if (error) {
+        console.error("Vendor access query error:", error);
+        setAccessError("Failed to load vendor accounts. Please try again.");
+        setLoading(false);
         return;
       }
 
-      setVendorAccount(vendorData as unknown as VendorAccount);
-      await loadProducts(vendorData.partner_id);
-      await loadStoreData(vendorData.partner_id);
+      const validAccounts = (accounts || []) as unknown as VendorAccount[];
+      setVendorAccounts(validAccounts);
+
+      if (validAccounts.length === 0) {
+        setAccessError("You don't have vendor access. Contact an admin to get set up.");
+        setLoading(false);
+        return;
+      }
+
+      if (validAccounts.length === 1) {
+        await selectStore(validAccounts[0]);
+      }
+      // If multiple, user picks from selector (loading stays true until they pick or we finish)
     } catch (err: any) {
       console.error("Vendor check error:", err);
-      navigate("/profile");
+      setAccessError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const selectStore = async (account: VendorAccount) => {
+    setVendorAccount(account);
+    setAccessError(null);
+    await Promise.all([loadProducts(account.partner_id), loadStoreData(account.partner_id)]);
   };
 
   const loadStoreData = async (partnerId: string) => {
@@ -196,6 +214,73 @@ const VendorPortal = () => {
     );
   }
 
+  if (accessError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-6 text-center space-y-4">
+            <AlertCircle className="w-12 h-12 text-destructive mx-auto" />
+            <p className="text-foreground font-medium">{accessError}</p>
+            <div className="flex gap-3 justify-center">
+              <Button variant="outline" onClick={() => navigate("/profile")}>
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Profile
+              </Button>
+              <Button variant="sage" onClick={() => navigate("/vendor/signup")}>
+                Apply for Access
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Multi-store selector
+  if (!vendorAccount && vendorAccounts.length > 1) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-lg w-full">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Store className="w-5 h-5 text-secondary" />
+              Select a Store
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {vendorAccounts.map((account) => {
+              const s = account.alpha_partners;
+              return (
+                <button
+                  key={account.id}
+                  onClick={async () => {
+                    setLoading(true);
+                    await selectStore(account);
+                    setLoading(false);
+                  }}
+                  className="w-full flex items-center gap-4 p-4 rounded-lg border border-border hover:border-secondary hover:bg-muted/50 transition-all text-left"
+                >
+                  {s.logo_url ? (
+                    <img src={s.logo_url} alt={s.name} className="w-12 h-12 rounded-lg object-contain bg-muted p-1" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+                      <Store className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground truncate">{s.name}</p>
+                    <p className="text-sm text-muted-foreground">{s.city}, {s.country !== "South Africa" ? s.country : s.region}</p>
+                  </div>
+                  <Badge variant="secondary" className="shrink-0 capitalize">{account.role}</Badge>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                </button>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!vendorAccount) return null;
 
   const store = vendorAccount.alpha_partners;
@@ -259,7 +344,16 @@ const VendorPortal = () => {
             })}
           </nav>
 
-          <div className="p-3 border-t border-border">
+          <div className="p-3 border-t border-border space-y-1">
+            {vendorAccounts.length > 1 && (
+              <button
+                onClick={() => { setVendorAccount(null); setProducts([]); setStoreData(null); setActiveSection("dashboard"); }}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              >
+                <Store className="w-4 h-4" />
+                <span>Switch Store</span>
+              </button>
+            )}
             <Link
               to="/profile"
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
