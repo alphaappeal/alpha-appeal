@@ -997,6 +997,13 @@ export type Database = {
             foreignKeyName: "event_tickets_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "active_upcoming_map_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
             referencedRelation: "map_events"
             referencedColumns: ["id"]
           },
@@ -3730,6 +3737,30 @@ export type Database = {
       }
     }
     Views: {
+      active_upcoming_map_events: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          event_date: string | null
+          id: string | null
+          title: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          event_date?: string | null
+          id?: string | null
+          title?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          event_date?: string | null
+          id?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
       map_events_with_types: {
         Row: {
           active: boolean | null
