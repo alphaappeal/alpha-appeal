@@ -344,7 +344,16 @@ const VendorPortal = () => {
             })}
           </nav>
 
-          <div className="p-3 border-t border-border">
+          <div className="p-3 border-t border-border space-y-1">
+            {vendorAccounts.length > 1 && (
+              <button
+                onClick={() => { setVendorAccount(null); setProducts([]); setStoreData(null); setActiveSection("dashboard"); }}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              >
+                <Store className="w-4 h-4" />
+                <span>Switch Store</span>
+              </button>
+            )}
             <Link
               to="/profile"
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
