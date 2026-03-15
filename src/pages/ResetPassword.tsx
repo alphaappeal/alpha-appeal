@@ -19,15 +19,28 @@ const ResetPassword = () => {
   const [isRecovery, setIsRecovery] = useState(false);
 
   useEffect(() => {
+    // Check if Supabase already exchanged the recovery token before mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setIsRecovery(true);
+    });
+
+    // PKCE flow: check for code + type=recovery in search params
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("type") === "recovery" || params.get("code")) {
+      setIsRecovery(true);
+    }
+
+    // Hash fragment flow (legacy)
+    if (window.location.hash.includes("type=recovery")) {
+      setIsRecovery(true);
+    }
+
+    // Fallback listener for late-firing events
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         setIsRecovery(true);
       }
     });
-    // Check hash for recovery token
-    if (window.location.hash.includes("type=recovery")) {
-      setIsRecovery(true);
-    }
     return () => subscription.unsubscribe();
   }, []);
 
