@@ -96,7 +96,7 @@ const MemberPortal = ({ isOpen, onClose, tier = "private", userId, onWalletUpdat
     const unread = notifs.filter((n: any) => !n.seen).length;
 
     setRewards(rewardsRes.data || []);
-    setEvents(filteredEvents);
+    setEvents(allEvents);
     setRewardCoins(userRes.data?.diary_points ?? 0);
     setNotifications(notifs);
     setUnreadCount(unread);
