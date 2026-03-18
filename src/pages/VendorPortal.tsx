@@ -101,7 +101,7 @@ const VendorPortal = () => {
 
       const { data: accounts, error } = await supabase
         .from("vendor_accounts")
-        .select(`id, partner_id, role, alpha_partners (id, name, alpha_status, city, region, country, hero_image, logo_url)`)
+        .select(`id, partner_id, role, alpha_partners!vendor_accounts_partner_id_fkey (id, name, alpha_status, city, region, country, hero_image, logo_url)`)
         .eq("user_id", user.id)
         .eq("is_active", true);
 
