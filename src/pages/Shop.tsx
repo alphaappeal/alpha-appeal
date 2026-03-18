@@ -242,6 +242,9 @@ const Shop = () => {
                         {product.category}
                       </Badge>
                     )}
+                    {product.store_name && (
+                      <p className="text-xs text-muted-foreground mb-1 truncate">by {product.store_name}</p>
+                    )}
                     <h3 className="font-medium text-foreground text-sm mb-1 line-clamp-2">{product.name}</h3>
                     <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{product.description || ""}</p>
                     <div className="flex items-center justify-between gap-2">
