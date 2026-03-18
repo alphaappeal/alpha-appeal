@@ -21,6 +21,7 @@ interface Product {
   description: string | null;
   in_stock: boolean | null;
   stock_quantity: number;
+  store_name?: string | null;
 }
 
 interface CartItem extends Product {
@@ -40,13 +41,35 @@ const Shop = () => {
   const fetchProducts = async () => {
     setFetchError(null);
     try {
-      const { data, error } = await supabase
+      // Fetch platform products
+      const { data: platformProducts, error: platformError } = await supabase
         .from("products")
         .select("id, name, price, category, image_url, description, in_stock, stock_quantity")
         .eq("active", true)
         .order("created_at", { ascending: false });
-      if (error) throw error;
-      setProducts(data as Product[]);
+      if (platformError) throw platformError;
+
+      // Fetch vendor/partner products with store name
+      const { data: partnerProducts, error: partnerError } = await supabase
+        .from("partner_products")
+        .select("id, name, price, category, image_url, description, in_stock, stock_quantity, alpha_partners(name)")
+        .eq("in_stock", true)
+        .order("created_at", { ascending: false });
+      if (partnerError) throw partnerError;
+
+      const mappedPartnerProducts: Product[] = (partnerProducts || []).map((pp: any) => ({
+        id: pp.id,
+        name: pp.name,
+        price: pp.price || 0,
+        category: pp.category,
+        image_url: pp.image_url,
+        description: pp.description,
+        in_stock: pp.in_stock,
+        stock_quantity: pp.stock_quantity || 0,
+        store_name: pp.alpha_partners?.name || null,
+      }));
+
+      setProducts([...(platformProducts as Product[]), ...mappedPartnerProducts]);
     } catch (err: any) {
       console.error("Failed to fetch products:", err);
       setFetchError("Unable to load products. Please try again.");
@@ -218,6 +241,9 @@ const Shop = () => {
                       <Badge variant="outline" className={cn("text-xs mb-2", getCategoryColor(product.category))}>
                         {product.category}
                       </Badge>
+                    )}
+                    {product.store_name && (
+                      <p className="text-xs text-muted-foreground mb-1 truncate">by {product.store_name}</p>
                     )}
                     <h3 className="font-medium text-foreground text-sm mb-1 line-clamp-2">{product.name}</h3>
                     <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{product.description || ""}</p>
