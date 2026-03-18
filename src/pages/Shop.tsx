@@ -21,6 +21,7 @@ interface Product {
   description: string | null;
   in_stock: boolean | null;
   stock_quantity: number;
+  store_name?: string | null;
 }
 
 interface CartItem extends Product {
