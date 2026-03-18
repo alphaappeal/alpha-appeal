@@ -43,12 +43,13 @@ const MemberPortal = ({ isOpen, onClose, tier = "private", userId, onWalletUpdat
     setLoading(true);
 
     const [
-      rewardsRes, eventsRes, userRes, notifRes,
+      rewardsRes, memberEventsRes, mapEventsRes, userRes, notifRes,
       ordersRes, deliveriesRes, diaryRes, starsRes,
       walletRes, referralsRes, claimsRes, bookingsRes,
     ] = await Promise.all([
       supabase.from("member_rewards").select("*").eq("active", true),
       supabase.from("member_events").select("*").order("event_date", { ascending: true }).limit(10),
+      supabase.from("active_upcoming_map_events").select("id, title, description, event_date, latitude, longitude, event_type_name"),
       supabase.from("users").select("diary_points").eq("id", userId).maybeSingle(),
       supabase.from("user_notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(50),
       supabase.from("orders").select("id").eq("user_id", userId),
@@ -61,17 +62,41 @@ const MemberPortal = ({ isOpen, onClose, tier = "private", userId, onWalletUpdat
       supabase.from("event_bookings").select("event_id").eq("user_id", userId),
     ]);
 
-    // Filter events by tier access
-    const filteredEvents = (eventsRes.data || []).filter((e: any) => {
+    // Filter member_events by tier access
+    const filteredMemberEvents = (memberEventsRes.data || []).filter((e: any) => {
       if (!e.tier_access) return true;
       return e.tier_access.includes(tier);
     });
+
+    // Map admin-created map events into the same shape
+    const mapEventsMapped = (mapEventsRes.data || []).map((e: any) => ({
+      id: e.id,
+      event_name: e.title,
+      event_date: e.event_date,
+      location: e.event_type_name || "Map Event",
+      description: e.description,
+      tier_access: null, // map events are visible to all tiers
+      _source: "map",
+    }));
+
+    // Deduplicate by name+date, prefer member_events
+    const memberEventKeys = new Set(
+      filteredMemberEvents.map((e: any) => `${e.event_name}::${e.event_date}`)
+    );
+    const uniqueMapEvents = mapEventsMapped.filter(
+      (e: any) => !memberEventKeys.has(`${e.event_name}::${e.event_date}`)
+    );
+
+    // Combine and sort by date
+    const allEvents = [...filteredMemberEvents, ...uniqueMapEvents].sort(
+      (a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
+    );
 
     const notifs = notifRes.data || [];
     const unread = notifs.filter((n: any) => !n.seen).length;
 
     setRewards(rewardsRes.data || []);
-    setEvents(filteredEvents);
+    setEvents(allEvents);
     setRewardCoins(userRes.data?.diary_points ?? 0);
     setNotifications(notifs);
     setUnreadCount(unread);

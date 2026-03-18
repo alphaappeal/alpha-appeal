@@ -3741,25 +3741,32 @@ export type Database = {
         Row: {
           active: boolean | null
           created_at: string | null
+          description: string | null
+          end_date: string | null
+          event_color: string | null
           event_date: string | null
+          event_icon: string | null
+          event_type: string | null
+          event_type_id: string | null
+          event_type_name: string | null
+          event_url: string | null
+          icon_svg: string | null
           id: string | null
+          image_url: string | null
+          latitude: number | null
+          longitude: number | null
+          start_date: string | null
           title: string | null
         }
-        Insert: {
-          active?: boolean | null
-          created_at?: string | null
-          event_date?: string | null
-          id?: string | null
-          title?: string | null
-        }
-        Update: {
-          active?: boolean | null
-          created_at?: string | null
-          event_date?: string | null
-          id?: string | null
-          title?: string | null
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "map_events_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "event_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       map_events_with_types: {
         Row: {

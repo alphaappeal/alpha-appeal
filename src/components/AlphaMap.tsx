@@ -221,7 +221,7 @@ const AlphaMap = () => {
     loadLocations();
   }, []);
 
-  // Load event pins from pre-filtered view (active + future events)
+  // Load event pins from pre-filtered view (active + future events) + realtime
   useEffect(() => {
     const loadEvents = async () => {
       const { data } = await supabase
@@ -233,6 +233,17 @@ const AlphaMap = () => {
       }
     };
     loadEvents();
+
+    // Realtime subscription so admin-created events appear instantly
+    const channel = supabase
+      .channel('map-events-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'map_events' }, () => {
+        // Re-fetch from the view to get joined type data and filtering
+        loadEvents();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const filteredPartners = useMemo(() => {
