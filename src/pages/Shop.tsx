@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingBag, X, Loader2, Plus, Minus, CheckCircle, ArrowRight, Eye } from "lucide-react";
+import { ShoppingBag, X, Loader2, Plus, Minus, CheckCircle, ArrowRight, Eye, Star, MapPin, Clock, Phone, Mail, Globe, Calendar, Hash, Tag, TrendingUp, Info, ChevronLeft, ChevronRight, Leaf, Droplet, Wind, Zap, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import BottomNav from "@/components/BottomNav";
 import logoLight from "@/assets/alpha-logo-light.png";
 import { cn } from "@/lib/utils";
@@ -23,10 +24,35 @@ interface Product {
   in_stock: boolean | null;
   stock_quantity: number;
   store_name?: string | null;
+  // Enhanced fields for detailed view
+  partner_id?: string;
+  thc_percentage?: number | null;
+  cbd_percentage?: number | null;
+  strain_type?: string | null;
+  effects?: string[] | null;
+  flavors?: string[] | null;
+  price_unit?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface CartItem extends Product {
   quantity: number;
+}
+
+interface PartnerInfo {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  region: string;
+  country: string;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  hours_weekdays: string | null;
+  hours_saturday: string | null;
+  hours_sunday: string | null;
 }
 
 const Shop = () => {
@@ -47,6 +73,12 @@ const Shop = () => {
   const [cartBounce, setCartBounce] = useState(false);
   const [addedToast, setAddedToast] = useState<{ product: Product; qty: number } | null>(null);
 
+  // Enhanced preview state
+  const [partnerInfo, setPartnerInfo] = useState<PartnerInfo | null>(null);
+  const [loadingPartner, setLoadingPartner] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState<'details' | 'specs' | 'vendor'>('details');
+
   const cartIconRef = useRef<HTMLButtonElement>(null);
 
   const fetchProducts = async () => {
@@ -61,7 +93,7 @@ const Shop = () => {
 
       const { data: partnerProducts, error: partnerError } = await supabase
         .from("partner_products")
-        .select("id, name, price, category, image_url, description, in_stock, stock_quantity, alpha_partners(name)")
+        .select("id, name, price, category, image_url, description, in_stock, stock_quantity, partner_id, thc_percentage, cbd_percentage, strain_type, effects, flavors, price_unit, created_at, updated_at, alpha_partners(name)")
         .eq("in_stock", true)
         .order("created_at", { ascending: false });
       if (partnerError) throw partnerError;
@@ -76,6 +108,15 @@ const Shop = () => {
         in_stock: pp.in_stock,
         stock_quantity: pp.stock_quantity || 0,
         store_name: pp.alpha_partners?.name || null,
+        partner_id: pp.partner_id,
+        thc_percentage: pp.thc_percentage,
+        cbd_percentage: pp.cbd_percentage,
+        strain_type: pp.strain_type,
+        effects: pp.effects,
+        flavors: pp.flavors,
+        price_unit: pp.price_unit,
+        created_at: pp.created_at,
+        updated_at: pp.updated_at,
       }));
 
       setProducts([...(platformProducts as Product[]), ...mappedPartnerProducts]);
@@ -121,9 +162,29 @@ const Shop = () => {
     (p) => selectedCategory === "all" || p.category?.toLowerCase() === selectedCategory.toLowerCase()
   );
 
-  const openPreview = (product: Product) => {
+  const openPreview = async (product: Product) => {
     setPreviewProduct(product);
     setPreviewQty(1);
+    setCurrentImageIndex(0);
+    setActiveTab('details');
+    
+    // Fetch partner info if available
+    if (product.partner_id) {
+      setLoadingPartner(true);
+      try {
+        const { data } = await supabase
+          .from("alpha_partners")
+          .select("id, name, address, city, region, country, phone, email, website, hours_weekdays, hours_saturday, hours_sunday")
+          .eq("id", product.partner_id)
+          .single();
+        setPartnerInfo(data || null);
+      } catch (err) {
+        console.error("Failed to fetch partner info:", err);
+        setPartnerInfo(null);
+      } finally {
+        setLoadingPartner(false);
+      }
+    }
   };
 
   const confirmAddToCart = () => {
@@ -350,11 +411,11 @@ const Shop = () => {
         <BottomNav />
       </div>
 
-      {/* ── Product Preview Modal ── */}
+      {/* ── Enhanced Product Preview Modal ── */}
       <AnimatePresence>
         {previewProduct && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -362,104 +423,412 @@ const Shop = () => {
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setPreviewProduct(null)} />
 
             <motion.div
-              initial={{ y: 100, opacity: 0 }}
+              initial={{ y: "100%", opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 100, opacity: 0 }}
+              exit={{ y: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-lg bg-card rounded-t-3xl sm:rounded-3xl border border-border/50 overflow-hidden max-h-[90vh] flex flex-col"
+              className="relative w-full max-w-4xl bg-card rounded-t-3xl sm:rounded-3xl border border-border/50 overflow-hidden max-h-[95vh] flex flex-col shadow-2xl"
             >
-              {/* Close */}
-              <button
-                onClick={() => setPreviewProduct(null)}
-                className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              {/* Image */}
-              <div className="relative aspect-[4/3] bg-muted/30 shrink-0">
-                {previewProduct.image_url ? (
-                  <img
-                    src={previewProduct.image_url}
-                    alt={previewProduct.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                    <ShoppingBag className="w-16 h-16 opacity-20" />
-                  </div>
-                )}
-                {previewProduct.stock_quantity <= 0 && (
-                  <div className="absolute bottom-4 left-4">
-                    <Badge variant="destructive">Sold Out</Badge>
-                  </div>
-                )}
+              {/* Header with close button */}
+              <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4 flex items-center justify-between">
+                <h2 className="font-display text-lg font-bold text-foreground">Product Details</h2>
+                <button
+                  onClick={() => setPreviewProduct(null)}
+                  className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
 
-              {/* Details */}
-              <div className="p-6 space-y-4 overflow-y-auto flex-1">
-                <div>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      {previewProduct.category && (
-                        <Badge variant="outline" className={cn("text-xs mb-2", getCategoryColor(previewProduct.category))}>
-                          {previewProduct.category}
-                        </Badge>
+              {/* Scrollable content */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+                  {/* Left column - Image Gallery */}
+                  <div className="bg-muted/30 p-6 border-b md:border-b-0 md:border-r border-border/50">
+                    {/* Main image */}
+                    <div className="relative aspect-square rounded-xl overflow-hidden bg-background mb-4">
+                      {previewProduct.image_url ? (
+                        <img
+                          src={previewProduct.image_url}
+                          alt={previewProduct.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                          <ShoppingBag className="w-24 h-24 opacity-20" />
+                        </div>
                       )}
-                      <h2 className="font-display text-xl font-bold text-foreground">{previewProduct.name}</h2>
-                      {previewProduct.store_name && (
-                        <p className="text-sm text-muted-foreground mt-0.5">by {previewProduct.store_name}</p>
+                      {previewProduct.stock_quantity <= 0 && (
+                        <div className="absolute top-4 right-4">
+                          <Badge variant="destructive" className="text-sm px-3 py-1">Sold Out</Badge>
+                        </div>
                       )}
                     </div>
-                    <span className="text-2xl font-bold text-secondary shrink-0">
-                      R{previewProduct.price}
-                    </span>
+
+                    {/* Image thumbnails (placeholder for future multi-image support) */}
+                    <div className="flex gap-2 justify-center">
+                      <div className="w-16 h-16 rounded-lg border-2 border-secondary overflow-hidden cursor-pointer opacity-100">
+                        {previewProduct.image_url ? (
+                          <img src={previewProduct.image_url} alt="Thumbnail" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <ShoppingBag className="w-6 h-6 opacity-30" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right column - Product Info */}
+                  <div className="p-6 space-y-6">
+                    {/* Title & Price */}
+                    <div>
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="min-w-0 flex-1">
+                          {previewProduct.category && (
+                            <Badge variant="outline" className={cn("text-xs mb-2", getCategoryColor(previewProduct.category))}>
+                              {previewProduct.category}
+                            </Badge>
+                          )}
+                          <h2 className="font-display text-2xl font-bold text-foreground leading-tight">{previewProduct.name}</h2>
+                          {previewProduct.store_name && (
+                            <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
+                              <Store className="w-3.5 h-3.5" /> by {previewProduct.store_name}
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-3xl font-bold text-secondary shrink-0">R{previewProduct.price}</span>
+                      </div>
+                      {previewProduct.price_unit && (
+                        <p className="text-xs text-muted-foreground">Price unit: {previewProduct.price_unit}</p>
+                      )}
+                    </div>
+
+                    {/* Stock Status */}
+                    {previewProduct.stock_quantity > 0 ? (
+                      <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                        <div>
+                          <p className="text-sm font-medium text-green-500">In Stock</p>
+                          <p className="text-xs text-muted-foreground">
+                            {previewProduct.stock_quantity <= 5
+                              ? `Only ${previewProduct.stock_quantity} left - order soon!`
+                              : `${previewProduct.stock_quantity} units available`}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
+                        <X className="w-5 h-5 text-destructive" />
+                        <p className="text-sm font-medium text-destructive">Currently unavailable</p>
+                      </div>
+                    )}
+
+                    {/* Tabs */}
+                    <div className="border-b border-border">
+                      <div className="flex gap-4">
+                        <button
+                          onClick={() => setActiveTab('details')}
+                          className={cn(
+                            "pb-2 text-sm font-medium transition-colors border-b-2",
+                            activeTab === 'details'
+                              ? "border-secondary text-secondary"
+                              : "border-transparent text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          Details
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('specs')}
+                          className={cn(
+                            "pb-2 text-sm font-medium transition-colors border-b-2",
+                            activeTab === 'specs'
+                              ? "border-secondary text-secondary"
+                              : "border-transparent text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          Specifications
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('vendor')}
+                          className={cn(
+                            "pb-2 text-sm font-medium transition-colors border-b-2",
+                            activeTab === 'vendor'
+                              ? "border-secondary text-secondary"
+                              : "border-transparent text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          Vendor
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Tab Content */}
+                    <div className="min-h-[200px] max-h-[300px] overflow-y-auto pr-2">
+                      {/* Details Tab */}
+                      {activeTab === 'details' && (
+                        <div className="space-y-4">
+                          {previewProduct.description ? (
+                            <div>
+                              <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                                <Info className="w-4 h-4" /> Description
+                              </h3>
+                              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                                {previewProduct.description}
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic">No description available</p>
+                          )}
+
+                          {/* Effects & Flavors */}
+                          {(previewProduct.effects?.length || previewProduct.flavors?.length) && (
+                            <div className="space-y-3 pt-4 border-t border-border">
+                              {previewProduct.effects && previewProduct.effects.length > 0 && (
+                                <div>
+                                  <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                                    <Zap className="w-3.5 h-3.5" /> Effects
+                                  </h4>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {previewProduct.effects.map((effect, idx) => (
+                                      <Badge key={idx} variant="secondary" className="text-xs">
+                                        {effect}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {previewProduct.flavors && previewProduct.flavors.length > 0 && (
+                                <div>
+                                  <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                                    <Wind className="w-3.5 h-3.5" /> Flavors
+                                  </h4>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {previewProduct.flavors.map((flavor, idx) => (
+                                      <Badge key={idx} variant="outline" className="text-xs">
+                                        {flavor}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Metadata */}
+                          <div className="pt-4 border-t border-border space-y-2">
+                            {previewProduct.created_at && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                <Calendar className="w-3.5 h-3.5" />
+                                Added: {new Date(previewProduct.created_at).toLocaleDateString()}
+                              </p>
+                            )}
+                            {previewProduct.updated_at && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                <TrendingUp className="w-3.5 h-3.5" />
+                                Updated: {new Date(previewProduct.updated_at).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Specifications Tab */}
+                      {activeTab === 'specs' && (
+                        <div className="space-y-3">
+                          {/* Cannabis-specific specs */}
+                          {(previewProduct.thc_percentage !== null || previewProduct.cbd_percentage !== null || previewProduct.strain_type) && (
+                            <Card>
+                              <CardContent className="p-4 space-y-3">
+                                <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                                  <Leaf className="w-3.5 h-3.5" /> Cannabinoid Profile
+                                </h4>
+                                {previewProduct.thc_percentage !== null && (
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                                      <Droplet className="w-3.5 h-3.5" /> THC
+                                    </span>
+                                    <span className="text-sm font-semibold text-foreground">{previewProduct.thc_percentage}%</span>
+                                  </div>
+                                )}
+                                {previewProduct.cbd_percentage !== null && (
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                                      <Droplet className="w-3.5 h-3.5" /> CBD
+                                    </span>
+                                    <span className="text-sm font-semibold text-foreground">{previewProduct.cbd_percentage}%</span>
+                                  </div>
+                                )}
+                                {previewProduct.strain_type && (
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                                      <Wind className="w-3.5 h-3.5" /> Strain Type
+                                    </span>
+                                    <Badge variant="outline" className="capitalize">{previewProduct.strain_type}</Badge>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          )}
+
+                          {/* General specs */}
+                          <Card>
+                            <CardContent className="p-4 space-y-3">
+                              <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                                <Hash className="w-3.5 h-3.5" /> Product Information
+                              </h4>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Product ID</span>
+                                  <span className="text-foreground font-mono text-xs">{previewProduct.id.slice(0, 8)}...</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Category</span>
+                                  <span className="text-foreground capitalize">{previewProduct.category || 'N/A'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Stock Level</span>
+                                  <span className="text-foreground">{previewProduct.stock_quantity} units</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Availability</span>
+                                  <span className={previewProduct.in_stock ? "text-green-500" : "text-destructive"}>
+                                    {previewProduct.in_stock ? 'Available' : 'Out of Stock'}
+                                  </span>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      )}
+
+                      {/* Vendor Tab */}
+                      {activeTab === 'vendor' && (
+                        <div className="space-y-4">
+                          {loadingPartner ? (
+                            <div className="flex items-center justify-center py-8">
+                              <Loader2 className="w-6 h-6 animate-spin text-secondary" />
+                            </div>
+                          ) : partnerInfo ? (
+                            <>
+                              <Card>
+                                <CardContent className="p-4 space-y-3">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <Store className="w-4 h-4 text-secondary" />
+                                    <h4 className="text-sm font-semibold text-foreground">{partnerInfo.name}</h4>
+                                  </div>
+                                  
+                                  {partnerInfo.address && (
+                                    <div className="flex items-start gap-2 text-sm">
+                                      <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                                      <span className="text-muted-foreground">
+                                        {partnerInfo.address}, {partnerInfo.city}, {partnerInfo.region}, {partnerInfo.country}
+                                      </span>
+                                    </div>
+                                  )}
+                                  
+                                  {partnerInfo.phone && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <Phone className="w-4 h-4 text-muted-foreground" />
+                                      <a href={`tel:${partnerInfo.phone}`} className="text-secondary hover:underline">
+                                        {partnerInfo.phone}
+                                      </a>
+                                    </div>
+                                  )}
+                                  
+                                  {partnerInfo.email && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <Mail className="w-4 h-4 text-muted-foreground" />
+                                      <a href={`mailto:${partnerInfo.email}`} className="text-secondary hover:underline">
+                                        {partnerInfo.email}
+                                      </a>
+                                    </div>
+                                  )}
+                                  
+                                  {partnerInfo.website && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <Globe className="w-4 h-4 text-muted-foreground" />
+                                      <a href={partnerInfo.website} target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline">
+                                        Visit Website
+                                      </a>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+
+                              {/* Business Hours */}
+                              {(partnerInfo.hours_weekdays || partnerInfo.hours_saturday || partnerInfo.hours_sunday) && (
+                                <Card>
+                                  <CardContent className="p-4 space-y-2">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <Clock className="w-4 h-4 text-secondary" />
+                                      <h4 className="text-sm font-semibold text-foreground">Business Hours</h4>
+                                    </div>
+                                    <div className="space-y-1 text-xs">
+                                      {partnerInfo.hours_weekdays && (
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">Mon-Fri</span>
+                                          <span className="text-foreground">{partnerInfo.hours_weekdays}</span>
+                                        </div>
+                                      )}
+                                      {partnerInfo.hours_saturday && (
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">Saturday</span>
+                                          <span className="text-foreground">{partnerInfo.hours_saturday}</span>
+                                        </div>
+                                      )}
+                                      {partnerInfo.hours_sunday && (
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">Sunday</span>
+                                          <span className="text-foreground">{partnerInfo.hours_sunday}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic text-center py-4">
+                              No vendor information available
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                {previewProduct.description && (
-                  <p className="text-sm text-muted-foreground leading-relaxed">{previewProduct.description}</p>
-                )}
-
+              {/* Quantity selector & Action bar */}
+              <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 p-6 shrink-0">
                 {previewProduct.stock_quantity > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    {previewProduct.stock_quantity <= 5
-                      ? `Only ${previewProduct.stock_quantity} left in stock`
-                      : "In stock"}
-                  </p>
-                )}
-
-                {/* Quantity selector */}
-                {previewProduct.stock_quantity > 0 && (
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm text-muted-foreground">Quantity</span>
-                    <div className="flex items-center gap-3 bg-muted/40 rounded-full px-1 py-1">
+                  <div className="flex items-center gap-4 mb-4">
+                    <span className="text-sm font-medium text-foreground">Quantity</span>
+                    <div className="flex items-center gap-2 bg-muted/40 rounded-full px-2 py-1">
                       <button
                         onClick={() => setPreviewQty(Math.max(1, previewQty - 1))}
                         className="w-8 h-8 rounded-full bg-background flex items-center justify-center text-foreground hover:bg-muted transition-colors"
                       >
-                        <Minus className="w-3.5 h-3.5" />
+                        <Minus className="w-4 h-4" />
                       </button>
-                      <span className="w-8 text-center font-semibold text-foreground">{previewQty}</span>
+                      <span className="w-10 text-center font-semibold text-foreground">{previewQty}</span>
                       <button
                         onClick={() => setPreviewQty(Math.min(previewProduct.stock_quantity, previewQty + 1))}
                         className="w-8 h-8 rounded-full bg-background flex items-center justify-center text-foreground hover:bg-muted transition-colors"
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-4 h-4" />
                       </button>
                     </div>
-                    <span className="text-sm font-semibold text-foreground ml-auto">
-                      R{(previewProduct.price * previewQty).toLocaleString()}
-                    </span>
+                    <div className="ml-auto text-right">
+                      <p className="text-xs text-muted-foreground">Total</p>
+                      <p className="text-xl font-bold text-secondary">R{(previewProduct.price * previewQty).toLocaleString()}</p>
+                    </div>
                   </div>
                 )}
-              </div>
-
-              {/* Action bar */}
-              <div className="p-6 pt-0 shrink-0">
                 <Button
                   variant="sage"
-                  className="w-full py-6 text-base gap-2"
+                  className="w-full py-6 text-lg gap-2"
                   disabled={previewProduct.stock_quantity <= 0}
                   onClick={confirmAddToCart}
                 >
