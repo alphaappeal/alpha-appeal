@@ -23,10 +23,12 @@ import {
   HelpCircle,
   Loader2,
   Crown,
+  Store,
 } from "lucide-react";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
 import { useAdminAlerts } from "@/hooks/useAdminAlerts";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { useVendorCheck } from "@/hooks/useVendorCheck";
 import logoLight from "@/assets/alpha-logo-light.png";
 
 const Profile = () => {
@@ -41,6 +43,7 @@ const Profile = () => {
   const [showMemberPortal, setShowMemberPortal] = useState(false);
   const [localPrefs, setLocalPrefs] = useState<any>(null);
   const { isAdmin } = useAdminCheck();
+  const { isVendor, loading: vendorLoading } = useVendorCheck();
 
   const currentTier = subscription?.tier || profile?.tier || "private";
 
@@ -298,6 +301,17 @@ const Profile = () => {
           aria-label="Admin Dashboard"
         >
           <Shield className="w-5 h-5" />
+        </button>
+      )}
+
+      {/* Vendor FAB — bottom-right, above admin FAB if both exist */}
+      {!vendorLoading && isVendor && (
+        <button
+          onClick={() => navigate("/vendor")}
+          className="fixed bottom-24 right-20 z-50 w-12 h-12 rounded-full bg-secondary text-secondary-foreground shadow-lg flex items-center justify-center hover:bg-secondary/90 transition-all border border-secondary/30"
+          aria-label="Vendor Dashboard"
+        >
+          <Store className="w-5 h-5" />
         </button>
       )}
     </>

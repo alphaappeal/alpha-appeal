@@ -8,7 +8,10 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "supabase:types": "npx supabase gen types typescript --project-id xlyxtbcqirspcfxdznyu > src/integrations/supabase/types.ts",
+    "supabase:migrate": "npx supabase db push",
+    "supabase:link": "npx supabase link --project-ref xlyxtbcqirspcfxdznyu"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

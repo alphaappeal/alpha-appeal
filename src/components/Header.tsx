@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Shield } from "lucide-react";
+import { Menu, X, Shield, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { useVendorCheck } from "@/hooks/useVendorCheck";
 import { supabase } from "@/integrations/supabase/client";
 import alphaLogo from "@/assets/alpha-logo-light.png";
 
@@ -10,6 +11,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { isAdmin, loading: adminLoading } = useAdminCheck();
+  const { isVendor, loading: vendorLoading } = useVendorCheck();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -53,6 +55,12 @@ const Header = () => {
               <Link to="/admin" className="text-secondary hover:text-secondary/80 transition-colors text-sm font-medium flex items-center gap-1">
                 <Shield className="w-4 h-4" />
                 Admin
+              </Link>
+            )}
+            {!vendorLoading && isVendor && (
+              <Link to="/vendor" className="text-secondary hover:text-secondary/80 transition-colors text-sm font-medium flex items-center gap-1">
+                <Store className="w-4 h-4" />
+                Vendor
               </Link>
             )}
           </nav>
@@ -123,6 +131,16 @@ const Header = () => {
                 >
                   <Shield className="w-4 h-4" />
                   Admin Dashboard
+                </Link>
+              )}
+              {!vendorLoading && isVendor && (
+                <Link 
+                  to="/vendor" 
+                  className="text-secondary py-2 font-medium flex items-center gap-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Store className="w-4 h-4" />
+                  Vendor Portal
                 </Link>
               )}
               <div className="flex gap-3 pt-4 border-t border-border/30">

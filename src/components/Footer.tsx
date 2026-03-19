@@ -57,6 +57,7 @@ const Footer = () => {
               <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Contact Us</a></li>
               <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Careers</a></li>
               <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Press</a></li>
+              <li><a href="/vendor/signup" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Become a Vendor</a></li>
             </ul>
           </div>
 

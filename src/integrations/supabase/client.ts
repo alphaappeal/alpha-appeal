@@ -8,10 +8,36 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// Enhanced Supabase client with improved error handling and performance
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-  }
+    // Prevent auto-redirect on token expiry errors
+    flowType: 'pkce',
+    detectSessionInUrl: true,
+  },
+  // Realtime configuration for live updates
+  realtime: {
+    params: {
+      eventsPerSecond: 10, // Limit to prevent overload
+    },
+  },
+  // Global fetch wrapper for error handling
+  global: {
+    fetch: async (input, init) => {
+      const response = await fetch(input, init);
+      
+      // Log slow queries for performance monitoring
+      if (response.headers.get('x-supabase-duration')) {
+        const duration = parseInt(response.headers.get('x-supabase-duration') || '0');
+        if (duration > 1000) {
+          console.warn(`Slow Supabase query detected: ${duration}ms for ${input.toString()}`);
+        }
+      }
+      
+      return response;
+    },
+  },
 });
