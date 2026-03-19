@@ -41,6 +41,7 @@ const Map = lazyWithRetry(() => import("./pages/Map"));
 const Admin = lazyWithRetry(() => import("./pages/Admin"));
 const VendorPortal = lazyWithRetry(() => import("./pages/VendorPortal"));
 const VendorSignup = lazyWithRetry(() => import("./pages/VendorSignup"));
+const VendorDiagnostic = lazyWithRetry(() => import("./pages/VendorDiagnostic"));
 const MyDiary = lazyWithRetry(() => import("./pages/MyDiary"));
 const Deliveries = lazyWithRetry(() => import("./pages/Deliveries"));
 const Billing = lazyWithRetry(() => import("./pages/Billing"));
@@ -97,6 +98,7 @@ const App = () => (
               <Route path="/admin" element={<ProtectedAdminRoute><Admin /></ProtectedAdminRoute>} />
               <Route path="/vendor" element={<VendorPortal />} />
               <Route path="/vendor/signup" element={<VendorSignup />} />
+              <Route path="/vendor-diagnostic" element={<VendorDiagnostic />} />
               <Route path="/legal" element={<Legal />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

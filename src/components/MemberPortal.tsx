@@ -179,7 +179,7 @@ const MemberPortal = ({ isOpen, onClose, tier = "private", userId, onWalletUpdat
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-2xl max-h-[90vh] overflow-auto bg-card border-2 border-gold/30 rounded-3xl shadow-2xl">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold via-secondary to-gold rounded-t-3xl" />
@@ -189,47 +189,48 @@ const MemberPortal = ({ isOpen, onClose, tier = "private", userId, onWalletUpdat
           <button
             onClick={() => setActiveTab("notifications")}
             className="relative p-2 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="View notifications"
           >
-            <Bell className="w-6 h-6" />
+            <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </button>
-          <button onClick={onClose} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
-            <X className="w-6 h-6" />
+          <button onClick={onClose} className="p-2 text-muted-foreground hover:text-foreground transition-colors" aria-label="Close portal">
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
         {/* Header — title only, no tier sub-heading */}
-        <div className="p-8 pb-4 text-center">
+        <div className="p-6 sm:p-8 pb-4 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-gold/20 to-secondary/20 border border-gold/30 mb-4">
             <Crown className="w-8 h-8 text-gold" />
           </div>
-          <h2 className="font-display text-3xl font-bold text-foreground">Membership Portal</h2>
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground">Membership Portal</h2>
         </div>
 
         {/* Stats bar — "Points" → "Coins" */}
-        <div className="mx-8 p-6 rounded-2xl bg-gradient-to-r from-gold/10 via-secondary/10 to-gold/10 border border-gold/20 mb-6">
-          <div className="grid grid-cols-3 gap-4 text-center">
+        <div className="mx-6 sm:mx-8 p-4 sm:p-6 rounded-2xl bg-gradient-to-r from-gold/10 via-secondary/10 to-gold/10 border border-gold/20 mb-4 sm:mb-6">
+          <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center">
             <div>
-              <p className="text-2xl font-bold text-gold">{rewardCoins.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">Coins</p>
+              <p className="text-xl sm:text-2xl font-bold text-gold">{rewardCoins.toLocaleString()}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">Coins</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-secondary">{events.length}</p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">Events</p>
+              <p className="text-xl sm:text-2xl font-bold text-secondary">{events.length}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">Events</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-foreground">{overviewData.walletBalance}</p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">Balance</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground">{overviewData.walletBalance}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">Balance</p>
             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mx-8 mb-4">
+        <div className="flex gap-2 mx-6 sm:mx-8 mb-4">
           {[
             { id: "overview", label: "Overview" },
             { id: "events", label: "Events" },
@@ -238,7 +239,7 @@ const MemberPortal = ({ isOpen, onClose, tier = "private", userId, onWalletUpdat
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all ${
+              className={`flex-1 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-medium transition-all ${
                 activeTab === tab.id
                   ? "bg-secondary text-secondary-foreground"
                   : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
@@ -250,7 +251,7 @@ const MemberPortal = ({ isOpen, onClose, tier = "private", userId, onWalletUpdat
         </div>
 
         {/* Content */}
-        <div className="p-8 pt-4">
+        <div className="p-6 sm:p-8 pt-4 sm:pt-6">
           {loading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-secondary" />
@@ -266,12 +267,12 @@ const MemberPortal = ({ isOpen, onClose, tier = "private", userId, onWalletUpdat
                     { label: "Total Orders", value: overviewData.totalOrders, icon: BookOpen },
                     { label: "Referrals", value: overviewData.referralCount, icon: Gift },
                   ].map((item) => (
-                    <div key={item.label} className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-muted/20">
-                      <div className="flex items-center gap-3">
-                        <item.icon className="w-5 h-5 text-secondary" />
-                        <span className="text-foreground font-medium">{item.label}</span>
+                    <div key={item.label} className="flex items-center justify-between p-3 sm:p-4 rounded-xl border border-border/50 bg-muted/20">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
+                        <span className="text-xs sm:text-sm text-foreground font-medium">{item.label}</span>
                       </div>
-                      <span className="text-foreground font-bold">{item.value}</span>
+                      <span className="text-sm sm:text-base text-foreground font-bold">{item.value}</span>
                     </div>
                   ))}
                 </div>
@@ -286,19 +287,19 @@ const MemberPortal = ({ isOpen, onClose, tier = "private", userId, onWalletUpdat
                     events.map((event) => {
                       const isBooked = bookingIds.has(event.id);
                       return (
-                        <div key={event.id} className="p-4 rounded-xl border bg-muted/20 border-border">
-                          <div className="flex items-start gap-3 mb-3">
-                            <div className="text-center min-w-[50px]">
-                              <Calendar className="w-5 h-5 mx-auto mb-1 text-secondary" />
-                              <span className="text-xs text-muted-foreground">
+                        <div key={event.id} className="p-3 sm:p-4 rounded-xl border bg-muted/20 border-border">
+                          <div className="flex items-start gap-2 sm:gap-3 mb-3">
+                            <div className="text-center min-w-[40px] sm:min-w-[50px]">
+                              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 text-secondary" />
+                              <span className="text-[10px] sm:text-xs text-muted-foreground">
                                 {new Date(event.event_date).toLocaleDateString("en-ZA", { month: "short", day: "numeric" })}
                               </span>
                             </div>
-                            <div className="flex-1">
-                              <p className="font-medium text-foreground">{event.event_name}</p>
-                              <p className="text-sm text-muted-foreground">{event.location}</p>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate">{event.event_name}</p>
+                              <p className="text-xs sm:text-sm text-muted-foreground truncate">{event.location}</p>
                               {event.description && (
-                                <p className="text-xs text-muted-foreground mt-1">{event.description}</p>
+                                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{event.description}</p>
                               )}
                             </div>
                           </div>
@@ -311,15 +312,15 @@ const MemberPortal = ({ isOpen, onClose, tier = "private", userId, onWalletUpdat
                               className={!isBooked ? "bg-secondary text-secondary-foreground flex-1" : "flex-1"}
                             >
                               {bookingLoading === event.id ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
                               ) : isBooked ? (
-                                <><Check className="w-4 h-4 mr-1" /> Booked</>
+                                <><Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Booked</>
                               ) : (
                                 "Book"
                               )}
                             </Button>
                             <Button size="sm" variant="outline" className="flex-1" onClick={handleSaveEvent}>
-                              <Bookmark className="w-4 h-4 mr-1" /> Save
+                              <Bookmark className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Save
                             </Button>
                           </div>
                         </div>
@@ -430,7 +431,7 @@ const MemberPortal = ({ isOpen, onClose, tier = "private", userId, onWalletUpdat
           )}
         </div>
 
-        <div className="p-8 pt-0">
+        <div className="p-6 sm:p-8 pt-0">
           <Button onClick={onClose} variant="outline" className="w-full">Close Portal</Button>
         </div>
       </div>

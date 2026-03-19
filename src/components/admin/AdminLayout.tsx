@@ -197,10 +197,10 @@ const AdminLayout = () => {
         <aside className={`fixed inset-y-0 left-0 z-50 w-60 bg-admin-surface border-r border-admin-border flex flex-col transition-transform duration-200 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
           {/* Logo */}
           <div className="h-14 flex items-center justify-between px-4 border-b border-admin-border">
-            <Link to="/" className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-2" aria-label="Go to homepage">
               <img src={logoLight} alt="Alpha" className="h-6" />
             </Link>
-            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground">
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground" aria-label="Close sidebar">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -223,10 +223,11 @@ const AdminLayout = () => {
                             ? "bg-admin-emerald/10 text-admin-emerald"
                             : "text-muted-foreground hover:text-foreground hover:bg-admin-surface-hover"
                         }`}
+                        aria-current={active ? "page" : undefined}
                       >
-                        <Icon className="w-4 h-4 shrink-0" />
+                        <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
                         <span>{item.label}</span>
-                        {active && <ChevronRight className="w-3.5 h-3.5 ml-auto" />}
+                        {active && <ChevronRight className="w-3.5 h-3.5 ml-auto" aria-hidden="true" />}
                       </button>
                     );
                   })}
@@ -243,15 +244,17 @@ const AdminLayout = () => {
                 navigate("/profile");
               }}
               className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-admin-surface-hover transition-colors"
+              aria-label="View application as regular user"
             >
-              <Users className="w-4 h-4" />
+              <Users className="w-4 h-4" aria-hidden="true" />
               <span>View as User</span>
             </button>
             <Link
               to="/profile"
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-admin-surface-hover transition-colors"
+              aria-label="Return to main application"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4" aria-hidden="true" />
               <span>Return to App</span>
             </Link>
           </div>
@@ -283,22 +286,23 @@ const AdminLayout = () => {
               <button
                 onClick={() => setShowSearch(true)}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-admin-surface-hover text-muted-foreground text-sm hover:text-foreground transition-colors"
+                aria-label="Open search" aria-keyshortcuts="Meta+K"
               >
-                <Search className="w-3.5 h-3.5" />
+                <Search className="w-3.5 h-3.5" aria-hidden="true" />
                 <span className="hidden sm:inline">Search…</span>
                 <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-admin-border text-[10px] font-mono">
-                  <Command className="w-2.5 h-2.5" />K
+                  <Command className="w-2.5 h-2.5" aria-hidden="true" />K
                 </kbd>
               </button>
 
               {/* Status indicator */}
-              <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-admin-emerald/10 text-admin-emerald text-[11px] font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-admin-emerald animate-pulse" />
+              <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-admin-emerald/10 text-admin-emerald text-[11px] font-medium" role="status">
+                <span className="w-1.5 h-1.5 rounded-full bg-admin-emerald animate-pulse" aria-hidden="true" />
                 Operational
               </div>
 
               <Badge variant="outline" className="gap-1 border-admin-border text-muted-foreground">
-                <Shield className="w-3 h-3" /> Admin
+                <Shield className="w-3 h-3" aria-hidden="true" /> Admin
               </Badge>
             </div>
           </header>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
@@ -14,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Store, Loader2, ArrowLeft, CheckCircle } from "lucide-react";
+import { Store, Loader2, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
 import logoLight from "@/assets/alpha-logo-light.png";
 
 interface PartnerOption {
@@ -88,17 +89,50 @@ const VendorSignup = () => {
       <>
         <Helmet><title>Application Submitted | Alpha Appeal</title></Helmet>
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
-          <Card className="max-w-md w-full text-center">
-            <CardContent className="pt-8 pb-8 space-y-4">
+          <Card className="max-w-lg w-full text-center">
+            <CardContent className="pt-8 pb-8 space-y-6">
               <CheckCircle className="w-16 h-16 text-secondary mx-auto" />
               <h2 className="font-display text-2xl font-bold text-foreground">Application Submitted</h2>
               <p className="text-muted-foreground">
                 Your vendor application has been received. Our team will review it and get back to you within 24-48 hours.
               </p>
-              <div className="flex gap-3 justify-center pt-4">
-                <Button variant="outline" onClick={() => navigate("/")}>Home</Button>
-                <Button variant="sage" onClick={() => navigate("/login")}>Log In</Button>
+              
+              {/* What's Next */}
+              <div className="p-4 rounded-lg bg-muted/50 border border-border text-left">
+                <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <Store className="w-5 h-5 text-secondary" />
+                  What Happens Next?
+                </h3>
+                <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
+                  <li>Our admin team will review your application</li>
+                  <li>You'll receive an email once approved (24-48 hours)</li>
+                  <li>After approval, you can access the Vendor Dashboard</li>
+                  <li>Manage products, store details, and orders</li>
+                </ol>
               </div>
+
+              {/* Quick Access After Approval */}
+              <Alert className="bg-blue-500/10 border border-blue-500/30">
+                <AlertCircle className="w-4 h-4 text-blue-500" />
+                <AlertDescription className="text-sm text-blue-500">
+                  Once approved, you'll see a "Vendor" link in the header and a Store icon button on your Profile page to quickly access the Vendor Dashboard.
+                </AlertDescription>
+              </Alert>
+
+              <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4 border-t border-border/30">
+                <Button variant="outline" onClick={() => navigate("/")}>Home</Button>
+                <Button variant="sage" onClick={() => navigate("/profile")}>Go to Profile</Button>
+              </div>
+              
+              <p className="text-xs text-muted-foreground pt-2">
+                Already have vendor access?{" "}
+                <button 
+                  onClick={() => navigate("/vendor")}
+                  className="text-secondary hover:underline font-medium"
+                >
+                  Go to Vendor Dashboard →
+                </button>
+              </p>
             </CardContent>
           </Card>
         </div>

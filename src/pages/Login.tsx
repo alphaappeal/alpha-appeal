@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -242,6 +242,15 @@ const Login = () => {
                   Reset it
                 </button>
               </p>
+              <div className="pt-4 border-t border-border/30">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Are you a cannabis retailer or wellness provider?
+                </p>
+                <Link to="/vendor/signup" className="inline-flex items-center gap-2 text-secondary hover:underline font-medium">
+                  <Store className="w-4 h-4" />
+                  Become a Vendor
+                </Link>
+              </div>
             </div>
           </div>
         </main>

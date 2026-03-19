@@ -98,11 +98,15 @@ const Profile = () => {
       <div className="min-h-screen bg-background pb-20">
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <Link to="/">
+            <Link to="/" aria-label="Go to homepage">
               <img src={logoLight} alt="Alpha" className="h-7" />
             </Link>
             <h1 className="font-display text-lg font-semibold text-foreground">Profile</h1>
-            <button onClick={() => {}} className="relative p-2">
+            <button 
+              onClick={() => {}} 
+              className="relative p-2" 
+              aria-label={`Notifications ${alertUnread > 0 ? `(${alertUnread} unread)` : ''}`}
+            >
               <Bell className="w-5 h-5 text-muted-foreground" />
               {alertUnread > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
@@ -128,7 +132,8 @@ const Profile = () => {
           {/* Member Portal Button */}
           <Button
             onClick={() => setShowMemberPortal(true)}
-            className="w-full mb-8 py-6 bg-gradient-to-r from-gold/80 to-secondary/80 hover:from-gold hover:to-secondary text-foreground font-semibold text-lg border border-gold/30"
+            className="w-full mb-8 py-6 bg-gradient-to-r from-gold/80 to-secondary/80 hover:from-gold hover:to-secondary text-foreground font-semibold text-lg border border-gold/30 transition-all"
+            aria-label="Open member portal"
           >
             <Crown className="w-5 h-5 mr-2" />
             Enter Member Portal
@@ -142,6 +147,7 @@ const Profile = () => {
                   key={alert.id}
                   onClick={() => markAlertRead(alert.id)}
                   className="w-full text-left p-4 rounded-xl border border-gold/30 bg-gold/5 hover:bg-gold/10 transition-all"
+                  aria-label={`Dismiss alert: ${alert.title}`}
                 >
                   <p className="font-medium text-foreground text-sm">{alert.title}</p>
                   {alert.message && <p className="text-xs text-muted-foreground mt-1">{alert.message}</p>}
@@ -213,12 +219,13 @@ const Profile = () => {
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 className="w-full flex items-center justify-between p-4 rounded-xl border border-border/50 bg-card/30 hover:border-secondary/50 transition-all"
+                aria-label={`Navigate to ${item.label}`}
               >
                 <div className="flex items-center gap-3">
-                  <item.icon className="w-5 h-5 text-muted-foreground" />
+                  <item.icon className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
                   <span className="text-foreground font-medium">{item.label}</span>
                 </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                <ChevronRight className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
               </button>
             ))}
           </div>
@@ -300,10 +307,10 @@ const Profile = () => {
           className="fixed bottom-24 right-5 z-50 w-12 h-12 rounded-full bg-secondary text-secondary-foreground shadow-lg flex items-center justify-center hover:bg-secondary/90 transition-all border border-secondary/30"
           aria-label="Admin Dashboard"
         >
-          <Shield className="w-5 h-5" />
+          <Shield className="w-5 h-5" aria-hidden="true" />
         </button>
       )}
-
+      
       {/* Vendor FAB — bottom-right, above admin FAB if both exist */}
       {!vendorLoading && isVendor && (
         <button
@@ -311,7 +318,7 @@ const Profile = () => {
           className="fixed bottom-24 right-20 z-50 w-12 h-12 rounded-full bg-secondary text-secondary-foreground shadow-lg flex items-center justify-center hover:bg-secondary/90 transition-all border border-secondary/30"
           aria-label="Vendor Dashboard"
         >
-          <Store className="w-5 h-5" />
+          <Store className="w-5 h-5" aria-hidden="true" />
         </button>
       )}
     </>

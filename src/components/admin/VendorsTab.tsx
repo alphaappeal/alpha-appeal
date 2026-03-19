@@ -128,15 +128,49 @@ const VendorsTab = () => {
   const handleApprove = async (app: VendorApplication) => {
     setProcessing(app.id);
     try {
-      // If user_id is provided, create vendor account
+      // If user_id is provided, create or update vendor account
       if (app.user_id) {
-        const { error: insertError } = await supabase.from("vendor_accounts").insert({
-          user_id: app.user_id,
-          partner_id: app.store_id,
-          role: app.role_requested,
-          is_active: true,
+        // Use upsert to handle existing vendor accounts
+        const { error: insertError } = await supabase.rpc('upsert_vendor_account', {
+          p_user_id: app.user_id,
+          p_partner_id: app.store_id,
+          p_role: app.role_requested
         });
-        if (insertError) throw insertError;
+        
+        // If RPC doesn't exist, fall back to manual upsert
+        if (insertError && insertError.message.includes('does not exist')) {
+          // Try to find existing vendor account
+          const { data: existing } = await supabase
+            .from('vendor_accounts')
+            .select('id')
+            .eq('user_id', app.user_id)
+            .eq('partner_id', app.store_id)
+            .single();
+          
+          if (existing) {
+            // Update existing
+            const { error: updateError } = await supabase
+              .from('vendor_accounts')
+              .update({ 
+                role: app.role_requested, 
+                is_active: true,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', existing.id);
+            if (updateError) throw updateError;
+          } else {
+            // Insert new
+            const { error: insertNewError } = await supabase.from('vendor_accounts').insert({
+              user_id: app.user_id,
+              partner_id: app.store_id,
+              role: app.role_requested,
+              is_active: true,
+            });
+            if (insertNewError) throw insertNewError;
+          }
+        } else if (insertError) {
+          throw insertError;
+        }
       }
 
       // Update application status
@@ -146,10 +180,15 @@ const VendorsTab = () => {
         .eq("id", app.id);
       if (error) throw error;
 
-      toast({ title: "Approved", description: `${app.full_name} has been approved as vendor` });
+      toast({ title: "Approved", description: `${app.full_name} has been approved as vendor`, variant: "default" });
       loadAll();
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      console.error('Approval error:', err);
+      toast({ 
+        title: "Error approving vendor", 
+        description: err.message || "Failed to approve vendor application", 
+        variant: "destructive" 
+      });
     } finally {
       setProcessing(null);
     }
