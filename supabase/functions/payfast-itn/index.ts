@@ -1,10 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getCorsHeaders, createCorsPreflightResponse } from "../_shared/cors.ts";
+import { verifyPayFastSignature, validatePayFastData } from "../_shared/payfast.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+const corsHeaders = getCorsHeaders(null);
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -21,6 +19,19 @@ Deno.serve(async (req) => {
     }
 
     console.log("PayFast ITN received:", JSON.stringify(data));
+
+    // SECURITY: Validate PayFast data integrity
+    if (!validatePayFastData(data)) {
+      console.error("Invalid PayFast ITN data");
+      return new Response("INVALID", { status: 400 });
+    }
+
+    // SECURITY: Verify ITN signature (CRITICAL for preventing fraud)
+    const isValidSignature = await verifyPayFastSignature(data);
+    if (!isValidSignature) {
+      console.error("Invalid PayFast signature - potential fraud attempt");
+      return new Response("INVALID_SIGNATURE", { status: 400 });
+    }
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,

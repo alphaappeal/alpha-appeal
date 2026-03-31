@@ -1,10 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { getCorsHeaders, createCorsPreflightResponse } from "../_shared/cors.ts";
+import { PayFastCheckoutSchema, validateRequest } from "../_shared/validation.ts";
 
 // PayFast production URL
 const PAYFAST_URL = "https://www.payfast.co.za/eng/process";
@@ -88,10 +84,12 @@ async function generateSignature(
   return await md5(signatureString);
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsPreflightResponse(req.headers.get("Origin") || null);
   }
+
+  const corsHeaders = getCorsHeaders(req.headers.get("Origin") || null);
 
   try {
     const authHeader = req.headers.get("Authorization");
@@ -121,7 +119,26 @@ Deno.serve(async (req) => {
     const userId = claimsData.claims.sub as string;
     const userEmail = claimsData.claims.email as string;
 
-    const { items, return_url, cancel_url, subscription_tier } = await req.json();
+    // Parse and validate request body
+    let requestBody: unknown;
+    try {
+      requestBody = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON in request body" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const validationResult = validateRequest(PayFastCheckoutSchema, requestBody);
+    if (!validationResult.success || !validationResult.data) {
+      return new Response(
+        JSON.stringify({ error: validationResult.error }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { items, return_url, cancel_url, subscription_tier } = validationResult.data;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return new Response(JSON.stringify({ error: "Cart is empty" }), {

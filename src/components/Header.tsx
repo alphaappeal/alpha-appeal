@@ -67,14 +67,33 @@ const Header = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
-            {isLoggedIn ? (
-              <Link to="/welcome">
-                <Button variant="sage" size="sm">
-                  Dashboard
-                </Button>
+            {!vendorLoading && isVendor ? (
+              <Link to="/vendor" className="text-secondary hover:text-secondary/80 transition-colors text-sm font-medium flex items-center gap-1">
+                <Store className="w-4 h-4" />
+                Vendor Portal
               </Link>
+            ) : isLoggedIn ? (
+              <>
+                <Link to="/vendor/signup">
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Store className="w-4 h-4" />
+                    Become a Vendor
+                  </Button>
+                </Link>
+                <Link to="/welcome">
+                  <Button variant="sage" size="sm">
+                    Dashboard
+                  </Button>
+                </Link>
+              </>
             ) : (
               <>
+                <Link to="/vendor/signup">
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Store className="w-4 h-4" />
+                    For Vendors
+                  </Button>
+                </Link>
                 <Link to="/login">
                   <Button variant="ghost" size="sm">
                     Sign In
@@ -144,12 +163,33 @@ const Header = () => {
                 </Link>
               )}
               <div className="flex gap-3 pt-4 border-t border-border/30">
-                {isLoggedIn ? (
-                  <Link to="/welcome" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="sage" className="w-full">Dashboard</Button>
+                {!vendorLoading && isVendor ? (
+                  <Link to="/vendor" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="sage" className="w-full gap-2">
+                      <Store className="w-4 h-4" />
+                      Vendor Portal
+                    </Button>
                   </Link>
+                ) : isLoggedIn ? (
+                  <>
+                    <Link to="/vendor/signup" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="outline" className="w-full gap-2 text-xs">
+                        <Store className="w-4 h-4" />
+                        Vendor
+                      </Button>
+                    </Link>
+                    <Link to="/welcome" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="sage" className="w-full">Dashboard</Button>
+                    </Link>
+                  </>
                 ) : (
                   <>
+                    <Link to="/vendor/signup" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="outline" className="w-full gap-2 text-xs">
+                        <Store className="w-4 h-4" />
+                        Vendors
+                      </Button>
+                    </Link>
                     <Link to="/login" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="ghost" className="w-full">Sign In</Button>
                     </Link>

@@ -1,14 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getCorsHeaders, createCorsPreflightResponse } from "../_shared/cors.ts";
+import { MailerliteSyncSchema, validateRequest } from "../_shared/validation.ts";
 
 const MAILERLITE_API_KEY = Deno.env.get("MAILERLITE_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 interface SubscribeRequest {
   email: string;
@@ -20,8 +17,10 @@ interface SubscribeRequest {
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsPreflightResponse(req.headers.get("Origin") || null);
   }
+
+  const corsHeaders = getCorsHeaders(req.headers.get("Origin") || null);
 
   try {
     // Authenticate the request
@@ -50,7 +49,27 @@ const handler = async (req: Request): Promise<Response> => {
 
     const authenticatedUserId = claimsData.claims.sub;
 
-    const { email, name, tier, userId }: SubscribeRequest = await req.json();
+    // Parse and validate request body
+    let requestBody: unknown;
+    try {
+      requestBody = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON in request body" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const validationResult = validateRequest(MailerliteSyncSchema, requestBody);
+    if (!validationResult.success || !validationResult.data) {
+      return new Response(
+        JSON.stringify({ error: validationResult.error }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const validatedData = validationResult.data;
+    const { email, name, tier, userId } = validatedData;
 
     // Ensure the userId matches the authenticated user
     if (userId !== authenticatedUserId) {

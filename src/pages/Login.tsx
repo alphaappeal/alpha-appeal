@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Eye, EyeOff, Loader2, Store } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2, Store, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -242,14 +242,29 @@ const Login = () => {
                   Reset it
                 </button>
               </p>
-              <div className="pt-4 border-t border-border/30">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Are you a cannabis retailer or wellness provider?
-                </p>
-                <Link to="/vendor/signup" className="inline-flex items-center gap-2 text-secondary hover:underline font-medium">
-                  <Store className="w-4 h-4" />
-                  Become a Vendor
-                </Link>
+              <div className="pt-6 mt-6 border-t border-border/30">
+                <div className="bg-gradient-to-br from-secondary/5 via-card to-secondary/5 rounded-xl p-5 border border-secondary/20">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                      <Store className="w-5 h-5 text-secondary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">For Vendors</p>
+                      <p className="text-xs text-muted-foreground">Manage your Alpha partner store</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+                    Are you a cannabis retailer or wellness provider? Join our network and access thousands of engaged members.
+                  </p>
+                  <Link 
+                    to="/vendor/signup" 
+                    className="inline-flex items-center justify-center w-full gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all rounded-lg px-4 py-2.5 text-sm font-medium shadow-sm"
+                  >
+                    <Store className="w-4 h-4" />
+                    Become a Vendor
+                    <ArrowRight className="w-4 h-4 ml-auto" />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

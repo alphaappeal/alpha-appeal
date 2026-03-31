@@ -1,10 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders, createCorsPreflightResponse } from "../_shared/cors.ts";
+import { ImportStrainsSchema, validateRequest } from "../_shared/validation.ts";
 
 interface StrainData {
   name: string;
@@ -16,10 +13,12 @@ interface StrainData {
   effects?: Record<string, string>;
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsPreflightResponse(req.headers.get("Origin") || null);
   }
+
+  const corsHeaders = getCorsHeaders(req.headers.get("Origin") || null);
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -58,23 +57,16 @@ serve(async (req) => {
       });
     }
 
-    // Get strain data from request body
-    const { strains } = await req.json() as { strains: StrainData[] };
-
-    if (!strains || !Array.isArray(strains)) {
-      return new Response(JSON.stringify({ error: "Invalid strain data" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Get strain data from request body with validation\n    let requestBody: unknown;\n    try {\n      requestBody = await req.json();\n    } catch {\n      return new Response(\n        JSON.stringify({ error: \"Invalid JSON in request body\" }),\n        { status: 400, headers: { ...corsHeaders, \"Content-Type\": \"application/json\" } }\n      );\n    }\n\n    const validationResult = validateRequest(ImportStrainsSchema, requestBody);\n    if (!validationResult.success || !validationResult.data) {\n      return new Response(\n        JSON.stringify({ error: validationResult.error }),\n        { status: 400, headers: { ...corsHeaders, \"Content-Type\": \"application/json\" } }\n      );\n    }\n\n    const validatedData = validationResult.data;
+    const strainsToImport = validatedData.data;
 
     // Process strains in batches
     const batchSize = 100;
     let imported = 0;
     let errors: string[] = [];
 
-    for (let i = 0; i < strains.length; i += batchSize) {
-      const batch = strains.slice(i, i + batchSize).map((strain) => ({
+    for (let i = 0; i < strainsToImport.length; i += batchSize) {
+      const batch = strainsToImport.slice(i, i + batchSize).map((strain: any) => ({
         name: strain.name,
         type: strain.type?.toLowerCase() || "hybrid",
         thc_level: strain.thc_level,
