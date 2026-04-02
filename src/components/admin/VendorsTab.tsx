@@ -131,11 +131,15 @@ const VendorsTab = () => {
       // If user_id is provided, create or update vendor account
       if (app.user_id) {
         // Use upsert to handle existing vendor accounts
-        const { error: insertError } = await supabase.rpc('upsert_vendor_account', {
-          p_user_id: app.user_id,
-          p_partner_id: app.store_id,
-          p_role: app.role_requested
-        });
+        const { error: insertError } = await supabase
+          .from('vendor_accounts')
+          .upsert({
+            user_id: app.user_id,
+            partner_id: app.store_id,
+            role: app.role_requested,
+            is_active: true,
+            created_at: new Date().toISOString(),
+          }, { onConflict: 'user_id,partner_id' });
         
         // If RPC doesn't exist, fall back to manual upsert
         if (insertError && insertError.message.includes('does not exist')) {

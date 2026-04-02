@@ -119,7 +119,7 @@ Deno.serve(async (req: Request) => {
         error_message: updateError.message,
         shipday_order_id: shipdayOrderId,
         occurred_at: new Date().toISOString(),
-      }).catch((logErr: any) => console.error("Failed to log error:", logErr));
+      }).then(({ error: logErr }) => { if (logErr) console.error("Failed to log error:", logErr); });
       
       return new Response(
         JSON.stringify({ error: "Failed to update delivery", retry: true }),

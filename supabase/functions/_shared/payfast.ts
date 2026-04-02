@@ -7,7 +7,8 @@
  * Documentation: https://developers.payfast.co.za/docs#step_4_instant_transaction_notification_itn
  */
 
-import { createHash } from "https://deno.land/std@0.190.0/hash/mod.ts";
+import { crypto } from "https://deno.land/std@0.190.0/crypto/mod.ts";
+import { encodeHex } from "https://deno.land/std@0.190.0/encoding/hex.ts";
 
 // PayFast public key for signature verification
 const PAYFAST_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
@@ -51,7 +52,10 @@ export async function verifyPayFastSignature(data: Record<string, string>): Prom
       : parameterString;
 
     // Hash the string with MD5 (PayFast uses MD5 for signature generation)
-    const hash = createHash("md5").update(stringToSign).toString();
+    const encoder = new TextEncoder();
+    const data = encoder.encode(stringToSign);
+    const hashBuffer = await crypto.subtle.digest("MD5", data);
+    const hash = encodeHex(new Uint8Array(hashBuffer));
 
     // Note: For production, you should verify using RSA with PayFast's public key
     // This is a simplified version - implement full RSA verification for production
