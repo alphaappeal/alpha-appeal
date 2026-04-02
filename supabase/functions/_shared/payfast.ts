@@ -7,7 +7,8 @@
  * Documentation: https://developers.payfast.co.za/docs#step_4_instant_transaction_notification_itn
  */
 
-import { createHash } from "https://deno.land/std@0.190.0/hash/mod.ts";
+import { crypto } from "https://deno.land/std@0.190.0/crypto/mod.ts";
+import { encodeHex } from "https://deno.land/std@0.190.0/encoding/hex.ts";
 
 // PayFast public key for signature verification
 const PAYFAST_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
