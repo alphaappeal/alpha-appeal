@@ -91,25 +91,21 @@ export const ShipdayUpdateSchema = z.object({
 /**
  * Post to Shipday Schema
  */
-export const ShipdayDeliveryAddressSchema = z.object({
-  street1: z.string().min(1),
-  street2: z.string().optional(),
-  city: z.string().min(1),
-  state: z.string().min(1),
-  zip: z.string().min(1),
-  country: z.string().length(2),
-});
-
 export const PostToShipdaySchema = z.object({
   order_id: UuidSchema,
+  delivery_id: z.string().uuid().optional(),
+  pickup_address: z.string().optional(),
+  delivery_address: z.string().min(1),
   customer_name: z.string().min(2),
-  customer_email: EmailSchema,
-  customer_phone: z.string().min(10),
-  delivery_address: ShipdayDeliveryAddressSchema,
-  items: z.array(z.object({
+  customer_email: EmailSchema.optional().or(z.literal("")),
+  customer_phone: z.string().optional().or(z.literal("")),
+  order_items: z.array(z.object({
     name: z.string(),
     quantity: z.number().int().positive(),
-  })),
+  })).optional(),
+  priority: z.enum(["normal", "rush"]).optional(),
+  admin_notes: z.string().optional(),
+  courier_name: z.string().optional(),
 });
 
 /**
