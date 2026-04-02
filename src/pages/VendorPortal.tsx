@@ -22,6 +22,7 @@ import {
 import logoLight from "@/assets/alpha-logo-light.png";
 import VendorStoreDetails from "@/components/vendor/VendorStoreDetails";
 import VendorStoreHours from "@/components/vendor/VendorStoreHours";
+import VendorDeliveries from "@/components/vendor/VendorDeliveries";
 
 interface VendorAccount {
   id: string;
@@ -57,7 +58,7 @@ interface PartnerProduct {
   flavors: string[] | null;
 }
 
-type VendorSection = "dashboard" | "products" | "store-details" | "store-hours" | "orders" | "settings";
+type VendorSection = "dashboard" | "products" | "store-details" | "store-hours" | "orders" | "deliveries" | "settings";
 
 const NAV_ITEMS: { id: VendorSection; label: string; icon: any }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -65,6 +66,7 @@ const NAV_ITEMS: { id: VendorSection; label: string; icon: any }[] = [
   { id: "store-details", label: "Store Details", icon: MapPin },
   { id: "store-hours", label: "Store Hours", icon: Clock },
   { id: "orders", label: "Orders", icon: ShoppingBag },
+  { id: "deliveries", label: "Deliveries", icon: Truck },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -563,6 +565,11 @@ const VendorPortal = () => {
                   </CardContent>
                 </Card>
               </div>
+            )}
+
+            {/* Deliveries */}
+            {activeSection === "deliveries" && (
+              <VendorDeliveries partnerId={vendorAccount.partner_id} partnerName={store.name} />
             )}
 
             {/* Settings */}

@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, createCorsPreflightResponse } from "../_shared/cors.ts";
+import { validateRequest, PostToShipdaySchema } from "../_shared/validation.ts";
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -52,7 +53,25 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const body = await req.json();
+    // Parse and validate request body
+    let requestBody: unknown;
+    try {
+      requestBody = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON in request body" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const validationResult = validateRequest(PostToShipdaySchema, requestBody);
+    if (!validationResult.success || !validationResult.data) {
+      return new Response(
+        JSON.stringify({ error: validationResult.error }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const {
       order_id,
       delivery_id,
@@ -65,7 +84,7 @@ Deno.serve(async (req: Request) => {
       priority,
       admin_notes,
       courier_name,
-    } = body;
+    } = validationResult.data;
 
     const SHIPDAY_API_KEY = Deno.env.get("SHIPDAY_API_KEY");
     if (!SHIPDAY_API_KEY) {

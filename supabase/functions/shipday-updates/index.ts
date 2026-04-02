@@ -24,19 +24,36 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const payload = await req.json();
-    console.log("Shipday webhook payload:", JSON.stringify(payload));
+    // Parse payload
+    let payload: any;
+    try {
+      payload = await req.json();
+    } catch (err) {
+      console.error("Failed to parse webhook payload:", err);
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON payload" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    // Shipday sends various event types
+    console.log("Shipday webhook received:", JSON.stringify(payload));
+
+    // Extract order identifiers
     const orderId = payload.orderNumber || payload.orderId;
     const shipdayOrderId = String(payload.id || payload.orderId || "");
 
+    // Validate order ID
     if (!shipdayOrderId) {
-      return new Response(JSON.stringify({ error: "No order ID in payload" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      console.error("No order ID in webhook payload");
+      return new Response(
+        JSON.stringify({ error: "No order ID in payload" }),
+        { status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
+
+    // Log webhook metadata for debugging
+    console.log(`Processing Shipday webhook for order: ${shipdayOrderId}, status: ${payload.orderStatus}`);
 
     const newStatus = statusMap[payload.orderStatus] || payload.orderStatus?.toLowerCase() || "pending";
 
@@ -82,18 +99,65 @@ Deno.serve(async (req: Request) => {
     if (payload.arrivedAtPickup) updateData.geofence_arrived_at = payload.arrivedAtPickup;
     if (payload.leftPickup) updateData.geofence_left_at = payload.leftPickup;
 
+    // Log the full update for debugging
+    console.log(`Updating delivery ${shipdayOrderId} with status: ${newStatus}`, JSON.stringify(updateData));
+
     // Update delivery record
-    const { error } = await supabase
+    const { data: updatedDelivery, error: updateError } = await supabase
       .from("user_deliveries")
       .update(updateData)
-      .eq("shipday_order_id", shipdayOrderId);
+      .eq("shipday_order_id", shipdayOrderId)
+      .select("id, user_id, order_id, status")
+      .maybeSingle();
 
-    if (error) {
-      console.error("Failed to update delivery:", error);
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (updateError) {
+      console.error("Database update failed:", updateError);
+      
+      // Log error for monitoring
+      await supabase.from("delivery_errors").insert({
+        error_type: "webhook_update_failed",
+        error_message: updateError.message,
+        shipday_order_id: shipdayOrderId,
+        occurred_at: new Date().toISOString(),
+      }).catch((logErr: any) => console.error("Failed to log error:", logErr));
+      
+      return new Response(
+        JSON.stringify({ error: "Failed to update delivery", retry: true }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // If no delivery found, create one (fallback)
+    if (!updatedDelivery) {
+      console.warn(`No delivery found for Shipday order ${shipdayOrderId}, creating new record`);
+      
+      // Try to find by order_number from orders table
+      if (orderId) {
+        const { data: order } = await supabase
+          .from("orders")
+          .select("user_id, id")
+          .eq("order_number", orderId)
+          .maybeSingle();
+        
+        if (order) {
+          const { error: insertError } = await supabase
+            .from("user_deliveries")
+            .insert({
+              order_id: order.id,
+              user_id: order.user_id,
+              shipday_order_id: shipdayOrderId,
+              shipday_status: payload.orderStatus,
+              status: newStatus,
+              ...updateData,
+            });
+          
+          if (insertError) {
+            console.error("Failed to create delivery record:", insertError);
+          } else {
+            console.log(`Created new delivery record for order ${orderId}`);
+          }
+        }
+      }
     }
 
     // Also update the linked order status
