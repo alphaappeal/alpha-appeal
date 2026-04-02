@@ -58,7 +58,7 @@ serve(async (req: Request) => {
     }
 
     // Get strain data from request body with validation\n    let requestBody: unknown;\n    try {\n      requestBody = await req.json();\n    } catch {\n      return new Response(\n        JSON.stringify({ error: \"Invalid JSON in request body\" }),\n        { status: 400, headers: { ...corsHeaders, \"Content-Type\": \"application/json\" } }\n      );\n    }\n\n    const validationResult = validateRequest(ImportStrainsSchema, requestBody);\n    if (!validationResult.success || !validationResult.data) {\n      return new Response(\n        JSON.stringify({ error: validationResult.error }),\n        { status: 400, headers: { ...corsHeaders, \"Content-Type\": \"application/json\" } }\n      );\n    }\n\n    const validatedData = validationResult.data;
-    const strainsToImport = validatedData.data;
+    const strainsToImport = validationResult.data.data;
 
     // Process strains in batches
     const batchSize = 100;
