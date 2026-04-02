@@ -102,7 +102,7 @@ serve(async (req: Request) => {
       JSON.stringify({
         success: true,
         imported,
-        total: strains.length,
+        total: strainsToImport.length,
         errors: errors.length > 0 ? errors : undefined,
       }),
       {

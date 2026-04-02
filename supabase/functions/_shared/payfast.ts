@@ -52,7 +52,10 @@ export async function verifyPayFastSignature(data: Record<string, string>): Prom
       : parameterString;
 
     // Hash the string with MD5 (PayFast uses MD5 for signature generation)
-    const hash = createHash("md5").update(stringToSign).toString();
+    const encoder = new TextEncoder();
+    const data = encoder.encode(stringToSign);
+    const hashBuffer = await crypto.subtle.digest("MD5", data);
+    const hash = encodeHex(new Uint8Array(hashBuffer));
 
     // Note: For production, you should verify using RSA with PayFast's public key
     // This is a simplified version - implement full RSA verification for production
