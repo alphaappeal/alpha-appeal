@@ -1,0 +1,42 @@
+name: Deploy to Hostinger FTP
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the repository code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Setup Node environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22 # Matching the recommended Node version for Vite/React
+
+      # 3. Install packages
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      # 4. Build the application wrapper
+      - name: Build Project
+        run: npm run build
+
+      # 5. Sync the 'dist' directory to Hostinger via FTP
+      - name: Deploy to Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: public_html/
+          local-dir: dist/
+          # Optional params to ensure secure or debug connections if standard FTP fails:
+          # protocol: ftp 
