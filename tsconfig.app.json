@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "types": ["vite-plugin-pwa/client"],
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
