@@ -38,5 +38,5 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: public_html/
           local-dir: dist/
-          # Optional params to ensure secure or debug connections if standard FTP fails:
-          # protocol: ftp 
+          protocol: ftps
+          port: 21
