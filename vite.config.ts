@@ -13,24 +13,66 @@ export default defineConfig(({ mode }) => ({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "favicon.png", "robots.txt", "placeholder.svg"],
+      includeAssets: ["favicon.ico", "favicon.png", "robots.txt", "placeholder.svg", "apple-touch-icon.png"],
       manifest: {
         name: "Alpha Appeal",
-        short_name: "Alpha Appeal",
-        description: "Alpha Appeal is a sovereign lifestyle ecosystem merging high end art, fashion and cars into one community.",
+        short_name: "AlphaAppeal",
+        description: "A sovereign lifestyle ecosystem merging high end art, fashion and cars into one community.",
         theme_color: "#000000",
         background_color: "#000000",
         display: "standalone",
+        scope: "/",
+        start_url: "/",
         icons: [
           {
-            src: "/favicon.png",
+            src: "pwa-192x192.png",
             sizes: "192x192",
             type: "image/png",
           },
           {
-            src: "/favicon.png",
+            src: "pwa-512x512.png",
             sizes: "512x512",
             type: "image/png",
+          },
+          {
+            src: "pwa-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
+        ],
+      },
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/.*/i,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "supabase-api-cache",
+              networkTimeoutSeconds: 10,
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/v1\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "supabase-storage-cache",
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
           },
         ],
       },
