@@ -23,20 +23,53 @@ const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const handleAuthRedirect = async (userId: string) => {
+    try {
+      // Check if admin
+      const { data: userData } = await supabase
+        .from("users")
+        .select("is_admin")
+        .eq("id", userId)
+        .maybeSingle();
+      
+      if (userData?.is_admin) {
+        navigate("/admin");
+        return;
+      }
+
+      // Check if active vendor
+      const { data: vendorData } = await supabase
+        .from("vendor_accounts")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("is_active", true)
+        .limit(1);
+      
+      if (vendorData && vendorData.length > 0) {
+        navigate("/vendor");
+        return;
+      }
+
+      navigate("/profile");
+    } catch (err) {
+      navigate("/profile");
+    }
+  };
+
   useEffect(() => {
-    // Check if already logged in - redirect to profile (not welcome)
+    // Check if already logged in
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/profile");
+        await handleAuthRedirect(session.user.id);
       }
     };
     checkSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        navigate("/profile");
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        await handleAuthRedirect(session.user.id);
       }
     });
 
@@ -104,8 +137,8 @@ const Login = () => {
           title: "Welcome back!",
           description: "You've successfully logged in.",
         });
-        // Redirect to profile, not welcome
-        navigate("/profile");
+        // Redirect based on roles
+        await handleAuthRedirect(data.session.user.id);
       }
     } catch (err) {
       toast({

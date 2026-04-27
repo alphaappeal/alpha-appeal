@@ -33,6 +33,7 @@ const VendorSignup = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [session, setSession] = useState<any>(null);
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
@@ -43,7 +44,14 @@ const VendorSignup = () => {
   });
 
   useEffect(() => {
-    const loadPartners = async () => {
+    const loadPartnersAndSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+
+      if (session?.user) {
+        setFormData(prev => ({ ...prev, email: session.user.email || "" }));
+      }
+
       const { data } = await supabase
         .from("alpha_partners")
         .select("id, name, city, region, country")
@@ -51,7 +59,7 @@ const VendorSignup = () => {
       setPartners((data as PartnerOption[]) || []);
       setLoading(false);
     };
-    loadPartners();
+    loadPartnersAndSession();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,10 +71,12 @@ const VendorSignup = () => {
 
     setSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      if (!session?.user) {
+        throw new Error("You must be logged in to submit an application.");
+      }
 
       const { error } = await supabase.from("vendor_applications").insert({
-        user_id: user?.id || null,
+        user_id: session.user.id,
         store_id: formData.store_id,
         full_name: formData.full_name,
         email: formData.email,
@@ -168,6 +178,21 @@ const VendorSignup = () => {
             </p>
           </div>
 
+          {!session && !loading ? (
+            <Card>
+              <CardContent className="pt-8 pb-8 text-center space-y-4">
+                <AlertCircle className="w-12 h-12 text-secondary mx-auto" />
+                <h2 className="font-display text-xl font-bold">Account Required</h2>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  You must have an Alpha account to apply as a vendor. Please sign in or create a free account to continue.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+                  <Button variant="outline" onClick={() => navigate("/login")}>Sign In</Button>
+                  <Button variant="sage" onClick={() => navigate("/signup")}>Create Free Account</Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
           <Card>
             <CardContent className="pt-6">
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -260,6 +285,7 @@ const VendorSignup = () => {
               </form>
             </CardContent>
           </Card>
+          )}
         </main>
       </div>
     </>

@@ -128,53 +128,54 @@ const VendorsTab = () => {
   const handleApprove = async (app: VendorApplication) => {
     setProcessing(app.id);
     try {
-      // If user_id is provided, create or update vendor account
-      if (app.user_id) {
-        // Use upsert to handle existing vendor accounts
-        const { error: insertError } = await supabase
+      if (!app.user_id) {
+        throw new Error("This application has no associated user account. Please reject and ask them to apply again while logged in.");
+      }
+
+      // Use upsert to handle existing vendor accounts
+      const { error: insertError } = await supabase
+        .from('vendor_accounts')
+        .upsert({
+          user_id: app.user_id,
+          partner_id: app.store_id,
+          role: app.role_requested,
+          is_active: true,
+          created_at: new Date().toISOString(),
+        }, { onConflict: 'user_id,partner_id' });
+      
+      // If RPC doesn't exist, fall back to manual upsert
+      if (insertError && insertError.message.includes('does not exist')) {
+        // Try to find existing vendor account
+        const { data: existing } = await supabase
           .from('vendor_accounts')
-          .upsert({
+          .select('id')
+          .eq('user_id', app.user_id)
+          .eq('partner_id', app.store_id)
+          .single();
+        
+        if (existing) {
+          // Update existing
+          const { error: updateError } = await supabase
+            .from('vendor_accounts')
+            .update({ 
+              role: app.role_requested, 
+              is_active: true,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existing.id);
+          if (updateError) throw updateError;
+        } else {
+          // Insert new
+          const { error: insertNewError } = await supabase.from('vendor_accounts').insert({
             user_id: app.user_id,
             partner_id: app.store_id,
             role: app.role_requested,
             is_active: true,
-            created_at: new Date().toISOString(),
-          }, { onConflict: 'user_id,partner_id' });
-        
-        // If RPC doesn't exist, fall back to manual upsert
-        if (insertError && insertError.message.includes('does not exist')) {
-          // Try to find existing vendor account
-          const { data: existing } = await supabase
-            .from('vendor_accounts')
-            .select('id')
-            .eq('user_id', app.user_id)
-            .eq('partner_id', app.store_id)
-            .single();
-          
-          if (existing) {
-            // Update existing
-            const { error: updateError } = await supabase
-              .from('vendor_accounts')
-              .update({ 
-                role: app.role_requested, 
-                is_active: true,
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', existing.id);
-            if (updateError) throw updateError;
-          } else {
-            // Insert new
-            const { error: insertNewError } = await supabase.from('vendor_accounts').insert({
-              user_id: app.user_id,
-              partner_id: app.store_id,
-              role: app.role_requested,
-              is_active: true,
-            });
-            if (insertNewError) throw insertNewError;
-          }
-        } else if (insertError) {
-          throw insertError;
+          });
+          if (insertNewError) throw insertNewError;
         }
+      } else if (insertError) {
+        throw insertError;
       }
 
       // Update application status
