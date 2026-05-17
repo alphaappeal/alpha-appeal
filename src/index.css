@@ -255,3 +255,12 @@
 .safe-area-padding-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
+
+/* Hide Lovable Badge injected by platform hosting */
+[id*="lovable"],
+[class*="lovable-badge"],
+a[href*="lovable.dev"],
+div:has(> a[href*="lovable.dev"]),
+iframe[src*="lovable.dev"] {
+  display: none !important;
+}
