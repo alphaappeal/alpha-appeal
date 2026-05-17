@@ -103,7 +103,7 @@ const AdminLayout = () => {
   };
 
   const loadProfiles = useCallback(async () => {
-    const { data } = await supabase.from("profiles").select("id, full_name, username, email, tier, subscription_tier, payment_status, application_status, created_at, role").order("created_at", { ascending: false });
+    const { data } = await supabase.from("profiles").select("id, full_name, username, email, tier, subscription_tier, payment_status, application_status, created_at, role, referral_code_used").order("created_at", { ascending: false });
     setProfiles(data || []);
   }, []);
 
@@ -249,13 +249,23 @@ const AdminLayout = () => {
               <Users className="w-4 h-4" aria-hidden="true" />
               <span>View as User</span>
             </button>
-            <Link
-              to="/profile"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-admin-surface-hover transition-colors"
-              aria-label="Return to main application"
+            <button
+              onClick={() => {
+                navigate("/vendor");
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-admin-surface-hover transition-colors"
+              aria-label="View vendor dashboard"
             >
-              <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-              <span>Return to App</span>
+              <Store className="w-4 h-4" aria-hidden="true" />
+              <span>View as Vendor</span>
+            </button>
+            <Link
+              to="/"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-admin-surface-hover transition-colors"
+              aria-label="Return to landing page"
+            >
+              <LayoutDashboard className="w-4 h-4" aria-hidden="true" />
+              <span>View Landing Page</span>
             </Link>
           </div>
         </aside>
@@ -330,6 +340,7 @@ const AdminLayout = () => {
             {activeSection === "subscriptions" && (
               <AdminSubscriptions
                 subscriptions={subscriptions}
+                profiles={profiles}
                 loading={loading}
                 resolveUser={resolveUser}
               />
@@ -355,7 +366,17 @@ const AdminLayout = () => {
             )}
             {activeSection === "activity" && <SystemActivityTab />}
             {activeSection === "vendors" && <VendorsTab />}
-            {activeSection === "health" && <SystemHealthTab />}
+            {activeSection === "health" && (
+              <SystemHealthTab 
+                profiles={profiles}
+                subscriptions={subscriptions}
+                orders={orders}
+                applications={applications}
+                products={products}
+                diaryEntries={diaryEntries}
+                loading={loading}
+              />
+            )}
             {activeSection === "settings" && <AdminSettingsSection />}
           </main>
         </div>

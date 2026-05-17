@@ -48,13 +48,31 @@ interface PlatformMetric {
   total_diary_entries: number;
 }
 
+interface Props {
+  profiles?: any[];
+  subscriptions?: any[];
+  orders?: any[];
+  applications?: any[];
+  products?: any[];
+  diaryEntries?: any[];
+  loading?: boolean;
+}
+
 const JOB_CONFIG = [
   { id: "cleanup", label: "Stale Data Cleanup", icon: Trash2, description: "Remove expired promos, old logs, abandoned carts" },
   { id: "subscriptions", label: "Subscription Check", icon: CreditCard, description: "Flag expired subs, downgrade tiers, detect upcoming renewals" },
   { id: "analytics", label: "Analytics Snapshot", icon: BarChart3, description: "Capture daily platform metrics snapshot" },
 ];
 
-const SystemHealthTab = () => {
+const SystemHealthTab = ({ 
+  profiles = [], 
+  subscriptions = [], 
+  orders = [], 
+  applications = [], 
+  products = [], 
+  diaryEntries = [],
+  loading: parentLoading = false
+}: Props) => {
   const { toast } = useToast();
   const [logs, setLogs] = useState<MaintenanceLog[]>([]);
   const [metrics, setMetrics] = useState<PlatformMetric[]>([]);
@@ -127,7 +145,20 @@ const SystemHealthTab = () => {
     }
   };
 
-  const latestMetric = metrics[0] || null;
+  const todayStr = new Date().toISOString().split('T')[0];
+  const liveMetric = {
+    snapshot_date: "Live (Now)",
+    total_users: profiles.length,
+    active_subscriptions: subscriptions.filter(s => s.status === "active").length,
+    revenue_total: orders.reduce((sum, o) => sum + (o.amount || 0), 0),
+    new_signups_today: profiles.filter(p => p.created_at?.startsWith(todayStr)).length,
+    pending_applications: applications.filter(a => a.application_status === "pending").length,
+    total_orders: orders.length,
+    total_products: products.length,
+    total_strains: products.filter(p => p.category === "strain").length,
+    total_culture_items: products.filter(p => p.category === "culture" || p.category === "merch").length, // Example heuristic since we don't pass culture_items
+    total_diary_entries: diaryEntries.length,
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -175,24 +206,31 @@ const SystemHealthTab = () => {
       </div>
 
       {/* Latest Metrics Snapshot */}
-      {latestMetric && (
+      {parentLoading ? (
+        <div className="p-5 rounded-xl bg-admin-surface border border-admin-border space-y-4">
+          <Skeleton className="h-6 w-48" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {[...Array(10)].map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+          </div>
+        </div>
+      ) : (
         <div className="p-5 rounded-xl bg-admin-surface border border-admin-border">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-foreground">Latest Snapshot — {latestMetric.snapshot_date}</h3>
-            <Badge variant="outline" className="text-[10px]">Updated daily</Badge>
+            <h3 className="text-sm font-semibold text-foreground">Live Snapshot — {liveMetric.snapshot_date}</h3>
+            <Badge variant="outline" className="text-[10px] bg-admin-emerald/10 text-admin-emerald border-admin-emerald/20">Real-time Data</Badge>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {[
-              { label: "Users", value: latestMetric.total_users, icon: Users },
-              { label: "Active Subs", value: latestMetric.active_subscriptions, icon: CreditCard },
-              { label: "Revenue", value: `R${latestMetric.revenue_total.toLocaleString()}`, icon: TrendingUp },
-              { label: "Signups Today", value: latestMetric.new_signups_today, icon: Users },
-              { label: "Pending Apps", value: latestMetric.pending_applications, icon: Clock },
-              { label: "Orders", value: latestMetric.total_orders, icon: Package },
-              { label: "Products", value: latestMetric.total_products, icon: Package },
-              { label: "Strains", value: latestMetric.total_strains, icon: Leaf },
-              { label: "Culture Items", value: latestMetric.total_culture_items, icon: Activity },
-              { label: "Diary Entries", value: latestMetric.total_diary_entries, icon: BarChart3 },
+              { label: "Users", value: liveMetric.total_users, icon: Users },
+              { label: "Active Subs", value: liveMetric.active_subscriptions, icon: CreditCard },
+              { label: "Revenue", value: `R${liveMetric.revenue_total.toLocaleString()}`, icon: TrendingUp },
+              { label: "Signups Today", value: liveMetric.new_signups_today, icon: Users },
+              { label: "Pending Apps", value: liveMetric.pending_applications, icon: Clock },
+              { label: "Orders", value: liveMetric.total_orders, icon: Package },
+              { label: "Products", value: liveMetric.total_products, icon: Package },
+              { label: "Strains", value: liveMetric.total_strains, icon: Leaf },
+              { label: "Culture Items", value: liveMetric.total_culture_items, icon: Activity },
+              { label: "Diary Entries", value: liveMetric.total_diary_entries, icon: BarChart3 },
             ].map(({ label, value, icon: Icon }) => (
               <div key={label} className="p-3 rounded-lg bg-admin-surface-hover">
                 <div className="flex items-center gap-1.5 mb-1">

@@ -15,10 +15,10 @@ import {
 
 interface AdminLog {
   id: string;
-  admin_id: string | null;
-  action: string | null;
-  target_table: string | null;
-  target_id: string | null;
+  user_id: string | null;
+  activity_type: string | null;
+  description: string | null;
+  metadata: any | null;
   created_at: string | null;
 }
 
@@ -39,13 +39,13 @@ const SystemActivityTab = () => {
   const fetchLogs = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from("admin_logs")
+      .from("activity_logs")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(100);
 
     if (error) {
-      console.error("Error fetching admin logs:", error);
+      console.error("Error fetching activity logs:", error);
     }
     setLogs(data || []);
     setLoading(false);
@@ -56,10 +56,10 @@ const SystemActivityTab = () => {
 
     // Real-time subscription for live updates
     const channel = supabase
-      .channel("admin-logs-realtime")
+      .channel("activity-logs-realtime")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "admin_logs" },
+        { event: "INSERT", schema: "public", table: "activity_logs" },
         (payload) => {
           setLogs((prev) => [payload.new as AdminLog, ...prev].slice(0, 100));
         }
@@ -131,22 +131,22 @@ const SystemActivityTab = () => {
               className="flex items-start gap-3 p-4 rounded-xl border border-border/50 bg-card/30 hover:bg-card/50 transition-colors"
             >
               <div className="mt-0.5 w-8 h-8 rounded-lg bg-muted/30 flex items-center justify-center shrink-0">
-                {getIcon(log.target_table)}
+                {getIcon(log.activity_type)}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant={getActionBadgeVariant(log.action)}>
-                    {log.action || "Unknown"}
+                  <Badge variant={getActionBadgeVariant(log.activity_type)}>
+                    {log.activity_type || "Unknown"}
                   </Badge>
-                  {log.target_table && (
-                    <span className="text-xs text-muted-foreground font-mono">
-                      {log.target_table}
+                  {log.user_id && (
+                    <span className="text-xs text-muted-foreground font-mono truncate max-w-[120px]">
+                      User: {log.user_id.split('-')[0]}...
                     </span>
                   )}
                 </div>
-                {log.target_id && (
-                  <p className="text-xs text-muted-foreground mt-1 font-mono truncate">
-                    Target: {log.target_id}
+                {log.description && (
+                  <p className="text-xs text-muted-foreground mt-1 truncate">
+                    {log.description}
                   </p>
                 )}
               </div>

@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, X, Save, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Save, Loader2, UploadCloud } from "lucide-react";
 
 interface Product {
   id: string;
@@ -39,6 +39,38 @@ const ProductsTab = ({ products, onRefresh }: ProductsTabProps) => {
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('products')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('products')
+        .getPublicUrl(filePath);
+
+      setForm(f => ({ ...f, image_url: publicUrl }));
+      toast({ title: "Image uploaded successfully" });
+    } catch (error: any) {
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const startCreate = () => {
     setEditing(null);
@@ -120,7 +152,15 @@ const ProductsTab = ({ products, onRefresh }: ProductsTabProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <Input placeholder="Product name *" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
         <Input placeholder="Price (ZAR) *" type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} />
-        <Input placeholder="Image URL" value={form.image_url} onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))} />
+        <div className="flex gap-2">
+          <Input placeholder="Image URL" value={form.image_url} onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))} className="flex-1" />
+          <div className="relative">
+            <Input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 opacity-0 cursor-pointer w-full" disabled={uploadingImage} />
+            <Button type="button" variant="outline" disabled={uploadingImage}>
+              {uploadingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
+            </Button>
+          </div>
+        </div>
         <Input placeholder="Stock quantity" type="number" value={form.stock_quantity} onChange={e => setForm(f => ({ ...f, stock_quantity: e.target.value }))} />
         <Input placeholder="Category" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} />
       </div>

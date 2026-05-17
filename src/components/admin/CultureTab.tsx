@@ -7,6 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Loader2, Leaf, Palette, Car, Shirt, Heart, Trash2, Edit, Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import StrainsTab from "./StrainsTab";
 
 interface CultureItem {
@@ -37,6 +39,15 @@ const CultureTab = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("strains");
+  const [showModal, setShowModal] = useState(false);
+  const [editingItem, setEditingItem] = useState<CultureItem | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    creator: "",
+    description: "",
+    img_url: "",
+    year: "",
+  });
 
   useEffect(() => {
     if (activeCategory !== "strains") {
@@ -75,6 +86,41 @@ const CultureTab = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
+      fetchCultureItems();
+    }
+  };
+
+  const openEditModal = (item: CultureItem) => {
+    setEditingItem(item);
+    setFormData({
+      name: item.name,
+      creator: item.creator || "",
+      description: item.description || "",
+      img_url: item.img_url || "",
+      year: item.year || "",
+    });
+    setShowModal(true);
+  };
+
+  const handleSave = async () => {
+    if (!editingItem) return;
+    const { error } = await supabase
+      .from("culture_items")
+      .update({
+        name: formData.name,
+        creator: formData.creator,
+        description: formData.description,
+        img_url: formData.img_url,
+        year: formData.year,
+      })
+      .eq("id", editingItem.id);
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to update item.", variant: "destructive" });
+    } else {
+      toast({ title: "Success", description: "Item updated successfully." });
+      setShowModal(false);
+      setEditingItem(null);
       fetchCultureItems();
     }
   };
@@ -189,6 +235,14 @@ const CultureTab = () => {
                             variant="outline"
                             size="sm"
                             className="flex-1 text-xs"
+                            onClick={() => openEditModal(item)}
+                          >
+                            <Edit className="w-3 h-3 mr-1" /> Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 text-xs"
                             onClick={() => togglePublished(item.id, item.published)}
                           >
                             {item.published ? "Unpublish" : "Publish"}
@@ -211,6 +265,63 @@ const CultureTab = () => {
           </TabsContent>
         ))}
       </Tabs>
+
+      {/* Edit Modal */}
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit {categoryConfig[activeCategory]?.label || "Item"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground">Name</label>
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-foreground">Creator</label>
+                <Input
+                  value={formData.creator}
+                  onChange={(e) => setFormData({ ...formData, creator: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground">Year</label>
+                <Input
+                  value={formData.year}
+                  onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Image URL</label>
+              <Input
+                value={formData.img_url}
+                onChange={(e) => setFormData({ ...formData, img_url: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Description</label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={4}
+              />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button variant="outline" className="flex-1" onClick={() => setShowModal(false)}>
+                Cancel
+              </Button>
+              <Button className="flex-1" onClick={handleSave}>
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

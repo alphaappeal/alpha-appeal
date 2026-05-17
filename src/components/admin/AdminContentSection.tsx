@@ -44,7 +44,7 @@ const AdminContentSection = ({ products, diaryEntries, locations, loading, onRef
       <Tabs defaultValue="products" className="space-y-4">
         <TabsList className="bg-admin-surface border border-admin-border p-1 h-auto flex-wrap gap-1">
           <TabsTrigger value="products" className="gap-1.5 text-xs data-[state=active]:bg-admin-emerald/10 data-[state=active]:text-admin-emerald"><ShoppingBag className="w-3.5 h-3.5" /> Products</TabsTrigger>
-          <TabsTrigger value="culture" className="gap-1.5 text-xs data-[state=active]:bg-admin-emerald/10 data-[state=active]:text-admin-emerald"><Palette className="w-3.5 h-3.5" /> Culture</TabsTrigger>
+          <TabsTrigger value="culture" className="gap-1.5 text-xs data-[state=active]:bg-admin-emerald/10 data-[state=active]:text-admin-emerald"><Palette className="w-3.5 h-3.5" /> Community</TabsTrigger>
           <TabsTrigger value="partners" className="gap-1.5 text-xs data-[state=active]:bg-admin-emerald/10 data-[state=active]:text-admin-emerald"><Store className="w-3.5 h-3.5" /> Partners</TabsTrigger>
           <TabsTrigger value="diary" className="gap-1.5 text-xs data-[state=active]:bg-admin-emerald/10 data-[state=active]:text-admin-emerald"><BookOpen className="w-3.5 h-3.5" /> Diary</TabsTrigger>
           <TabsTrigger value="locations" className="gap-1.5 text-xs data-[state=active]:bg-admin-emerald/10 data-[state=active]:text-admin-emerald"><MapPin className="w-3.5 h-3.5" /> Locations</TabsTrigger>

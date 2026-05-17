@@ -27,12 +27,12 @@ const Login = () => {
     try {
       // Check if admin
       const { data: userData } = await supabase
-        .from("users")
-        .select("is_admin")
+        .from("profiles")
+        .select("role")
         .eq("id", userId)
         .maybeSingle();
       
-      if (userData?.is_admin) {
+      if (userData?.role === 'admin') {
         navigate("/admin");
         return;
       }

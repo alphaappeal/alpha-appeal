@@ -58,6 +58,16 @@ const tierBadgeClass = (tier: string) => {
   }
 };
 
+const getDisplayName = (p: any) => {
+  if (p.full_name) return p.full_name;
+  if (p.username) return p.username;
+  if (p.email) {
+    const prefix = p.email.split("@")[0];
+    return `${prefix} (Pending Setup)`;
+  }
+  return "Pending Setup";
+};
+
 const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolveUser }: Props) => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
@@ -126,11 +136,16 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
     return new Date(d).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" });
   };
 
+  const promoUsers = profiles.filter(p => !!p.referral_code_used).length;
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground font-display">User Management</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">{profiles.length} total users</p>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          {profiles.length} total users 
+          {promoUsers > 0 && <span className="ml-2 px-2 py-0.5 rounded-full bg-admin-indigo/10 text-admin-indigo text-xs">{promoUsers} registered with promo codes</span>}
+        </p>
       </div>
 
       {/* Pending Applications */}
@@ -218,7 +233,8 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
                     <th className="text-left p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">User</th>
                     <th className="text-left p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tier</th>
                     <th className="text-left p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">Status</th>
-                    <th className="text-left p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden lg:table-cell">Joined</th>
+                    <th className="text-left p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden lg:table-cell">Promo</th>
+                    <th className="text-left p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden xl:table-cell">Joined</th>
                     <th className="text-right p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-12"></th>
                   </tr>
                 </thead>
@@ -231,7 +247,7 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
                             {(p.full_name || p.email || "U")[0].toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-foreground truncate">{p.full_name || p.username || "Unknown"}</p>
+                            <p className="text-sm font-medium text-foreground truncate">{getDisplayName(p)}</p>
                             <p className="text-xs text-muted-foreground truncate">{p.email || "N/A"}</p>
                           </div>
                         </div>
@@ -262,6 +278,15 @@ const AdminUsersSection = ({ profiles, applications, loading, onRefresh, resolve
                         </div>
                       </td>
                       <td className="p-3 hidden lg:table-cell">
+                        {p.referral_code_used ? (
+                          <Badge variant="secondary" className="text-[10px] font-mono bg-admin-indigo/10 text-admin-indigo hover:bg-admin-indigo/20">
+                            {p.referral_code_used}
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground/50">—</span>
+                        )}
+                      </td>
+                      <td className="p-3 hidden xl:table-cell">
                         <span className="text-xs text-muted-foreground">{fmt(p.created_at)}</span>
                       </td>
                       <td className="p-3 text-right">

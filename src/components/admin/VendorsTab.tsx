@@ -30,6 +30,7 @@ interface VendorApplication {
   status: string;
   created_at: string;
   store_name?: string;
+  store_location?: string;
 }
 
 interface VendorAccount {
@@ -40,7 +41,9 @@ interface VendorAccount {
   is_active: boolean;
   created_at: string;
   store_name?: string;
+  store_location?: string;
   user_email?: string;
+  products_count?: number;
 }
 
 const VendorsTab = () => {
@@ -74,16 +77,18 @@ const VendorsTab = () => {
       .order("created_at", { ascending: false });
 
     if (data) {
-      // Enrich with store names
       const storeIds = [...new Set(data.map((a: any) => a.store_id))];
       const { data: stores } = await supabase
         .from("alpha_partners")
-        .select("id, name")
+        .select("id, name, city")
         .in("id", storeIds);
-      const storeMap = new Map((stores || []).map((s: any) => [s.id, s.name]));
+      const storeMap = new Map((stores || []).map((s: any) => [s.id, { name: s.name, city: s.city }]));
 
       setApplications(
-        data.map((a: any) => ({ ...a, store_name: storeMap.get(a.store_id) || "Unknown" }))
+        data.map((a: any) => {
+          const store = storeMap.get(a.store_id) || { name: "Unknown", city: "Unknown" };
+          return { ...a, store_name: store.name, store_location: store.city };
+        })
       );
     }
   };
@@ -100,9 +105,9 @@ const VendorsTab = () => {
 
       const { data: stores } = await supabase
         .from("alpha_partners")
-        .select("id, name")
+        .select("id, name, city")
         .in("id", partnerIds);
-      const storeMap = new Map((stores || []).map((s: any) => [s.id, s.name]));
+      const storeMap = new Map((stores || []).map((s: any) => [s.id, { name: s.name, city: s.city }]));
 
       const { data: users } = await supabase
         .from("users")
@@ -110,12 +115,29 @@ const VendorsTab = () => {
         .in("id", userIds);
       const userMap = new Map((users || []).map((u: any) => [u.id, u.email]));
 
+      const { data: products } = await supabase
+        .from("partner_products")
+        .select("id, partner_id")
+        .in("partner_id", partnerIds);
+        
+      const productCountMap = new Map<string, number>();
+      if (products) {
+        products.forEach(p => {
+          productCountMap.set(p.partner_id, (productCountMap.get(p.partner_id) || 0) + 1);
+        });
+      }
+
       setVendors(
-        data.map((v: any) => ({
-          ...v,
-          store_name: storeMap.get(v.partner_id) || "Unknown",
-          user_email: userMap.get(v.user_id) || v.user_id?.slice(0, 8),
-        }))
+        data.map((v: any) => {
+          const store = storeMap.get(v.partner_id) || { name: "Unknown", city: "Unknown" };
+          return {
+            ...v,
+            store_name: store.name,
+            store_location: store.city,
+            user_email: userMap.get(v.user_id) || v.user_id?.slice(0, 8),
+            products_count: productCountMap.get(v.partner_id) || 0,
+          };
+        })
       );
     }
   };
@@ -216,15 +238,29 @@ const VendorsTab = () => {
     }
   };
 
-  const handleRemoveVendor = async (vendorId: string) => {
-    if (!confirm("Remove this vendor's access?")) return;
+  const handleToggleStatus = async (vendorId: string, currentStatus: boolean) => {
     try {
       const { error } = await supabase
         .from("vendor_accounts")
-        .update({ is_active: false })
+        .update({ is_active: !currentStatus })
         .eq("id", vendorId);
       if (error) throw error;
-      toast({ title: "Removed", description: "Vendor access revoked" });
+      toast({ title: "Updated", description: `Vendor status changed to ${!currentStatus ? 'Active' : 'Inactive'}` });
+      loadAll();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleRemoveVendor = async (vendorId: string) => {
+    if (!confirm("Are you sure you want to permanently delete this vendor access?")) return;
+    try {
+      const { error } = await supabase
+        .from("vendor_accounts")
+        .delete()
+        .eq("id", vendorId);
+      if (error) throw error;
+      toast({ title: "Removed", description: "Vendor access completely removed" });
       loadAll();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -268,7 +304,6 @@ const VendorsTab = () => {
   const pendingApps = applications.filter((a) => a.status === "pending");
   const filteredVendors = vendors.filter(
     (v) =>
-      v.is_active &&
       ((v.store_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
         (v.user_email || "").toLowerCase().includes(searchQuery.toLowerCase()))
   );
@@ -328,10 +363,13 @@ const VendorsTab = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="gap-1">
-                          <Store className="w-3 h-3" />
-                          {app.store_name}
-                        </Badge>
+                        <div>
+                          <Badge variant="outline" className="gap-1 mb-1">
+                            <Store className="w-3 h-3" />
+                            {app.store_name}
+                          </Badge>
+                          <p className="text-xs text-muted-foreground">{app.store_location || "Unknown location"}</p>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <span className="capitalize text-sm">{app.role_requested}</span>
@@ -449,8 +487,10 @@ const VendorsTab = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Vendor</TableHead>
-                  <TableHead>Store</TableHead>
+                  <TableHead>Store & Location</TableHead>
+                  <TableHead>Products</TableHead>
                   <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Since</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -460,13 +500,33 @@ const VendorsTab = () => {
                   <TableRow key={vendor.id}>
                     <TableCell className="text-sm font-medium">{vendor.user_email}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="gap-1">
-                        <Store className="w-3 h-3" />
-                        {vendor.store_name}
-                      </Badge>
+                      <div>
+                        <Badge variant="outline" className="gap-1 mb-1">
+                          <Store className="w-3 h-3" />
+                          {vendor.store_name}
+                        </Badge>
+                        <p className="text-xs text-muted-foreground">{vendor.store_location || "Unknown location"}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="font-mono">{vendor.products_count || 0}</Badge>
                     </TableCell>
                     <TableCell>
                       <span className="capitalize text-sm">{vendor.role}</span>
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={vendor.is_active ? "active" : "inactive"}
+                        onValueChange={(val) => handleToggleStatus(vendor.id, vendor.is_active)}
+                      >
+                        <SelectTrigger className={`w-[110px] h-8 text-xs ${vendor.is_active ? 'text-admin-emerald border-admin-emerald/30 bg-admin-emerald/10' : 'text-muted-foreground border-border/50 bg-muted/20'}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active" className="text-xs">Active</SelectItem>
+                          <SelectItem value="inactive" className="text-xs">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {new Date(vendor.created_at).toLocaleDateString()}
@@ -475,7 +535,7 @@ const VendorsTab = () => {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-destructive"
+                        className="text-destructive hover:bg-destructive/10"
                         onClick={() => handleRemoveVendor(vendor.id)}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -485,7 +545,7 @@ const VendorsTab = () => {
                 ))}
                 {filteredVendors.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       No active vendors found
                     </TableCell>
                   </TableRow>

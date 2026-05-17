@@ -53,13 +53,22 @@ const StrainsTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingStrain, setEditingStrain] = useState<Strain | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    type: string;
+    thc_level: string;
+    most_common_terpene: string;
+    description: string;
+    img_url: string;
+    effects: Record<string, string>;
+  }>({
     name: "",
     type: "hybrid",
     thc_level: "",
     most_common_terpene: "",
     description: "",
     img_url: "",
+    effects: {},
   });
 
   useEffect(() => {
@@ -151,6 +160,7 @@ const StrainsTab = () => {
             most_common_terpene: formData.most_common_terpene,
             description: formData.description,
             img_url: formData.img_url,
+            effects: formData.effects,
           })
           .eq("id", editingStrain.id);
       } else {
@@ -171,6 +181,7 @@ const StrainsTab = () => {
         most_common_terpene: "",
         description: "",
         img_url: "",
+        effects: {},
       });
       fetchStrains();
     } catch (error) {
@@ -208,6 +219,7 @@ const StrainsTab = () => {
       most_common_terpene: strain.most_common_terpene || "",
       description: strain.description || "",
       img_url: strain.img_url || "",
+      effects: strain.effects || {},
     });
     setShowModal(true);
   };
@@ -221,6 +233,7 @@ const StrainsTab = () => {
       most_common_terpene: "",
       description: "",
       img_url: "",
+      effects: {},
     });
     setShowModal(true);
   };
@@ -451,8 +464,64 @@ const StrainsTab = () => {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 placeholder="Describe the strain..."
-                rows={4}
+                rows={3}
               />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">
+                Effects (Percentage)
+              </label>
+              <div className="space-y-2">
+                {Object.entries(formData.effects).map(([effect, value], index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input 
+                      placeholder="Effect (e.g. Relaxed)" 
+                      value={effect} 
+                      onChange={(e) => {
+                        const newEffects = { ...formData.effects };
+                        const oldVal = newEffects[effect];
+                        delete newEffects[effect];
+                        if (e.target.value) {
+                          newEffects[e.target.value] = oldVal;
+                        }
+                        setFormData({ ...formData, effects: newEffects });
+                      }}
+                    />
+                    <Input 
+                      placeholder="%" 
+                      value={value} 
+                      className="w-24"
+                      onChange={(e) => {
+                        setFormData({ 
+                          ...formData, 
+                          effects: { ...formData.effects, [effect]: e.target.value } 
+                        });
+                      }}
+                    />
+                    <Button variant="ghost" size="icon" onClick={() => {
+                      const newEffects = { ...formData.effects };
+                      delete newEffects[effect];
+                      setFormData({ ...formData, effects: newEffects });
+                    }}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full text-xs"
+                  onClick={() => {
+                    const nextKey = `New Effect ${Object.keys(formData.effects).length + 1}`;
+                    setFormData({
+                      ...formData,
+                      effects: { ...formData.effects, [nextKey]: "" }
+                    })
+                  }}
+                >
+                  <Plus className="w-3 h-3 mr-1" /> Add Effect
+                </Button>
+              </div>
             </div>
             <div className="flex gap-3 pt-2">
               <Button
