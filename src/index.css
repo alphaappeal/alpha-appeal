@@ -257,10 +257,15 @@
 }
 
 /* Hide Lovable Badge injected by platform hosting */
-[id*="lovable"],
-[class*="lovable-badge"],
-a[href*="lovable.dev"],
-div:has(> a[href*="lovable.dev"]),
-iframe[src*="lovable.dev"] {
+[id*="lovable" i],
+[class*="lovable" i],
+a[href*="lovable" i],
+div:has(a[href*="lovable" i]),
+iframe[src*="lovable" i],
+lovable-badge {
   display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  z-index: -9999 !important;
 }
