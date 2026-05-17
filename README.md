@@ -1,6 +1,6 @@
 # Alpha Appeal
 
-**Alpha Appeal** is a sovereign lifestyle ecosystem merging high-end art, fashion, and culture into one exclusive community platform. The platform serves as a digital hub for luxury products, curated content, event maps, and a private members' club, with dedicated portals for members, vendors, and administrators.
+**Alpha Appeal** is a sovereign lifestyle ecosystem merging high end art, fashion and cars into one community. The platform serves as a digital hub for luxury products, curated content, event maps, and a private members' club, with dedicated portals for members, vendors, and administrators.
 
 ---
 
