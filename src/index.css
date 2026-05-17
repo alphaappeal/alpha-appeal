@@ -256,7 +256,7 @@
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
-/* Hide Lovable Badge injected by platform hosting */
+/* Hide Lovable Badge injected by platform hosting
 [id*="lovable" i],
 [class*="lovable" i],
 a[href*="lovable" i],
@@ -268,4 +268,4 @@ lovable-badge {
   visibility: hidden !important;
   pointer-events: none !important;
   z-index: -9999 !important;
-}
+} */

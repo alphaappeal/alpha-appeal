@@ -24,6 +24,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import AgeGate from "./components/AgeGate";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Lazy-loaded pages for code splitting
 const Index = lazyWithRetry(() => import("./pages/Index"));
@@ -70,39 +71,41 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AgeGate />
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/checkout/success" element={<CheckoutSuccess />} />
-              <Route path="/welcome" element={<Welcome />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/music" element={<Music />} />
-              <Route path="/community" element={<Community />} />
-              <Route path="/map" element={<Map />} />
-              <Route path="/partner/:partnerId" element={<PartnerDetail />} />
-              <Route path="/strain/:strainSlug" element={<StrainDetail />} />
-              <Route path="/community/:postId" element={<CommunityPostDetail />} />
-              <Route path="/culture/:slug" element={<CultureItemDetail />} />
-              <Route path="/admin/import-culture" element={<ProtectedAdminRoute><ImportCultureData /></ProtectedAdminRoute>} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/my-diary" element={<MyDiary />} />
-              <Route path="/deliveries" element={<Deliveries />} />
-              <Route path="/billing" element={<Billing />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/support" element={<Support />} />
-              <Route path="/admin" element={<ProtectedAdminRoute><Admin /></ProtectedAdminRoute>} />
-              <Route path="/vendor" element={<VendorPortal />} />
-              <Route path="/vendor/signup" element={<VendorSignup />} />
-              <Route path="/vendor-diagnostic" element={<VendorDiagnostic />} />
-              <Route path="/legal" element={<Legal />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
+          <ErrorBoundary>
+            <AgeGate />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/checkout/success" element={<CheckoutSuccess />} />
+                <Route path="/welcome" element={<Welcome />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/music" element={<Music />} />
+                <Route path="/community" element={<Community />} />
+                <Route path="/map" element={<Map />} />
+                <Route path="/partner/:partnerId" element={<PartnerDetail />} />
+                <Route path="/strain/:strainSlug" element={<StrainDetail />} />
+                <Route path="/community/:postId" element={<CommunityPostDetail />} />
+                <Route path="/culture/:slug" element={<CultureItemDetail />} />
+                <Route path="/admin/import-culture" element={<ProtectedAdminRoute><ImportCultureData /></ProtectedAdminRoute>} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/my-diary" element={<MyDiary />} />
+                <Route path="/deliveries" element={<Deliveries />} />
+                <Route path="/billing" element={<Billing />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/admin" element={<ProtectedAdminRoute><Admin /></ProtectedAdminRoute>} />
+                <Route path="/vendor" element={<VendorPortal />} />
+                <Route path="/vendor/signup" element={<VendorSignup />} />
+                <Route path="/vendor-diagnostic" element={<VendorDiagnostic />} />
+                <Route path="/legal" element={<Legal />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
