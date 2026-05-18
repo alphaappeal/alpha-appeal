@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Instagram, Twitter, Youtube, Download, Share, X } from "lucide-react";
 import alphaLogo from "@/assets/alpha-logo-light.png";
 
@@ -91,32 +92,32 @@ const Footer = () => {
           {/* Links */}
           <div>
             <h4 className="font-semibold text-foreground mb-4">Membership</h4>
-            <ul className="space-y-3">
-              <li><a href="#tiers" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Essential Tier</a></li>
-              <li><a href="#tiers" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Elite Tier</a></li>
-              <li><a href="#tiers" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Private Tier</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Gift a Membership</a></li>
+            <ul className="space-y-2">
+              <li><Link to="/#tiers" className="inline-block py-1.5 text-muted-foreground hover:text-secondary transition-colors text-sm">Essential Tier</Link></li>
+              <li><Link to="/#tiers" className="inline-block py-1.5 text-muted-foreground hover:text-secondary transition-colors text-sm">Elite Tier</Link></li>
+              <li><Link to="/#tiers" className="inline-block py-1.5 text-muted-foreground hover:text-secondary transition-colors text-sm">Private Tier</Link></li>
+              <li><Link to="/gift" className="inline-block py-1.5 text-muted-foreground hover:text-secondary transition-colors text-sm">Gift a Membership</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold text-foreground mb-4">Company</h4>
-            <ul className="space-y-3">
-              <li><a href="#philosophy" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Our Story</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Contact Us</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Careers</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Press</a></li>
-              <li><a href="/vendor/signup" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Become a Vendor</a></li>
+            <ul className="space-y-2">
+              <li><Link to="/#philosophy" className="inline-block py-1.5 text-muted-foreground hover:text-secondary transition-colors text-sm">Our Story</Link></li>
+              <li><Link to="/contact" className="inline-block py-1.5 text-muted-foreground hover:text-secondary transition-colors text-sm">Contact Us</Link></li>
+              <li><Link to="/careers" className="inline-block py-1.5 text-muted-foreground hover:text-secondary transition-colors text-sm">Careers</Link></li>
+              <li><Link to="/press" className="inline-block py-1.5 text-muted-foreground hover:text-secondary transition-colors text-sm">Press</Link></li>
+              <li><Link to="/vendor/signup" className="inline-block py-1.5 text-muted-foreground hover:text-secondary transition-colors text-sm">Become a Vendor</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold text-foreground mb-4">Legal</h4>
-            <ul className="space-y-3">
-              <li><a href="/legal#terms" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Terms & Conditions</a></li>
-              <li><a href="/legal#privacy" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Privacy Policy</a></li>
-              <li><a href="/legal#disclaimer" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Disclaimers</a></li>
-              <li><a href="/legal#contact" className="text-muted-foreground hover:text-secondary transition-colors text-sm">Contact Legal</a></li>
+            <ul className="space-y-2">
+              <li><Link to="/legal#terms" className="inline-block py-1.5 text-muted-foreground hover:text-secondary transition-colors text-sm">Terms & Conditions</Link></li>
+              <li><Link to="/legal#privacy" className="inline-block py-1.5 text-muted-foreground hover:text-secondary transition-colors text-sm">Privacy Policy</Link></li>
+              <li><Link to="/legal#disclaimer" className="inline-block py-1.5 text-muted-foreground hover:text-secondary transition-colors text-sm">Disclaimers</Link></li>
+              <li><Link to="/legal#contact" className="inline-block py-1.5 text-muted-foreground hover:text-secondary transition-colors text-sm">Contact Legal</Link></li>
             </ul>
           </div>
         </div>

@@ -55,6 +55,10 @@ const StrainDetail = lazyWithRetry(() => import("./pages/StrainDetail"));
 const CommunityPostDetail = lazyWithRetry(() => import("./pages/CommunityPostDetail"));
 const CultureItemDetail = lazyWithRetry(() => import("./pages/CultureItemDetail"));
 const ImportCultureData = lazyWithRetry(() => import("./pages/ImportCultureData"));
+const Contact = lazyWithRetry(() => import("./pages/Contact"));
+const Gift = lazyWithRetry(() => import("./pages/Gift"));
+const Careers = lazyWithRetry(() => import("./pages/Careers"));
+const Press = lazyWithRetry(() => import("./pages/Press"));
 
 const queryClient = new QueryClient();
 
@@ -102,6 +106,10 @@ const App = () => (
                 <Route path="/vendor/signup" element={<VendorSignup />} />
                 <Route path="/vendor-diagnostic" element={<VendorDiagnostic />} />
                 <Route path="/legal" element={<Legal />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/gift" element={<Gift />} />
+                <Route path="/careers" element={<Careers />} />
+                <Route path="/press" element={<Press />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

@@ -51,7 +51,7 @@ const Philosophy = () => {
           {values.map((value, index) => (
             <div
               key={value.title}
-              className="group p-6 md:p-8 rounded-2xl bg-glass border border-border/30 hover:border-secondary/50 transition-all duration-500 hover:-translate-y-2"
+              className="group p-6 md:p-8 rounded-2xl bg-card/40 backdrop-blur-xl border border-white/5 hover:border-secondary/30 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-secondary/5 active:scale-[0.98]"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="w-14 h-14 rounded-xl bg-secondary/10 flex items-center justify-center mb-6 group-hover:bg-secondary/20 transition-colors">
