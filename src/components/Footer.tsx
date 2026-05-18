@@ -126,7 +126,7 @@ const Footer = () => {
         <div className="pt-8 border-t border-border/30">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
             <p className="text-muted-foreground text-sm">
-              © {new Date().getFullYear()} Alpha Appeal. All rights reserved.
+              {/* v2 */}© {new Date().getFullYear()} Alpha Appeal. All rights reserved.
             </p>
             <div className="flex items-center gap-6 flex-wrap justify-center md:justify-end">
               {canShow && (
