@@ -140,7 +140,7 @@ const Legal = () => {
                     By using Alpha Appeal, you represent and warrant that you are of legal age to view cannabis-related information in your state, province, or country. We reserve the right to request proof of age at any time.
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    <strong>Parental Responsibility:</strong> If you believe your minor child has accessed this Platform, contact us immediately at legal@alphaappeal.com.
+                    <strong>Parental Responsibility:</strong> If you believe your minor child has accessed this Platform, contact us immediately at legal@alphaappeal.co.za.
                   </p>
                 </div>
 
@@ -374,7 +374,7 @@ const Legal = () => {
                     </div>
                   </div>
                   <p className="text-muted-foreground text-sm">
-                    To exercise these rights: <a href="mailto:legal@alphaappeal.com" className="text-secondary hover:underline">legal@alphaappeal.com</a>
+                    To exercise these rights: <a href="mailto:legal@alphaappeal.co.za" className="text-secondary hover:underline">legal@alphaappeal.co.za</a>
                   </p>
                 </div>
 
@@ -387,7 +387,7 @@ const Legal = () => {
                     We do not knowingly collect data from minors. If we discover a minor has provided data, we will delete the information immediately, terminate the account, and take measures to prevent future access.
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Parents/Guardians: If you believe your child accessed the Platform, contact <a href="mailto:legal@alphaappeal.com" className="text-destructive hover:underline">legal@alphaappeal.com</a>
+                    Parents/Guardians: If you believe your child accessed the Platform, contact <a href="mailto:legal@alphaappeal.co.za" className="text-destructive hover:underline">legal@alphaappeal.co.za</a>
                   </p>
                 </div>
 
@@ -483,12 +483,12 @@ const Legal = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-muted/30 p-4 rounded-lg">
                     <h4 className="font-semibold text-foreground mb-2">General Legal Inquiries</h4>
-                    <p className="text-secondary">legal@alphaappeal.com</p>
+                    <p className="text-secondary">legal@alphaappeal.co.za</p>
                     <p className="text-muted-foreground text-sm">Response time: 14 business days</p>
                   </div>
                   <div className="bg-muted/30 p-4 rounded-lg">
                     <h4 className="font-semibold text-foreground mb-2">Data Protection Officer</h4>
-                    <p className="text-secondary">dpo@alphaappeal.com</p>
+                    <p className="text-secondary">legal@alphaappeal.co.za</p>
                     <p className="text-muted-foreground text-sm">For privacy-specific concerns</p>
                   </div>
                   <div className="bg-muted/30 p-4 rounded-lg">
@@ -499,7 +499,7 @@ const Legal = () => {
                   </div>
                   <div className="bg-muted/30 p-4 rounded-lg">
                     <h4 className="font-semibold text-foreground mb-2">User Support</h4>
-                    <p className="text-secondary">support@alphaappeal.com</p>
+                    <p className="text-secondary">support@alphaappeal.co.za</p>
                     <p className="text-muted-foreground text-sm">For Platform assistance</p>
                   </div>
                 </div>

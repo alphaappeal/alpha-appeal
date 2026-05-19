@@ -4,7 +4,7 @@ const Press = () => {
   return (
     <PlaceholderPage 
       title="Press & Media" 
-      description="For all press inquiries, please contact our PR team at media@alpha-appeal.co.za." 
+      description="For all press inquiries, please contact our team at hello@alphaappeal.co.za." 
     />
   );
 };

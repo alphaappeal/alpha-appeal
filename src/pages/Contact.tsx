@@ -65,7 +65,7 @@ const Contact = () => {
             <div className="mt-16 text-center">
               <h2 className="font-display text-2xl font-semibold mb-4">General Inquiries</h2>
               <p className="text-muted-foreground mb-6">For partnerships, support, or general questions, please reach out via email.</p>
-              <a href="mailto:hello@alpha-appeal.co.za" className="inline-flex items-center justify-center h-12 px-8 rounded-full bg-secondary text-secondary-foreground font-medium hover:bg-secondary/90 transition-colors">
+              <a href="mailto:hello@alphaappeal.co.za" className="inline-flex items-center justify-center h-12 px-8 rounded-full bg-secondary text-secondary-foreground font-medium hover:bg-secondary/90 transition-colors">
                 Email Us
               </a>
             </div>

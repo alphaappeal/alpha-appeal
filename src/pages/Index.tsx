@@ -53,7 +53,7 @@ const Index = () => {
         <meta property="og:title" content="Alpha Appeal | Premium Lifestyle Movement" />
         <meta property="og:description" content="Art you can wear. Music you can live in. Culture you can feel. Join the movement." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://alpha-appeal.co.za" />
+        <link rel="canonical" href="https://alphaappeal.co.za" />
       </Helmet>
 
       <div className="min-h-screen bg-background">
