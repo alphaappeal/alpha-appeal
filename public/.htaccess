@@ -1,15 +1,25 @@
 AddType application/manifest+json .webmanifest
 AddType application/javascript .js
 
-Options -MultiViews
+Options -MultiViews -Indexes
+AddDefaultCharset UTF-8
+
+# Serve index.html for all non-file, non-directory requests (SPA routing)
 ErrorDocument 404 /index.html
+
+<IfModule mod_negotiation.c>
+  Options -MultiViews
+</IfModule>
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
-  RewriteRule ^index\.html$ - [L]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteCond %{REQUEST_FILENAME} !-l
-  RewriteRule . /index.html [L]
+
+  # Don't rewrite files or directories
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Rewrite everything else to index.html to allow SPA routing
+  RewriteRule ^ /index.html [L]
 </IfModule>
