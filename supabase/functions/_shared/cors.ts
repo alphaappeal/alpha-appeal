@@ -17,7 +17,7 @@ const ALLOWED_ORIGINS_STRING = Deno.env.get("ALLOWED_ORIGINS") || "";
 const ALLOWED_ORIGINS = ALLOWED_ORIGINS_STRING.split(",").map(origin => origin.trim()).filter(Boolean);
 
 // Fallback to production domain if no origins configured
-const DEFAULT_ORIGIN = "https://alpha-appeal.co.za";
+const DEFAULT_ORIGIN = "https://alphaappeal.co.za";
 
 /**
  * Get secure CORS headers for a given origin

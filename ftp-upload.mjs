@@ -8,8 +8,10 @@ async function upload() {
     client.ftp.verbose = true
     try {
         console.log("Connecting to FTP...")
+        let host = process.env.FTP_HOST || "ftp.alphaappeal.co.za";
+        host = host.replace(/^ftps?:\/\//, "");
         await client.access({
-            host: process.env.FTP_HOST || "ftp.alphaappeal.co.za",
+            host: host,
             user: process.env.FTP_USER || "u248051488.hostingeralphakey",
             password: process.env.FTP_PASSWORD || "@Mus1c@ppe@L",
             secure: false
@@ -17,7 +19,7 @@ async function upload() {
         console.log("Connected. Uploading dist folder to " + (process.env.FTP_REMOTE_DIR || "/public_html"));
         
         await client.ensureDir(process.env.FTP_REMOTE_DIR || "/public_html");
-        await client.clearWorkingDir();
+        // Bypassing clearWorkingDir to avoid errors with un-deletable remote files
         await client.uploadFromDir("dist");
         
         console.log("Upload completed successfully.");
