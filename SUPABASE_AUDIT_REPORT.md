@@ -124,6 +124,19 @@ npm run supabase:link       # Link to Supabase project
 
 ---
 
+### 6. Database Security Hardening
+**File:** `supabase/migrations/20260519220000_supabase_security_hardening.sql`
+
+**Key Improvements:**
+- **Search Path Hardening:** Set explicit `search_path = public` on mutable functions (`calculate_delivery_fee`, `apply_reward_to_wallet`, `find_optimal_delivery_provider`, `assign_driver_to_delivery`, `update_updated_at_column`) to prevent role hijacking.
+- **Materialized View Protection:** Revoked public/REST access from `anon`, `authenticated`, and `PUBLIC` on `product_views_daily`.
+- **Harden Permissive RLS Policies:**
+  - Dropped insecure unrestricted `INSERT` policy `Unified Users Insert` on the `users` table.
+  - Replaced insecure `Anyone can insert vendor applications` policy with a secure, authenticated policy: `WITH CHECK (auth.uid() = user_id)`.
+- **Revoked Security Definer RPC Execution:** Revoked public `EXECUTE` rights on all internal trigger, maintenance, and helper functions (18 functions total) to prevent unauthorized API calls.
+
+---
+
 ## 📋 DETAILED ANALYSIS
 
 ### A. Supabase Client Configuration
@@ -373,6 +386,7 @@ graph TD
 2. **`EDGE_FUNCTIONS_SECURITY.md`** - Security best practices guide
 3. **`SUPABASE_AUDIT_REPORT.md`** - This comprehensive report
 4. **Migration file** - Performance indexes (20260319000000)
+5. **Migration file** - Security hardening (20260519220000)
 
 ---
 
@@ -394,6 +408,21 @@ graph TD
 9. **Optimize bundle** - Manual chunking for Leaflet
 10. **Add analytics** - Google Analytics or Plausible
 11. **Improve documentation** - Inline code comments
+
+---
+
+## 🔐 SUPABASE AUTH: LEAKED PASSWORD PROTECTION
+
+To resolve the remaining linter warning regarding leaked passwords, you must enable this feature in your remote Supabase project dashboard. This is a platform-level toggle and cannot be executed via SQL migration.
+
+### Steps to Enable Leaked Password Protection:
+1. Navigate to the [Supabase Dashboard](https://supabase.com/dashboard).
+2. Select your project: **Alpha Appeal** (`xlyxtbcqirspcfxdznyu`).
+3. Click on the **Settings** gear icon in the bottom-left sidebar.
+4. Select **Auth** under the settings menu.
+5. Scroll down to the **Security** section.
+6. Toggle the **"Prevent use of leaked passwords"** setting to **Enabled** (this performs a secure check using HIBP database to block compromised passwords during signup/password changes).
+7. Save changes.
 
 ---
 
@@ -433,6 +462,6 @@ Your Supabase configuration is **production-ready** with minor improvements need
 
 **Questions?** Reach out with specific concerns about any section.
 
-**Last Updated:** March 19, 2026  
-**Version:** 1.0  
+**Last Updated:** May 19, 2026  
+**Version:** 1.1  
 **Status:** Complete ✅
